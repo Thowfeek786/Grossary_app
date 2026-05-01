@@ -1,0 +1,8 @@
+name: grocery_platform
+description: A complete grocery e-commerce app suite monorepo.
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dev_dependencies:
+  melos: ^5.2.0
