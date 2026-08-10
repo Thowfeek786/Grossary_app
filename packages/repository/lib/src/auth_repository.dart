@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:models/models.dart';
 
 class AuthRepository {
@@ -9,6 +10,57 @@ class AuthRepository {
   Stream<User?> get authStateChanges => _auth.authStateChanges();
   User? get currentUser => _auth.currentUser;
   String? get currentUserId => _auth.currentUser?.uid;
+
+  /// Sign in with Google
+  Future<UserModel?> signInWithGoogle() async {
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      await googleSignIn.signOut().catchError((_) => null);
+
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) return null; // User cancelled
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      if (googleAuth.idToken == null && googleAuth.accessToken == null) {
+        throw Exception(
+          'Google Auth tokens missing. Please ensure SHA-1 is added in Firebase Console and Google provider is enabled.',
+        );
+      }
+
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+
+      final cred = await _auth.signInWithCredential(credential);
+      final userDoc = await _db.collection('users').doc(cred.user!.uid).get();
+
+      if (userDoc.exists) {
+        return UserModel.fromFirestore(userDoc);
+      }
+
+      // Create new profile if first time
+      final newUser = UserModel(
+        id: cred.user!.uid,
+        name: googleUser.displayName ?? cred.user!.displayName ?? 'User',
+        email: googleUser.email,
+        phone: cred.user!.phoneNumber ?? '',
+        photoUrl: googleUser.photoUrl ?? cred.user!.photoURL,
+        role: UserRole.customer,
+        isActive: true,
+        isApproved: true,
+        createdAt: DateTime.now(),
+      );
+
+      await _db.collection('users').doc(newUser.id).set(newUser.toFirestore());
+      return newUser;
+    } catch (e) {
+      print('Google Sign In Error: $e');
+      rethrow;
+    }
+  }
+
 
   /// Register a new user with email + password
   Future<UserModel> registerWithEmail({
@@ -80,6 +132,25 @@ class AuthRepository {
   /// Update FCM token
   Future<void> updateFcmToken(String uid, String token) async {
     await _db.collection('users').doc(uid).update({'fcmToken': token});
+  }
+
+  /// Change password (requires re-authentication)
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null || user.email == null) {
+      throw Exception('No authenticated user found.');
+    }
+    // Re-authenticate first
+    final credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: currentPassword,
+    );
+    await user.reauthenticateWithCredential(credential);
+    // Update password
+    await user.updatePassword(newPassword);
   }
 
   /// Sign out

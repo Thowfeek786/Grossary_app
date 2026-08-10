@@ -1,12 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:models/models.dart';
 
 void main() {
-  test('adds one to input values', () {
-    final calculator = Calculator();
-    expect(calculator.addOne(2), 3);
-    expect(calculator.addOne(-7), -6);
-    expect(calculator.addOne(0), 1);
+  test('CategoryModel serialization test', () {
+    final now = DateTime.now();
+    final cat = CategoryModel(
+      id: 'cat_1',
+      name: 'Fruits & Vegetables',
+      imageUrl: 'https://example.com/fruits.png',
+      createdAt: now,
+    );
+
+    final map = cat.toFirestore();
+    expect(map['name'], 'Fruits & Vegetables');
+    expect(map['imageUrl'], 'https://example.com/fruits.png');
   });
 }

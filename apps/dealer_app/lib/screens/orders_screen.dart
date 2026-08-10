@@ -30,6 +30,17 @@ class _DealerOrdersScreenState extends State<DealerOrdersScreen> {
         title: 'Store Orders',
         actions: [
           IconButton(
+            icon: const Icon(Icons.download_rounded, color: AppColors.primary),
+            tooltip: 'Export Store Orders (CSV/PDF)',
+            onPressed: () async {
+              final orders = await _orderRepo.getOrdersByDealer(user.id).first;
+              final csv = ExportService.generateOrdersCsv(orders);
+              if (context.mounted) {
+                ExportService.showExportDialog(context, title: 'Store Orders Data', csvContent: csv, pdfSummaryTitle: 'Dealer Orders Statement');
+              }
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.filter_list_rounded, color: AppColors.primary),
             onPressed: () => _showFilterSheet(context),
           ),

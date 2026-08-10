@@ -35,6 +35,8 @@ class OrderModel {
   final String? dealerName;
   final String? cancellationReason;
   final String? notes;
+  final String? deliveryOtp;
+  final String? digitalSignatureUrl;
   final DateTime createdAt;
   final DateTime? updatedAt;
   final DateTime? deliveredAt;
@@ -62,13 +64,15 @@ class OrderModel {
     this.dealerName,
     this.cancellationReason,
     this.notes,
+    this.deliveryOtp,
+    this.digitalSignatureUrl,
     required this.createdAt,
     this.updatedAt,
     this.deliveredAt,
   });
 
   String get statusString => status.name;
-  int get itemCount => items.fold(0, (sum, item) => sum + item.quantity);
+  int get itemCount => items.fold(0, (acc, item) => acc + item.quantity);
 
   factory OrderModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -101,6 +105,8 @@ class OrderModel {
       dealerName: data['dealerName'],
       cancellationReason: data['cancellationReason'],
       notes: data['notes'],
+      deliveryOtp: data['deliveryOtp'],
+      digitalSignatureUrl: data['digitalSignatureUrl'],
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
       deliveredAt: (data['deliveredAt'] as Timestamp?)?.toDate(),
@@ -129,6 +135,8 @@ class OrderModel {
     'dealerName': dealerName,
     'cancellationReason': cancellationReason,
     'notes': notes,
+    'deliveryOtp': deliveryOtp,
+    'digitalSignatureUrl': digitalSignatureUrl,
     'createdAt': Timestamp.fromDate(createdAt),
     'updatedAt': FieldValue.serverTimestamp(),
     'deliveredAt': deliveredAt != null ? Timestamp.fromDate(deliveredAt!) : null,

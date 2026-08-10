@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:models/models.dart';
+import 'package:flutter/foundation.dart';
 
 class NotificationRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -8,11 +9,26 @@ class NotificationRepository {
   Stream<List<NotificationModel>> getUserNotifications(String userId) {
     return _col
         .where('userId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
-        .limit(50)
         .snapshots()
-        .map((s) => s.docs.map(NotificationModel.fromFirestore).toList());
+        .map((s) {
+          final list = s.docs.map(NotificationModel.fromFirestore).toList();
+          list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return list;
+        });
   }
+
+  /// Get broadcast notifications for a specific topic that the user should see
+  Stream<List<NotificationModel>> getBroadcastNotifications(String topic) {
+    return _col
+        .where('userId', isEqualTo: 'broadcast_$topic')
+        .snapshots()
+        .map((s) {
+          final list = s.docs.map(NotificationModel.fromFirestore).toList();
+          list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return list;
+        });
+  }
+
 
   Future<void> sendNotification(NotificationModel notification) async {
     final ref = _col.doc();
@@ -43,25 +59,181 @@ class NotificationRepository {
         .get();
     return snap.count ?? 0;
   }
+
+  /// Send broadcast notification:
+  /// 1. Saves to Firestore 'notifications' collection (for in-app display)
+  /// 2. Collects FCM tokens from matching users by role
+  /// 3. Writes to 'fcm_send_queue' collection for a Cloud Function to pick up and send
+  ///    (since direct FCM HTTP v1 API requires a service account key which shouldn't be in the app)
   Future<void> sendBroadcastNotification({
     required String title,
     required String body,
     required String topic,
     String? type,
+    String? imageUrl,
   }) async {
-    // 1. In a real app, you'd call a Cloud Function or FCM REST API here
-    // For this implementation, we log and save to a 'broadcast_notifications' collection
-    // so individual apps can also pull from there if needed.
-    
-    final ref = _db.collection('notifications').doc();
-    await ref.set({
+    final batch = _db.batch();
+
+    // 1. Save the broadcast notification record
+    final broadcastRef = _col.doc();
+    batch.set(broadcastRef, {
       'title': title,
       'body': body,
       'topic': topic,
       'type': type ?? 'broadcast',
+      'imageUrl': imageUrl,
       'createdAt': FieldValue.serverTimestamp(),
       'isRead': false,
-      'userId': 'broadcast_$topic', // Special ID for filtering
+      'userId': 'broadcast_$topic',
     });
+
+    // 2. Get FCM tokens for targeted users
+    List<String> fcmTokens = [];
+    try {
+      QuerySnapshot usersSnap;
+      
+      if (topic == 'all_notifications') {
+        // All users with FCM tokens
+        usersSnap = await _db
+            .collection('users')
+            .where('fcmToken', isNull: false)
+            .get();
+      } else if (topic == 'user_notifications') {
+        usersSnap = await _db
+            .collection('users')
+            .where('role', isEqualTo: 'customer')
+            .get();
+      } else if (topic == 'dealer_notifications') {
+        usersSnap = await _db
+            .collection('users')
+            .where('role', isEqualTo: 'dealer')
+            .get();
+      } else if (topic == 'delivery_notifications') {
+        usersSnap = await _db
+            .collection('users')
+            .where('role', isEqualTo: 'deliveryPartner')
+            .get();
+      } else {
+        usersSnap = await _db
+            .collection('users')
+            .where('fcmToken', isNull: false)
+            .get();
+      }
+
+      for (final doc in usersSnap.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        final token = data['fcmToken'] as String?;
+        if (token != null && token.isNotEmpty) {
+          fcmTokens.add(token);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching FCM tokens: $e');
+    }
+
+    // 3. Create individual notification entries for each user with a token
+    //    AND queue FCM push messages
+    if (fcmTokens.isNotEmpty) {
+      // Write to fcm_send_queue collection — a Cloud Function can listen
+      // to this and send the actual push notifications via FCM HTTP v1 API
+      final queueRef = _db.collection('fcm_send_queue').doc();
+      batch.set(queueRef, {
+        'title': title,
+        'body': body,
+        'tokens': fcmTokens,
+        'topic': topic,
+        'imageUrl': imageUrl,
+        'data': {
+          'type': type ?? 'broadcast',
+          'notificationId': broadcastRef.id,
+        },
+        'status': 'pending',
+        'createdAt': FieldValue.serverTimestamp(),
+        'tokenCount': fcmTokens.length,
+      });
+    }
+
+    await batch.commit();
+    debugPrint('Broadcast notification sent. ${fcmTokens.length} FCM tokens queued.');
+  }
+
+  /// Send a targeted notification to a specific user
+  Future<void> sendTargetedNotification({
+    required String userId,
+    required String title,
+    required String body,
+    String type = 'general',
+    Map<String, dynamic>? data,
+  }) async {
+    final batch = _db.batch();
+
+    // Save in-app notification
+    final notifRef = _col.doc();
+    batch.set(notifRef, {
+      'userId': userId,
+      'title': title,
+      'body': body,
+      'type': type,
+      'data': data,
+      'isRead': false,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    // Get user's FCM token
+    try {
+      final userDoc = await _db.collection('users').doc(userId).get();
+      final userData = userDoc.data();
+      final token = userData?['fcmToken'] as String?;
+
+      if (token != null && token.isNotEmpty) {
+        final queueRef = _db.collection('fcm_send_queue').doc();
+        batch.set(queueRef, {
+          'title': title,
+          'body': body,
+          'tokens': [token],
+          'data': {
+            'type': type,
+            'notificationId': notifRef.id,
+            ...?data,
+          },
+          'status': 'pending',
+          'createdAt': FieldValue.serverTimestamp(),
+          'tokenCount': 1,
+        });
+      }
+    } catch (e) {
+      debugPrint('Error sending targeted notification: $e');
+    }
+
+    await batch.commit();
+  }
+
+  /// Get all broadcast notifications sent (for admin history)
+  Stream<List<Map<String, dynamic>>> getBroadcastHistory() {
+    return _db
+        .collection('notifications')
+        .where('type', isEqualTo: 'broadcast')
+        .orderBy('createdAt', descending: true)
+        .limit(50)
+        .snapshots()
+        .map((s) => s.docs.map((d) {
+              final data = d.data();
+              data['id'] = d.id;
+              return data;
+            }).toList());
+  }
+
+  /// Get FCM send queue status for admin
+  Stream<List<Map<String, dynamic>>> getFcmQueueStatus() {
+    return _db
+        .collection('fcm_send_queue')
+        .orderBy('createdAt', descending: true)
+        .limit(20)
+        .snapshots()
+        .map((s) => s.docs.map((d) {
+              final data = d.data();
+              data['id'] = d.id;
+              return data;
+            }).toList());
   }
 }

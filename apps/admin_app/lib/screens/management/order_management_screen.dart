@@ -22,7 +22,22 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Order Management'),
+      appBar: CustomAppBar(
+        title: 'Order Management',
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.download_rounded, color: Colors.white),
+            tooltip: 'Export Orders (CSV/PDF)',
+            onPressed: () async {
+              final orders = await OrderRepository().getAllOrders().first;
+              final csv = ExportService.generateOrdersCsv(orders);
+              if (context.mounted) {
+                ExportService.showExportDialog(context, title: 'Orders List', csvContent: csv, pdfSummaryTitle: 'Orders Statement Report');
+              }
+            },
+          ),
+        ],
+      ),
       body: Column(
         children: [
           _buildFilterBar(),
@@ -102,6 +117,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
 
     await showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -119,27 +135,35 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
               'Order #${order.id.substring(0, 8).toUpperCase()}',
               style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
             ),
-            const SizedBox(height: 20),
-            ...statuses.map((status) => ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: _statusIcon(status),
-                  title: Text(
-                    _statusLabel(status),
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  onTap: () async {
-                    Navigator.pop(ctx);
-                    await management.updateOrderStatus(order.id, status);
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Order status updated to ${_statusLabel(status)}'),
-                          backgroundColor: AppColors.success,
-                        ),
-                      );
-                    }
-                  },
-                )),
+            const SizedBox(height: 12),
+            ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.4),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: statuses.map((status) => ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: _statusIcon(status),
+                    title: Text(
+                      _statusLabel(status),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    onTap: () async {
+                      Navigator.pop(ctx);
+                      await management.updateOrderStatus(order.id, status);
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Order status updated to ${_statusLabel(status)}'),
+                            backgroundColor: AppColors.success,
+                          ),
+                        );
+                      }
+                    },
+                  )).toList(),
+                ),
+              ),
+            ),
             const SizedBox(height: 8),
           ],
         ),

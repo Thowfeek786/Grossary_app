@@ -104,16 +104,22 @@ class _FAQItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.grey200)),
-      child: ExpansionTile(
-        title: Text(question, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-        children: [
-           Padding(
-             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-             child: Text(answer, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.5)),
-           ),
-        ],
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.grey200)),
+      child: Material(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        child: ExpansionTile(
+          shape: const Border(),
+          title: Text(question, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Text(answer, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.5)),
+            ),
+          ],
+        ),
       ),
     );
+
   }
 }

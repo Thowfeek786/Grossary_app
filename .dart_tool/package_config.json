@@ -249,8 +249,8 @@
     }
   ],
   "generator": "pub",
-  "generatorVersion": "3.10.7",
-  "flutterRoot": "file:///C:/flutter/src/flutter",
-  "flutterVersion": "3.38.8",
+  "generatorVersion": "3.12.2",
+  "flutterRoot": "file:///C:/flutter_windows_3.44.0-stable/flutter",
+  "flutterVersion": "3.44.4",
   "pubCache": "file:///C:/Users/thowf/AppData/Local/Pub/Cache"
 }

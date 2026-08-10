@@ -24,6 +24,18 @@ class _AddEditBannerScreenState extends State<AddEditBannerScreen> {
   XFile? _image;
   bool _isActive = true;
 
+  // Banner Navigation Target Dropdown options
+  final List<Map<String, String>> _navigationTargets = [
+    {'label': 'No Action / Display Only', 'value': ''},
+    {'label': 'Categories Screen', 'value': '/categories'},
+    {'label': 'All Products', 'value': '/products'},
+    {'label': 'Coupons & Deals', 'value': '/coupons'},
+    {'label': 'User Cart', 'value': '/cart'},
+    {'label': 'Custom Action / Link', 'value': 'custom'},
+  ];
+
+  String _selectedTarget = '';
+
   @override
   void initState() {
     super.initState();
@@ -31,6 +43,13 @@ class _AddEditBannerScreenState extends State<AddEditBannerScreen> {
     _descCtrl = TextEditingController(text: widget.banner?.subtitle);
     _linkCtrl = TextEditingController(text: widget.banner?.actionUrl);
     _isActive = widget.banner?.isActive ?? true;
+
+    final actionUrl = widget.banner?.actionUrl ?? '';
+    final existingMatch = _navigationTargets.firstWhere(
+      (t) => t['value'] == actionUrl && actionUrl.isNotEmpty,
+      orElse: () => {'label': actionUrl.isNotEmpty ? 'Custom Action / Link' : 'No Action / Display Only', 'value': actionUrl.isNotEmpty ? 'custom' : ''},
+    );
+    _selectedTarget = existingMatch['value']!;
   }
 
   Future<void> _pickImage() async {
@@ -59,12 +78,14 @@ class _AddEditBannerScreenState extends State<AddEditBannerScreen> {
         return;
       }
 
+      final actionUrl = _selectedTarget == 'custom' ? _linkCtrl.text.trim() : _selectedTarget;
+
       final banner = BannerModel(
         id: widget.banner?.id ?? '',
         title: _titleCtrl.text.trim(),
         subtitle: _descCtrl.text.trim(),
         imageUrl: imageUrl,
-        actionUrl: _linkCtrl.text.trim(),
+        actionUrl: actionUrl,
         isActive: _isActive,
         createdAt: widget.banner?.createdAt ?? DateTime.now(),
         sortOrder: widget.banner?.sortOrder ?? 0,
@@ -101,6 +122,7 @@ class _AddEditBannerScreenState extends State<AddEditBannerScreen> {
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               GestureDetector(
                 onTap: _pickImage,
@@ -126,16 +148,73 @@ class _AddEditBannerScreenState extends State<AddEditBannerScreen> {
               ),
               const SizedBox(height: 16),
               AppTextField(
-                label: 'Description',
+                label: 'Description / Subtitle',
                 controller: _descCtrl,
                 maxLines: 2,
               ),
               const SizedBox(height: 16),
-              AppTextField(
-                label: 'Action Link (Optional)',
-                controller: _linkCtrl,
+
+              // ─── Banner Navigation Target Dropdown ───
+              const Text('Banner Navigation Target',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.textPrimary)),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.grey300),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _selectedTarget,
+                    isExpanded: true,
+                    icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary),
+                    onChanged: (String? val) {
+                      if (val != null) {
+                        setState(() {
+                          _selectedTarget = val;
+                          if (val != 'custom') {
+                            _linkCtrl.text = val;
+                          }
+                        });
+                      }
+                    },
+                    items: _navigationTargets.map((t) {
+                      return DropdownMenuItem<String>(
+                        value: t['value'],
+                        child: Row(
+                          children: [
+                            Icon(
+                              t['value'] == '' ? Icons.block_rounded :
+                              t['value'] == '/categories' ? Icons.category_rounded :
+                              t['value'] == '/products' ? Icons.inventory_2_rounded :
+                              t['value'] == '/coupons' ? Icons.confirmation_num_rounded :
+                              t['value'] == '/cart' ? Icons.shopping_cart_rounded :
+                              Icons.link_rounded,
+                              size: 18,
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(t['label']!, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+
+              if (_selectedTarget == 'custom') ...[
+                AppTextField(
+                  label: 'Custom Action URL / Route',
+                  controller: _linkCtrl,
+                  hint: 'e.g. /category/dairy or https://example.com',
+                ),
+                const SizedBox(height: 16),
+              ],
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

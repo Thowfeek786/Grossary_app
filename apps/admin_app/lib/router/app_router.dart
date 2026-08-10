@@ -6,12 +6,23 @@ import '../screens/dashboard_screen.dart';
 import '../screens/management/products_management_screen.dart';
 import '../screens/management/category_management_screen.dart';
 import '../screens/management/order_management_screen.dart';
+import '../screens/management/admin_order_detail_screen.dart';
 import '../screens/management/user_management_screen.dart';
 import '../screens/management/add_user_screen.dart';
 import '../screens/management/banner_management_screen.dart';
 import '../screens/management/dealer_management_screen.dart';
 import '../screens/management/notification_management_screen.dart';
+import '../screens/management/delivery_settings_screen.dart';
+import '../screens/management/analytics_screen.dart';
+import '../screens/management/coupon_management_screen.dart';
+import '../screens/management/review_management_screen.dart';
+import '../screens/management/refund_management_screen.dart';
+import '../screens/management/wallet_management_screen.dart';
+import '../screens/management/payment_management_screen.dart';
+import '../screens/management/platform_settings_screen.dart';
+import '../screens/management/flash_sale_management_screen.dart';
 import '../screens/profile_screen.dart';
+
 
 class AppRouter {
   static GoRouter router(AdminAuthProvider auth) {
@@ -29,52 +40,43 @@ class AppRouter {
         return null;
       },
       routes: [
-        GoRoute(
-          path: '/login',
-          builder: (_, __) => const LoginScreen(),
-        ),
-        GoRoute(
-          path: '/dashboard',
-          builder: (_, __) => const AdminDashboard(),
-        ),
-        GoRoute(
-          path: '/management/products',
-          builder: (_, __) => const ProductsManagementScreen(),
-        ),
-        GoRoute(
-          path: '/management/categories',
-          builder: (_, __) => const CategoryManagementScreen(),
-        ),
+        GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
+        GoRoute(path: '/dashboard', builder: (_, __) => const AdminDashboard()),
+        GoRoute(path: '/management/delivery-settings', builder: (_, __) => const AdminDeliverySettingsScreen()),
+        GoRoute(path: '/management/products', builder: (_, __) => const ProductsManagementScreen()),
+        GoRoute(path: '/management/categories', builder: (_, __) => const CategoryManagementScreen()),
         GoRoute(
           path: '/management/orders',
           builder: (_, __) => const OrderManagementScreen(),
+          routes: [
+            GoRoute(
+              path: ':orderId',
+              builder: (context, state) => AdminOrderDetailScreen(
+                orderId: state.pathParameters['orderId'] ?? '',
+              ),
+            ),
+          ],
         ),
         GoRoute(
           path: '/management/users',
           builder: (_, __) => const UserManagementScreen(),
           routes: [
-            GoRoute(
-              path: 'add',
-              builder: (_, __) => const AddUserScreen(),
-            ),
+            GoRoute(path: 'add', builder: (_, __) => const AddUserScreen()),
           ],
         ),
-        GoRoute(
-          path: '/management/banners',
-          builder: (_, __) => const BannerManagementScreen(),
-        ),
-        GoRoute(
-          path: '/management/dealers',
-          builder: (_, __) => const DealerManagementScreen(),
-        ),
-        GoRoute(
-          path: '/management/notifications',
-          builder: (_, __) => const NotificationManagementScreen(),
-        ),
-        GoRoute(
-          path: '/profile',
-          builder: (_, __) => const AdminProfileScreen(),
-        ),
+        GoRoute(path: '/management/banners', builder: (_, __) => const BannerManagementScreen()),
+        GoRoute(path: '/management/dealers', builder: (_, __) => const DealerManagementScreen()),
+        GoRoute(path: '/management/notifications', builder: (_, __) => const NotificationManagementScreen()),
+        GoRoute(path: '/management/analytics', builder: (_, __) => const AnalyticsScreen()),
+        GoRoute(path: '/management/coupons', builder: (_, __) => const CouponManagementScreen()),
+        GoRoute(path: '/management/reviews', builder: (_, __) => const ReviewManagementScreen()),
+        GoRoute(path: '/management/refunds', builder: (_, __) => const RefundManagementScreen()),
+        GoRoute(path: '/management/wallets', builder: (_, __) => const WalletManagementScreen()),
+        GoRoute(path: '/management/payments', builder: (_, __) => const PaymentManagementScreen()),
+        GoRoute(path: '/management/platform-settings', builder: (_, __) => const PlatformSettingsScreen()),
+        GoRoute(path: '/management/flash-sale', builder: (_, __) => const FlashSaleManagementScreen()),
+        GoRoute(path: '/profile', builder: (_, __) => const AdminProfileScreen()),
+
       ],
     );
   }

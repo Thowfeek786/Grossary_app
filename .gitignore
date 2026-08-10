@@ -2,3 +2,12 @@ node_modules/
 .env
 tools/serviceAccountKey.json
 *.log
+
+# Flutter & Dart gitignore rules
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+.kotlin/
+*.DS_Store

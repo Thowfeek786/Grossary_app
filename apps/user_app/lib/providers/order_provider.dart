@@ -36,4 +36,7 @@ class OrderProvider extends ChangeNotifier {
 
   Future<OrderModel?> getOrderById(String id) => _repo.getOrderById(id);
   Stream<OrderModel?> getOrderStream(String id) => _repo.getOrderStream(id);
+  Stream<Map<String, dynamic>?> streamDriverLocation(String id) =>
+      _repo.streamDriverLocation(id);
 }
+

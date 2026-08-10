@@ -84,4 +84,19 @@ class DeliveryProvider extends ChangeNotifier {
       setLoading(false);
     }
   }
+
+  Future<void> updateLocation({
+    required String orderId,
+    required double latitude,
+    required double longitude,
+    double? heading,
+  }) async {
+    await _orderRepo.updateDriverLocation(
+      orderId: orderId,
+      latitude: latitude,
+      longitude: longitude,
+      heading: heading,
+    );
+  }
 }
+

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:go_router/go_router.dart';
 import 'package:core/core.dart';
 import 'package:models/models.dart';
 import 'package:ui_kit/ui_kit.dart';
@@ -101,6 +102,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             _ProfileItem(icon: Icons.store_rounded, title: 'Store Details', subtitle: user.shopName ?? 'Set shop details', onTap: () => _showEditShopDialog(context, user, auth)),
+            _ProfileItem(icon: Icons.local_shipping_rounded, title: 'Delivery & Shipping Rates', subtitle: 'Set custom delivery fee & minimum free threshold', onTap: () => context.push('/delivery-settings')),
             _ProfileItem(icon: Icons.payments_rounded, title: 'Payment Payouts', onTap: (){}),
             _ProfileItem(icon: Icons.support_agent_rounded, title: 'Vendor Support', onTap: (){}),
             _ProfileItem(icon: Icons.help_outline_rounded, title: 'Partner Terms', onTap: (){}),
@@ -158,117 +160,119 @@ class ProfileScreen extends StatelessWidget {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => StatefulBuilder(
         builder: (context, setStateSB) {
-          return Padding(
-            padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).viewInsets.bottom),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Edit Store Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: nameCtrl,
-                  decoration: const InputDecoration(labelText: 'Shop Name', border: OutlineInputBorder()),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: addrCtrl,
-                  decoration: const InputDecoration(labelText: 'Shop Address', border: OutlineInputBorder()),
-                  maxLines: 3,
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.primarySurface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+          return SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).viewInsets.bottom),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Edit Store Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: nameCtrl,
+                    decoration: const InputDecoration(labelText: 'Shop Name', border: OutlineInputBorder()),
                   ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.location_on_rounded, color: AppColors.primary),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Store Location', style: TextStyle(fontWeight: FontWeight.w600)),
-                            Text(
-                              selectedLat != null ? 'Location selected' : 'Mark store on map',
-                              style: TextStyle(color: selectedLat != null ? AppColors.success : AppColors.textSecondary, fontSize: 12),
-                            ),
-                          ],
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: addrCtrl,
+                    decoration: const InputDecoration(labelText: 'Shop Address', border: OutlineInputBorder()),
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.primarySurface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.location_on_rounded, color: AppColors.primary),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Store Location', style: TextStyle(fontWeight: FontWeight.w600)),
+                              Text(
+                                selectedLat != null ? 'Location selected' : 'Mark store on map',
+                                style: TextStyle(color: selectedLat != null ? AppColors.success : AppColors.textSecondary, fontSize: 12),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      TextButton(
-                        onPressed: () async {
-                          LatLng? tempSelectedLoc = selectedLat != null ? LatLng(selectedLat!, selectedLng!) : null;
-                          final loc = await Navigator.push<LatLng>(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => StatefulBuilder(
-                                builder: (context, setStateMap) {
-                                  return Scaffold(
-                                    appBar: const CustomAppBar(title: 'Pick Store Location'),
-                                    body: LocationPickerWidget(
-                                      initialLocation: tempSelectedLoc,
-                                      onLocationSelected: (l) {
-                                        tempSelectedLoc = l;
-                                      },
-                                    ),
-                                    bottomNavigationBar: Container(
-                                      padding: const EdgeInsets.all(20),
-                                      child: AppButton(
-                                        label: 'Confirm Location',
-                                        onTap: () {
-                                          Navigator.pop(context, tempSelectedLoc); 
+                        TextButton(
+                          onPressed: () async {
+                            LatLng? tempSelectedLoc = selectedLat != null ? LatLng(selectedLat!, selectedLng!) : null;
+                            final loc = await Navigator.push<LatLng>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => StatefulBuilder(
+                                  builder: (context, setStateMap) {
+                                    return Scaffold(
+                                      appBar: const CustomAppBar(title: 'Pick Store Location'),
+                                      body: LocationPickerWidget(
+                                        initialLocation: tempSelectedLoc,
+                                        onLocationSelected: (l) {
+                                          tempSelectedLoc = l;
                                         },
                                       ),
-                                    ),
-                                  );
-                                }
+                                      bottomNavigationBar: Container(
+                                        padding: const EdgeInsets.all(20),
+                                        child: AppButton(
+                                          label: 'Confirm Location',
+                                          onTap: () {
+                                            Navigator.pop(context, tempSelectedLoc); 
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                ),
                               ),
-                            ),
-                          );
-                          if (loc != null) {
-                            setStateSB(() {
-                              selectedLat = loc.latitude;
-                              selectedLng = loc.longitude;
-                            });
-                            try {
-                              final placemarks = await placemarkFromCoordinates(loc.latitude, loc.longitude);
-                              if (placemarks.isNotEmpty) {
-                                final p = placemarks.first;
-                                final parts = [p.street, p.subLocality, p.locality, p.administrativeArea, p.postalCode].where((e) => e != null && e.isNotEmpty).toList();
-                                if (parts.isNotEmpty) {
-                                  setStateSB(() {
-                                    addrCtrl.text = parts.join(', ');
-                                  });
+                            );
+                            if (loc != null) {
+                              setStateSB(() {
+                                selectedLat = loc.latitude;
+                                selectedLng = loc.longitude;
+                              });
+                              try {
+                                final placemarks = await placemarkFromCoordinates(loc.latitude, loc.longitude);
+                                if (placemarks.isNotEmpty) {
+                                  final p = placemarks.first;
+                                  final parts = [p.street, p.subLocality, p.locality, p.administrativeArea, p.postalCode].where((e) => e != null && e.isNotEmpty).toList();
+                                  if (parts.isNotEmpty) {
+                                    setStateSB(() {
+                                      addrCtrl.text = parts.join(', ');
+                                    });
+                                  }
                                 }
-                              }
-                            } catch (_) {}
-                          }
-                        },
-                        child: const Text('Pick'),
-                      ),
-                    ],
+                              } catch (_) {}
+                            }
+                          },
+                          child: const Text('Pick'),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                AppButton(
-                  label: 'Save Changes',
-                  onTap: () async {
-                    await auth.updateUserProfile(
-                       shopName: nameCtrl.text.trim(),
-                       shopAddress: addrCtrl.text.trim(),
-                       latitude: selectedLat,
-                       longitude: selectedLng,
-                    );
-                    if (ctx.mounted) Navigator.pop(ctx);
-                  },
-                ),
-                const SizedBox(height: 12),
-              ],
+                  const SizedBox(height: 24),
+                  AppButton(
+                    label: 'Save Changes',
+                    onTap: () async {
+                      await auth.updateUserProfile(
+                         shopName: nameCtrl.text.trim(),
+                         shopAddress: addrCtrl.text.trim(),
+                         latitude: selectedLat,
+                         longitude: selectedLng,
+                      );
+                      if (ctx.mounted) Navigator.pop(ctx);
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              ),
             ),
           );
         }

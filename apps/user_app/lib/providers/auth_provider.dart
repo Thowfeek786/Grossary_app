@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:models/models.dart';
 import 'package:repository/repository.dart';
+import 'package:core/core.dart';
 
 enum AuthStatus { unknown, authenticated, unauthenticated }
 
@@ -45,6 +46,27 @@ class AuthProvider extends ChangeNotifier {
     });
   }
 
+  Future<bool> signInWithGoogle() async {
+    _setLoading(true);
+    _error = null;
+    try {
+      final user = await _authRepo.signInWithGoogle();
+      if (user == null) {
+        // User cancelled
+        return false;
+      }
+      _user = user;
+      _status = AuthStatus.authenticated;
+      NotificationService.saveFcmToken(user.id);
+      return true;
+    } catch (e) {
+      _error = 'Google sign-in failed: ${e.toString()}';
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   Future<bool> login(String email, String password) async {
     _setLoading(true);
     _error = null;
@@ -57,6 +79,8 @@ class AuthProvider extends ChangeNotifier {
       }
       _user = user;
       _status = AuthStatus.authenticated;
+      // Save FCM token for push notifications
+      NotificationService.saveFcmToken(user.id);
       return true;
     } on FirebaseAuthException catch (e) {
       _error = _mapFirebaseError(e.code);
@@ -87,6 +111,8 @@ class AuthProvider extends ChangeNotifier {
       );
       _user = user;
       _status = AuthStatus.authenticated;
+      // Save FCM token for push notifications
+      NotificationService.saveFcmToken(user.id);
       return true;
     } on FirebaseAuthException catch (e) {
       _error = _mapFirebaseError(e.code);
@@ -100,6 +126,10 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    final uid = _user?.id;
+    if (uid != null) {
+      await NotificationService.removeFcmToken(uid);
+    }
     await _authRepo.signOut();
     _user = null;
     _status = AuthStatus.unauthenticated;

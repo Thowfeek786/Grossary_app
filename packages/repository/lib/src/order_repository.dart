@@ -184,4 +184,46 @@ class OrderRepository {
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }
+
+  Future<void> updateDriverLocation({
+    required String orderId,
+    required double latitude,
+    required double longitude,
+    double? heading,
+  }) async {
+    await _col.doc(orderId).update({
+      'driverLocation': {
+        'latitude': latitude,
+        'longitude': longitude,
+        'heading': heading ?? 0.0,
+        'timestamp': FieldValue.serverTimestamp(),
+      },
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Stream<Map<String, dynamic>?> streamDriverLocation(String orderId) {
+    return _col.doc(orderId).snapshots().map((doc) {
+      if (!doc.exists) return null;
+      final data = doc.data() as Map<String, dynamic>?;
+      return data?['driverLocation'] as Map<String, dynamic>?;
+    });
+  }
+
+  Future<bool> verifyDeliveryOtp({
+    required String orderId,
+    required String inputOtp,
+  }) async {
+    final doc = await _col.doc(orderId).get();
+    if (!doc.exists) return false;
+    final data = doc.data() as Map<String, dynamic>;
+    final expectedOtp = data['deliveryOtp'] as String?;
+
+    if (expectedOtp != null && expectedOtp == inputOtp.trim()) {
+      await updateOrderStatus(orderId, OrderStatus.delivered);
+      return true;
+    }
+    return false;
+  }
 }
+

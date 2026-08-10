@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:models/models.dart';
 import 'package:repository/repository.dart';
+import 'package:core/core.dart';
 
 enum AuthStatus { unknown, authenticated, unauthenticated }
 
@@ -64,6 +65,7 @@ class DealerAuthProvider extends ChangeNotifier {
       }
       _user = user;
       _status = AuthStatus.authenticated;
+      NotificationService.saveFcmToken(user.id);
       return true;
     } catch (e) {
       _error = 'Login failed. Please check your credentials.';
@@ -88,6 +90,7 @@ class DealerAuthProvider extends ChangeNotifier {
       );
       _user = user;
       _status = AuthStatus.authenticated;
+      NotificationService.saveFcmToken(user.id);
       return true;
     } catch (e) {
       _error = 'Registration failed. ${e.toString()}';
@@ -154,6 +157,10 @@ class DealerAuthProvider extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    final uid = _user?.id;
+    if (uid != null) {
+      await NotificationService.removeFcmToken(uid);
+    }
     await _authRepo.signOut();
   }
 }

@@ -3,14 +3,48 @@ import 'package:models/models.dart';
 
 class CartProvider extends ChangeNotifier {
   final List<CartItemModel> _items = [];
+  CouponModel? _appliedCoupon;
+
+  double _baseDeliveryFee = 40.0;
+  double _freeDeliveryThreshold = 500.0;
+  bool _isFreeDeliveryEnabled = true;
 
   List<CartItemModel> get items => List.unmodifiable(_items);
   int get itemCount => _items.fold(0, (sum, i) => sum + i.quantity);
   bool get isEmpty => _items.isEmpty;
 
+  CouponModel? get appliedCoupon => _appliedCoupon;
   double get subtotal => _items.fold(0, (sum, i) => sum + i.totalPrice);
-  double get deliveryFee => subtotal > 500 ? 0 : 40;
-  double get total => subtotal + deliveryFee;
+
+  double get baseDeliveryFee => _baseDeliveryFee;
+  double get freeDeliveryThreshold => _freeDeliveryThreshold;
+  bool get isFreeDeliveryEnabled => _isFreeDeliveryEnabled;
+
+  double get deliveryFee {
+    if (subtotal == 0) return 0.0;
+    if (_isFreeDeliveryEnabled && subtotal >= _freeDeliveryThreshold) return 0.0;
+    return _baseDeliveryFee;
+  }
+
+  double get discountAmount => _appliedCoupon?.calculateDiscount(subtotal) ?? 0.0;
+  double get total => (subtotal + deliveryFee - discountAmount).clamp(0.0, double.infinity);
+
+  void updateDeliverySettings(StoreSettingsModel settings) {
+    _baseDeliveryFee = settings.baseDeliveryFee;
+    _freeDeliveryThreshold = settings.freeDeliveryThreshold;
+    _isFreeDeliveryEnabled = settings.isFreeDeliveryEnabled;
+    notifyListeners();
+  }
+
+  void applyCoupon(CouponModel coupon) {
+    _appliedCoupon = coupon;
+    notifyListeners();
+  }
+
+  void removeCoupon() {
+    _appliedCoupon = null;
+    notifyListeners();
+  }
 
   bool containsProduct(String productId) =>
       _items.any((i) => i.productId == productId);
@@ -71,6 +105,7 @@ class CartProvider extends ChangeNotifier {
 
   void clearCart() {
     _items.clear();
+    _appliedCoupon = null;
     notifyListeners();
   }
 }

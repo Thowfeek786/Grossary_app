@@ -15,6 +15,8 @@ import '../screens/earnings_screen.dart';
 import '../screens/help_support_screen.dart';
 import '../screens/withdraw_funds_screen.dart';
 
+import '../screens/onboarding/onboarding_screen.dart';
+
 class AppRouter {
   static final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
   static final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -25,18 +27,23 @@ class AppRouter {
     _router ??= GoRouter(
       navigatorKey: _rootNavigatorKey,
       refreshListenable: auth,
-      initialLocation: '/dashboard',
+      initialLocation: '/onboarding',
       redirect: (context, state) {
         final isAuth = auth.status == AuthStatus.authenticated;
         final isUnknown = auth.status == AuthStatus.unknown;
+        final isOnboarding = state.matchedLocation == '/onboarding';
         final isAuthRoute = state.matchedLocation == '/login' || state.matchedLocation == '/signup';
 
-        if (isUnknown) return null;
+        if (isOnboarding || isUnknown) return null;
         if (!isAuth && !isAuthRoute) return '/login';
         if (isAuth && isAuthRoute) return '/dashboard';
         return null;
       },
       routes: [
+        GoRoute(
+          path: '/onboarding',
+          builder: (_, __) => const DeliveryOnboardingScreen(),
+        ),
         GoRoute(
           path: '/login',
           builder: (_, __) => const LoginScreen(),
