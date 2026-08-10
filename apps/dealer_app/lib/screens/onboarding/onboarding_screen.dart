@@ -32,10 +32,10 @@ class _DealerOnboardingScreenState extends State<DealerOnboardingScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.emerald.withOpacity(0.2),
+                      color: const Color(0xFF10B981).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.storefront_rounded, color: Colors.emeraldAccent, size: 28),
+                    child: const Icon(Icons.storefront_rounded, color: Color(0xFF34D399), size: 28),
                   ),
                   const SizedBox(width: 10),
                   const Text('GroceryGo Dealer', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20)),
@@ -49,7 +49,7 @@ class _DealerOnboardingScreenState extends State<DealerOnboardingScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 20, offset: const Offset(0, 8)),
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 8)),
                   ],
                 ),
                 child: ClipRRect(
@@ -58,7 +58,7 @@ class _DealerOnboardingScreenState extends State<DealerOnboardingScreen> {
                     'assets/images/onboarding_dealer.png',
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => Container(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       child: const Icon(Icons.storefront_rounded, color: Colors.white54, size: 80),
                     ),
                   ),
@@ -75,7 +75,7 @@ class _DealerOnboardingScreenState extends State<DealerOnboardingScreen> {
               Text(
                 'Receive orders from local customers, manage inventory, track daily earnings, and scale your grocery store effortlessly.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14, height: 1.5),
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14, height: 1.5),
               ),
               const Spacer(),
 
@@ -86,7 +86,7 @@ class _DealerOnboardingScreenState extends State<DealerOnboardingScreen> {
                 child: ElevatedButton(
                   onPressed: _onFinish,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.emerald,
+                    backgroundColor: const Color(0xFF059669),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     elevation: 4,
@@ -101,6 +101,7 @@ class _DealerOnboardingScreenState extends State<DealerOnboardingScreen> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 12),
             ],
           ),

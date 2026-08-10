@@ -32,7 +32,7 @@ class _DeliveryOnboardingScreenState extends State<DeliveryOnboardingScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.2),
+                      color: Colors.blue.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.delivery_dining_rounded, color: Colors.blueAccent, size: 28),
@@ -49,7 +49,7 @@ class _DeliveryOnboardingScreenState extends State<DeliveryOnboardingScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 20, offset: const Offset(0, 8)),
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 8)),
                   ],
                 ),
                 child: ClipRRect(
@@ -58,7 +58,7 @@ class _DeliveryOnboardingScreenState extends State<DeliveryOnboardingScreen> {
                     'assets/images/onboarding_delivery.png',
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => Container(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       child: const Icon(Icons.delivery_dining_rounded, color: Colors.white54, size: 80),
                     ),
                   ),
@@ -75,8 +75,9 @@ class _DeliveryOnboardingScreenState extends State<DeliveryOnboardingScreen> {
               Text(
                 'Turn your vehicle into income. Accept nearby orders, follow optimized routes, and earn competitive payouts with daily payouts.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14, height: 1.5),
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14, height: 1.5),
               ),
+
               const Spacer(),
 
               // Button
