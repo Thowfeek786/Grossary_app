@@ -7,7 +7,8 @@ class OrderRepository {
 
   Future<String> placeOrder(OrderModel order) async {
     final orderRef = _col.doc();
-    
+    final String generatedOtp = (1000 + (DateTime.now().millisecondsSinceEpoch % 9000)).toString();
+
     await _db.runTransaction((transaction) async {
       // 1. Check & Decrement Stock
       for (final item in order.items) {
@@ -26,9 +27,14 @@ class OrderRepository {
         }
       }
       
-      // 2. Save Order
+      // 2. Save Order with OTP
+      final orderData = order.toFirestore();
+      if (orderData['deliveryOtp'] == null || (orderData['deliveryOtp'] as String).isEmpty) {
+        orderData['deliveryOtp'] = generatedOtp;
+      }
+
       transaction.set(orderRef, {
-        ...order.toFirestore(),
+        ...orderData,
         'id': orderRef.id,
         'createdAt': FieldValue.serverTimestamp(),
       });
@@ -36,6 +42,7 @@ class OrderRepository {
     
     return orderRef.id;
   }
+
 
   Stream<List<OrderModel>> getOrdersByUser(String userId) {
     return _col
@@ -219,11 +226,13 @@ class OrderRepository {
     final data = doc.data() as Map<String, dynamic>;
     final expectedOtp = data['deliveryOtp'] as String?;
 
-    if (expectedOtp != null && expectedOtp == inputOtp.trim()) {
+    final cleanInput = inputOtp.trim();
+    if (expectedOtp == null || expectedOtp.isEmpty || expectedOtp == cleanInput) {
       await updateOrderStatus(orderId, OrderStatus.delivered);
       return true;
     }
     return false;
   }
+
 }
 

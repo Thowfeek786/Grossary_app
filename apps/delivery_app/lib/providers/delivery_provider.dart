@@ -54,6 +54,28 @@ class DeliveryProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> verifyAndCompleteDelivery({
+    required String orderId,
+    required String partnerId,
+    required String inputOtp,
+    required double amount,
+  }) async {
+    try {
+      setLoading(true);
+      final isVerified = await _orderRepo.verifyDeliveryOtp(
+        orderId: orderId,
+        inputOtp: inputOtp,
+      );
+      if (isVerified) {
+        await UserRepository().updatePartnerStats(partnerId, deliveries: 1, earnings: amount);
+        return true;
+      }
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }
+
   Future<void> completeDelivery(String orderId, String partnerId, double amount) async {
     try {
       setLoading(true);
@@ -65,6 +87,7 @@ class DeliveryProvider extends ChangeNotifier {
       setLoading(false);
     }
   }
+
 
   Future<void> markPickedUp(String orderId) async {
     try {

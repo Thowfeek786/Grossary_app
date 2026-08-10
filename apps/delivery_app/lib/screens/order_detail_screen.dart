@@ -436,38 +436,20 @@ class OrderDetailScreen extends StatelessWidget {
 
     String label;
     VoidCallback? action;
-    Color color = AppColors.primary;
 
     switch (order.status) {
       case OrderStatus.shipped:
         label = 'Confirm Pickup';
         action = () async {
           await delivery.markPickedUp(order.id);
-          // Don't pop, stream handles state
         };
         break;
       case OrderStatus.outForDelivery:
-        // Ensure payment is confirmed if it's COD
         final isCOD = order.paymentMethod.toLowerCase().contains('cash');
         final canDeliver = !isCOD || order.isPaid;
         
-        label = canDeliver ? 'Mark as Delivered ✓' : 'Please Collect Payment First';
-        action = canDeliver ? () async {
-          final userId = context.read<DeliveryAuthProvider>().user?.id;
-          if (userId != null) {
-            await delivery.completeDelivery(order.id, userId, 45.0);
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('🎉 Delivery completed!'),
-                  backgroundColor: AppColors.success,
-                ),
-              );
-              context.pop();
-            }
-          }
-        } : null;
-        color = canDeliver ? AppColors.success : AppColors.grey400;
+        label = canDeliver ? 'Enter OTP & Complete Delivery 🔑' : 'Please Collect Payment First';
+        action = canDeliver ? () => _showOtpDialog(context, delivery, order) : null;
         break;
       default:
         label = 'Awaiting Pickup Confirmation';
@@ -480,7 +462,7 @@ class OrderDetailScreen extends StatelessWidget {
         color: AppColors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -5),
           )
@@ -490,8 +472,160 @@ class OrderDetailScreen extends StatelessWidget {
         label: label,
         isLoading: delivery.isLoading,
         onTap: action,
-        // Disable button if no action (e.g. payment not collected)
       ),
     );
   }
+
+  void _showOtpDialog(BuildContext context, DeliveryProvider delivery, OrderModel order) {
+    final controllers = List.generate(4, (_) => TextEditingController());
+    final focusNodes = List.generate(4, (_) => FocusNode());
+    String error = '';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (modalContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.grey200,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: const BoxDecoration(
+                        color: AppColors.primarySurface,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.shield_rounded, color: AppColors.primary, size: 32),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Enter Delivery OTP',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Ask customer for their 4-digit verification code',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: List.generate(4, (index) {
+                        return SizedBox(
+                          width: 56,
+                          height: 60,
+                          child: TextField(
+                            controller: controllers[index],
+                            focusNode: focusNodes[index],
+                            keyboardType: TextInputType.number,
+                            textAlign: TextAlign.center,
+                            maxLength: 1,
+                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.primary),
+                            decoration: InputDecoration(
+                              counterText: '',
+                              filled: true,
+                              fillColor: AppColors.grey100,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                              ),
+                            ),
+                            onChanged: (val) {
+                              if (val.isNotEmpty && index < 3) {
+                                focusNodes[index + 1].requestFocus();
+                              } else if (val.isEmpty && index > 0) {
+                                focusNodes[index - 1].requestFocus();
+                              }
+                            },
+                          ),
+                        );
+                      }),
+                    ),
+
+                    if (error.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      Text(
+                        error,
+                        style: const TextStyle(color: AppColors.error, fontSize: 13, fontWeight: FontWeight.w700),
+                      ),
+                    ],
+
+                    const SizedBox(height: 24),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: AppButton(
+                        label: 'Verify & Complete Delivery ✓',
+                        isLoading: delivery.isLoading,
+                        onTap: () async {
+                          final inputOtp = controllers.map((c) => c.text).join();
+                          if (inputOtp.length < 4) {
+                            setState(() => error = 'Please enter all 4 digits');
+                            return;
+                          }
+
+                          final partnerId = context.read<DeliveryAuthProvider>().user?.id ?? '';
+                          final success = await delivery.verifyAndCompleteDelivery(
+                            orderId: order.id,
+                            partnerId: partnerId,
+                            inputOtp: inputOtp,
+                            amount: 45.0,
+                          );
+
+                          if (success) {
+                            if (modalContext.mounted) Navigator.pop(modalContext);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('🎉 OTP Verified & Order Delivered!'),
+                                  backgroundColor: AppColors.success,
+                                ),
+                              );
+                              context.pop();
+                            }
+                          } else {
+                            setState(() => error = 'Incorrect OTP. Please check with customer.');
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 }
+
