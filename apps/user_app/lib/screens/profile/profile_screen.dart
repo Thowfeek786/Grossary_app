@@ -140,7 +140,7 @@ class ProfileScreen extends StatelessWidget {
                               ? CachedNetworkImage(
                                   imageUrl: photoUrl,
                                   fit: BoxFit.cover,
-                                  errorWidget: (_, __, ___) => Container(
+                                  errorWidget: (_, _, _) => Container(
                                     color: const Color(0xFF34D399),
                                     child: Center(
                                       child: Text(
@@ -277,6 +277,12 @@ class ProfileScreen extends StatelessWidget {
                         iconColor: const Color(0xFF3B82F6),
                         title: 'My Orders & History',
                         onTap: () => context.go('/orders'),
+                      ),
+                      _ProfileItem(
+                        icon: Icons.favorite_border_rounded,
+                        iconColor: const Color(0xFFEF4444),
+                        title: 'My Favorites & Wishlist',
+                        onTap: () => context.push('/profile/favorites'),
                       ),
                       _ProfileItem(
                         icon: Icons.location_on_outlined,

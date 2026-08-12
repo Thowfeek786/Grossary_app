@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:go_router/go_router.dart';
-import 'package:core/core.dart';
 import 'package:models/models.dart';
 import 'package:ui_kit/ui_kit.dart';
 import 'package:repository/repository.dart';
@@ -17,7 +16,7 @@ class ProfileScreen extends StatelessWidget {
   Future<void> _pickImage(BuildContext context) async {
     final picker = ImagePicker();
     final img = await picker.pickImage(source: ImageSource.gallery);
-    if (img != null) {
+    if (img != null && context.mounted) {
       await context.read<DealerAuthProvider>().updateProfileImage(File(img.path));
     }
   }
@@ -29,15 +28,27 @@ class ProfileScreen extends StatelessWidget {
     if (user == null) return const SizedBox.shrink();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Vendor Profile'),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: const CustomAppBar(
+        title: 'Vendor Profile Settings',
+        backgroundColor: Color(0xFF0B3C26),
+        foregroundColor: Colors.white,
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
         child: Column(
           children: [
+            // Dark Emerald Profile Hero Header Card
             Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.grey200)),
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF0B3C26), Color(0xFF13653F), Color(0xFF052B1B)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
+              ),
               child: Column(
                 children: [
                   GestureDetector(
@@ -45,38 +56,60 @@ class ProfileScreen extends StatelessWidget {
                     child: Stack(
                       children: [
                         CircleAvatar(
-                          radius: 50, backgroundColor: AppColors.primarySurface,
+                          radius: 46,
+                          backgroundColor: Colors.white,
                           backgroundImage: user.photoUrl != null ? NetworkImage(user.photoUrl!) : null,
-                          child: user.photoUrl == null ? Text(user.name.isNotEmpty ? user.name[0].toUpperCase() : 'V', style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary, fontSize: 32)) : null,
+                          child: user.photoUrl == null
+                              ? Text(
+                                  user.name.isNotEmpty ? user.name[0].toUpperCase() : 'V',
+                                  style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF0B3C26), fontSize: 32),
+                                )
+                              : null,
                         ),
                         Positioned(
-                          bottom: 0, right: 0,
+                          bottom: 0,
+                          right: 0,
                           child: Container(
                             padding: const EdgeInsets.all(6),
-                            decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-                            child: auth.isLoading 
-                              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white))
-                              : const Icon(Icons.camera_alt_rounded, color: AppColors.white, size: 16),
+                            decoration: const BoxDecoration(color: Color(0xFF059669), shape: BoxShape.circle),
+                            child: auth.isLoading
+                                ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                : const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 14),
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Text(user.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-                  Text(user.email, style: const TextStyle(color: AppColors.textSecondary)),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
+                  Text(
+                    user.shopName ?? user.name,
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white),
+                  ),
+                  Text(
+                    user.email,
+                    style: const TextStyle(color: Color(0xFF34D399), fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 10),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(color: user.isApproved ? AppColors.success.withOpacity(0.1) : AppColors.warning.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: user.isApproved ? const Color(0xFF10B981).withValues(alpha: 0.2) : const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: user.isApproved ? const Color(0xFF6EE7B7) : const Color(0xFFFCD34D)),
+                    ),
                     child: Text(
-                      user.isApproved ? 'VERIFIED VENDOR' : 'PENDING APPROVAL',
-                      style: TextStyle(color: user.isApproved ? AppColors.success : AppColors.warning, fontWeight: FontWeight.w800, fontSize: 10),
+                      user.isApproved ? 'VERIFIED STORE VENDOR' : 'PENDING VERIFICATION',
+                      style: TextStyle(
+                        color: user.isApproved ? const Color(0xFF34D399) : const Color(0xFFFCD34D),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 10,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  
-                  // Real Stats from Repository
+
+                  const SizedBox(height: 20),
+
+                  // Real Stats Row from Firestore
                   StreamBuilder<List<OrderModel>>(
                     stream: OrderRepository().getOrdersByDealer(user.id),
                     builder: (context, snapshot) {
@@ -88,37 +121,81 @@ class ProfileScreen extends StatelessWidget {
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                           _InfoCard(title: 'Orders', value: totalDeliveries.toString()),
-                           const SizedBox(width: 16),
-                           _InfoCard(title: 'Rating', value: rating.toStringAsFixed(1)),
-                           const SizedBox(width: 16),
-                           _InfoCard(title: 'Sales', value: '₹${(sales/1000).toStringAsFixed(1)}K'),
+                          _InfoCard(title: 'Orders', value: totalDeliveries.toString()),
+                          const SizedBox(width: 12),
+                          _InfoCard(title: 'Rating', value: rating.toStringAsFixed(1)),
+                          const SizedBox(width: 12),
+                          _InfoCard(title: 'Sales', value: '₹${(sales / 1000).toStringAsFixed(1)}K'),
                         ],
                       );
-                    }
+                    },
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 32),
-            _ProfileItem(icon: Icons.store_rounded, title: 'Store Details', subtitle: user.shopName ?? 'Set shop details', onTap: () => _showEditShopDialog(context, user, auth)),
-            _ProfileItem(icon: Icons.local_shipping_rounded, title: 'Delivery & Shipping Rates', subtitle: 'Set custom delivery fee & minimum free threshold', onTap: () => context.push('/delivery-settings')),
-            _ProfileItem(icon: Icons.payments_rounded, title: 'Payment Payouts', onTap: (){}),
-            _ProfileItem(icon: Icons.support_agent_rounded, title: 'Vendor Support', onTap: (){}),
-            _ProfileItem(icon: Icons.help_outline_rounded, title: 'Partner Terms', onTap: (){}),
-            const SizedBox(height: 32),
-            AppButton(
-              label: 'Logout Account', variant: AppButtonVariant.outlined,
-              onTap: () => auth.logout(),
-            ),
-            const SizedBox(height: 12),
-            Center(
-              child: TextButton(
-                onPressed: () => _showDeleteConfirmation(context, auth),
-                child: const Text('Delete Account', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w700, fontSize: 13)),
+
+            const SizedBox(height: 20),
+
+            // Profile Settings Actions
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  _ProfileItem(
+                    icon: Icons.store_rounded,
+                    title: 'Store Details & Address',
+                    subtitle: user.shopName ?? 'Configure store name and map location',
+                    onTap: () => _showEditShopDialog(context, user, auth),
+                  ),
+                  _ProfileItem(
+                    icon: Icons.local_shipping_rounded,
+                    title: 'Delivery Radius & Fees',
+                    subtitle: 'Set custom radius, delivery fee & free threshold',
+                    onTap: () => context.push('/delivery-settings'),
+                  ),
+                  _ProfileItem(
+                    icon: Icons.payments_rounded,
+                    title: 'Payment & Payout Accounts',
+                    subtitle: 'Request withdrawal to bank A/C or UPI VPA',
+                    onTap: () => context.push('/dealer-payouts'),
+                  ),
+                  _ProfileItem(
+                    icon: Icons.support_agent_rounded,
+                    title: 'Vendor Partner Helpline',
+                    subtitle: '24/7 store dispatch and support desk',
+                    onTap: () {},
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      onPressed: () => auth.logout(),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFFEF4444),
+                        side: const BorderSide(color: Color(0xFFFCA5A5)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      icon: const Icon(Icons.logout_rounded, size: 18),
+                      label: const Text('Logout Vendor Account', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  Center(
+                    child: TextButton(
+                      onPressed: () => _showDeleteConfirmation(context, auth),
+                      child: const Text('Delete Store Account', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.w800, fontSize: 12)),
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+                ],
               ),
             ),
-            const SizedBox(height: 48),
           ],
         ),
       ),
@@ -129,19 +206,21 @@ class ProfileScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Account?'),
-        content: const Text('This action is irreversible. All your shop details, product inventory, and sales history will be permanently deleted.'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Delete Store Account?', style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
+        content: const Text('This action is permanent and irreversible. Your store profile, inventory, and sales history will be permanently deleted.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          TextButton(
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w700))),
+          ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
               await auth.deleteAccount();
               if (auth.error != null && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(auth.error!), backgroundColor: AppColors.error));
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(auth.error!), backgroundColor: const Color(0xFFEF4444)));
               }
             },
-            child: const Text('Delete', style: TextStyle(color: AppColors.error)),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFEF4444), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+            child: const Text('Delete', style: TextStyle(fontWeight: FontWeight.w900)),
           ),
         ],
       ),
@@ -157,7 +236,7 @@ class ProfileScreen extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => StatefulBuilder(
         builder: (context, setStateSB) {
           return SingleChildScrollView(
@@ -167,70 +246,59 @@ class ProfileScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Edit Store Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-                  const SizedBox(height: 20),
+                  const Text('Edit Store Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
+                  const SizedBox(height: 18),
                   TextField(
                     controller: nameCtrl,
-                    decoration: const InputDecoration(labelText: 'Shop Name', border: OutlineInputBorder()),
+                    decoration: InputDecoration(
+                      labelText: 'Shop Name',
+                      filled: true,
+                      fillColor: const Color(0xFFF1F5F9),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                    ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   TextField(
                     controller: addrCtrl,
-                    decoration: const InputDecoration(labelText: 'Shop Address', border: OutlineInputBorder()),
-                    maxLines: 3,
+                    decoration: InputDecoration(
+                      labelText: 'Shop Address',
+                      filled: true,
+                      fillColor: const Color(0xFFF1F5F9),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                    ),
+                    maxLines: 2,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.primarySurface,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                      color: const Color(0xFF059669).withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFF059669).withValues(alpha: 0.2)),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.location_on_rounded, color: AppColors.primary),
+                        const Icon(Icons.location_on_rounded, color: Color(0xFF059669)),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Store Location', style: TextStyle(fontWeight: FontWeight.w600)),
+                              const Text('Store GPS Pin', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
                               Text(
-                                selectedLat != null ? 'Location selected' : 'Mark store on map',
-                                style: TextStyle(color: selectedLat != null ? AppColors.success : AppColors.textSecondary, fontSize: 12),
+                                selectedLat != null ? '${selectedLat!.toStringAsFixed(4)}, ${selectedLng!.toStringAsFixed(4)}' : 'No GPS location set',
+                                style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
                               ),
                             ],
                           ),
                         ),
                         TextButton(
                           onPressed: () async {
-                            LatLng? tempSelectedLoc = selectedLat != null ? LatLng(selectedLat!, selectedLng!) : null;
-                            final loc = await Navigator.push<LatLng>(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => StatefulBuilder(
-                                  builder: (context, setStateMap) {
-                                    return Scaffold(
-                                      appBar: const CustomAppBar(title: 'Pick Store Location'),
-                                      body: LocationPickerWidget(
-                                        initialLocation: tempSelectedLoc,
-                                        onLocationSelected: (l) {
-                                          tempSelectedLoc = l;
-                                        },
-                                      ),
-                                      bottomNavigationBar: Container(
-                                        padding: const EdgeInsets.all(20),
-                                        child: AppButton(
-                                          label: 'Confirm Location',
-                                          onTap: () {
-                                            Navigator.pop(context, tempSelectedLoc); 
-                                          },
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                ),
+                            final LatLng? loc = await showDialog<LatLng>(
+                              context: context,
+                              builder: (c) => _LocationPickerModal(
+                                initialLat: selectedLat ?? 12.9716,
+                                initialLng: selectedLng ?? 77.5946,
                               ),
                             );
                             if (loc != null) {
@@ -239,43 +307,47 @@ class ProfileScreen extends StatelessWidget {
                                 selectedLng = loc.longitude;
                               });
                               try {
-                                final placemarks = await placemarkFromCoordinates(loc.latitude, loc.longitude);
+                                List<Placemark> placemarks = await placemarkFromCoordinates(loc.latitude, loc.longitude);
                                 if (placemarks.isNotEmpty) {
                                   final p = placemarks.first;
-                                  final parts = [p.street, p.subLocality, p.locality, p.administrativeArea, p.postalCode].where((e) => e != null && e.isNotEmpty).toList();
-                                  if (parts.isNotEmpty) {
-                                    setStateSB(() {
-                                      addrCtrl.text = parts.join(', ');
-                                    });
-                                  }
+                                  final addr = '${p.street}, ${p.subLocality}, ${p.locality}, ${p.postalCode}';
+                                  addrCtrl.text = addr;
                                 }
                               } catch (_) {}
                             }
                           },
-                          child: const Text('Pick'),
+                          child: const Text('Change Pin', style: TextStyle(color: Color(0xFF059669), fontWeight: FontWeight.w900)),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  AppButton(
-                    label: 'Save Changes',
-                    onTap: () async {
-                      await auth.updateUserProfile(
-                         shopName: nameCtrl.text.trim(),
-                         shopAddress: addrCtrl.text.trim(),
-                         latitude: selectedLat,
-                         longitude: selectedLng,
-                      );
-                      if (ctx.mounted) Navigator.pop(ctx);
-                    },
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        await auth.updateUserProfile(
+                          shopName: nameCtrl.text.trim(),
+                          shopAddress: addrCtrl.text.trim(),
+                          latitude: selectedLat,
+                          longitude: selectedLng,
+                        );
+                        if (context.mounted) Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF059669),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      child: const Text('Save Details', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+                    ),
                   ),
-                  const SizedBox(height: 12),
                 ],
               ),
             ),
           );
-        }
+        },
       ),
     );
   }
@@ -284,19 +356,21 @@ class ProfileScreen extends StatelessWidget {
 class _InfoCard extends StatelessWidget {
   final String title;
   final String value;
-
   const _InfoCard({required this.title, required this.value});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 80,
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(12)),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+      ),
       child: Column(
         children: [
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AppColors.primary)),
-          Text(title, style: const TextStyle(color: AppColors.textSecondary, fontSize: 10)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.white, fontSize: 16)),
+          Text(title, style: const TextStyle(color: Color(0xFF34D399), fontSize: 11, fontWeight: FontWeight.w700)),
         ],
       ),
     );
@@ -315,17 +389,97 @@ class _ProfileItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.grey200)),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: AppColors.primarySurface, borderRadius: BorderRadius.circular(10)),
-          child: Icon(icon, color: AppColors.primary, size: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 6, offset: const Offset(0, 2)),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: ListTile(
+          onTap: onTap,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF059669).withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: const Color(0xFF059669), size: 20),
+          ),
+          title: Text(title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Color(0xFF0F172A))),
+          subtitle: subtitle != null ? Text(subtitle!, style: const TextStyle(color: Color(0xFF64748B), fontSize: 12)) : null,
+          trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8)),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-        subtitle: subtitle != null ? Text(subtitle!, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis) : null,
-        trailing: const Icon(Icons.chevron_right_rounded, size: 18),
-        onTap: onTap,
+      ),
+    );
+  }
+}
+
+class _LocationPickerModal extends StatefulWidget {
+  final double initialLat;
+  final double initialLng;
+
+  const _LocationPickerModal({required this.initialLat, required this.initialLng});
+
+  @override
+  State<_LocationPickerModal> createState() => _LocationPickerModalState();
+}
+
+class _LocationPickerModalState extends State<_LocationPickerModal> {
+  late LatLng _selectedPos;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedPos = LatLng(widget.initialLat, widget.initialLng);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: SizedBox(
+          height: 450,
+          child: Column(
+            children: [
+              AppBar(
+                title: const Text('Pin Store Location', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
+                automaticallyImplyLeading: false,
+                actions: [
+                  IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
+                ],
+              ),
+              Expanded(
+                child: GoogleMap(
+                  initialCameraPosition: CameraPosition(target: _selectedPos, zoom: 15),
+                  onTap: (pos) => setState(() => _selectedPos = pos),
+                  markers: {
+                    Marker(markerId: const MarkerId('store'), position: _selectedPos),
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context, _selectedPos),
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF059669), foregroundColor: Colors.white),
+                    child: const Text('Confirm Location', style: TextStyle(fontWeight: FontWeight.w900)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:models/models.dart';
 
 class OrderRepository {
@@ -136,11 +137,62 @@ class OrderRepository {
   }
 
   Future<void> cancelOrder(String orderId, String reason) async {
-    await _col.doc(orderId).update({
-      'status': OrderStatus.cancelled.name,
-      'cancellationReason': reason,
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+    try {
+      final doc = await _col.doc(orderId).get();
+      if (!doc.exists) return;
+      final order = OrderModel.fromFirestore(doc);
+
+      await _db.runTransaction((transaction) async {
+        // 1. Restock Product Quantities
+        for (final item in order.items) {
+          final productRef = _db.collection('products').doc(item.productId);
+          final productDoc = await transaction.get(productRef);
+          if (productDoc.exists) {
+            final currentStock =
+                (productDoc.data()?['stockQuantity'] as num?)?.toDouble() ?? 0.0;
+            transaction.update(productRef, {
+              'stockQuantity': currentStock + item.quantity,
+              'updatedAt': FieldValue.serverTimestamp(),
+            });
+          }
+        }
+
+        // 2. Auto-Refund to Customer Wallet if order was paid or paid via wallet
+        if (order.isPaid || order.paymentMethod == 'GroceryGo Wallet') {
+          final walletRef = _db.collection('wallets').doc(order.userId);
+          transaction.set(
+            walletRef,
+            {
+              'balance': FieldValue.increment(order.total),
+              'updatedAt': FieldValue.serverTimestamp(),
+            },
+            SetOptions(merge: true),
+          );
+
+          final historyRef = walletRef.collection('history').doc();
+          transaction.set(historyRef, {
+            'id': historyRef.id,
+            'amount': order.total,
+            'type': 'credit',
+            'description':
+                'Refund for Cancelled Order #${order.id.substring(0, order.id.length > 6 ? 6 : order.id.length).toUpperCase()}',
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+        }
+
+        // 3. Mark Order Status & Payment Status as Cancelled / Refunded
+        transaction.update(_col.doc(orderId), {
+          'status': OrderStatus.cancelled.name,
+          'cancellationReason': reason,
+          'paymentStatus': (order.isPaid || order.paymentMethod == 'GroceryGo Wallet')
+              ? 'refunded'
+              : 'cancelled',
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      });
+    } catch (e) {
+      debugPrint('Error cancelling order: $e');
+    }
   }
 
   Future<Map<String, dynamic>> getDashboardStats() async {

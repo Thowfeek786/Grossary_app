@@ -178,7 +178,7 @@ class _OrderCard extends StatelessWidget {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: order.items.length > 5 ? 5 : order.items.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  separatorBuilder: (_, _) => const SizedBox(width: 8),
                   itemBuilder: (context, idx) {
                     final item = order.items[idx];
                     return Container(
@@ -195,7 +195,7 @@ class _OrderCard extends StatelessWidget {
                             ? CachedNetworkImage(
                                 imageUrl: item.imageUrl!,
                                 fit: BoxFit.cover,
-                                errorWidget: (_, __, ___) => const Icon(Icons.image_outlined, color: Colors.grey, size: 22),
+                                errorWidget: (_, _, _) => const Icon(Icons.image_outlined, color: Colors.grey, size: 22),
                               )
                             : const Icon(Icons.image_outlined, color: Colors.grey, size: 22),
                       ),
@@ -279,7 +279,7 @@ class _OrderShimmerList extends StatelessWidget {
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: 4,
-        itemBuilder: (_, __) => Container(
+        itemBuilder: (_, _) => Container(
           height: 180,
           margin: const EdgeInsets.only(bottom: 14),
           decoration: BoxDecoration(

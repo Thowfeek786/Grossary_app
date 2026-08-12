@@ -61,6 +61,7 @@ class _AddEditBannerScreenState extends State<AddEditBannerScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     
+    final messenger = ScaffoldMessenger.of(context);
     final management = context.read<AdminManagementProvider>();
     management.setLoading(true);
     
@@ -74,7 +75,7 @@ class _AddEditBannerScreenState extends State<AddEditBannerScreen> {
       }
 
       if (imageUrl.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select an image'), backgroundColor: AppColors.error));
+        messenger.showSnackBar(const SnackBar(content: Text('Please select an image'), backgroundColor: AppColors.error));
         return;
       }
 
@@ -113,9 +114,22 @@ class _AddEditBannerScreenState extends State<AddEditBannerScreen> {
     final isLoading = context.watch<AdminManagementProvider>().isLoading;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: CustomAppBar(
         title: widget.banner == null ? 'Add Banner' : 'Edit Banner',
+        backgroundColor: const Color(0xFF0F172A),
+        foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.arrow_back_rounded, size: 18, color: Colors.white),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -134,9 +148,9 @@ class _AddEditBannerScreenState extends State<AddEditBannerScreen> {
                     : widget.banner?.imageUrl != null
                       ? ClipRRect(borderRadius: BorderRadius.circular(16), child: Image.network(widget.banner!.imageUrl, fit: BoxFit.cover))
                       : const Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                          Icon(Icons.add_photo_alternate_rounded, color: AppColors.primary, size: 48),
+                          Icon(Icons.add_photo_alternate_rounded, color: Color(0xFF6366F1), size: 48),
                           SizedBox(height: 8),
-                          Text('Add Banner Image', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700)),
+                          Text('Add Banner Image', style: TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.w700)),
                         ]),
                 ),
               ),
@@ -169,7 +183,7 @@ class _AddEditBannerScreenState extends State<AddEditBannerScreen> {
                   child: DropdownButton<String>(
                     value: _selectedTarget,
                     isExpanded: true,
-                    icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary),
+                    icon: const Icon(Icons.arrow_drop_down_rounded, color: Color(0xFF6366F1)),
                     onChanged: (String? val) {
                       if (val != null) {
                         setState(() {
@@ -193,7 +207,7 @@ class _AddEditBannerScreenState extends State<AddEditBannerScreen> {
                               t['value'] == '/cart' ? Icons.shopping_cart_rounded :
                               Icons.link_rounded,
                               size: 18,
-                              color: AppColors.primary,
+                              color: const Color(0xFF6366F1),
                             ),
                             const SizedBox(width: 10),
                             Text(t['label']!, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
@@ -222,7 +236,7 @@ class _AddEditBannerScreenState extends State<AddEditBannerScreen> {
                   Switch(
                     value: _isActive,
                     onChanged: (v) => setState(() => _isActive = v),
-                    activeColor: AppColors.primary,
+                    activeThumbColor: const Color(0xFF6366F1),
                   ),
                 ],
               ),

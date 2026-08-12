@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:core/core.dart';
 import 'package:models/models.dart';
+import 'package:repository/repository.dart';
 import 'package:ui_kit/ui_kit.dart';
 import '../providers/auth_provider.dart';
 import '../providers/delivery_provider.dart';
+import 'widgets/daily_goal_card.dart';
 
 class DeliveryDashboard extends StatelessWidget {
   const DeliveryDashboard({super.key});
@@ -20,259 +21,506 @@ class DeliveryDashboard extends StatelessWidget {
     final isOnline = delivery.isOnline;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: CustomAppBar(
         title: 'Partner Dashboard',
         showBackButton: false,
+        backgroundColor: const Color(0xFF0B3C26),
+        foregroundColor: Colors.white,
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: Row(
-              children: [
-                Text(
-                  isOnline ? 'Online' : 'Offline',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                    color: isOnline ? AppColors.success : AppColors.grey400,
-                  ),
-                ),
-                Switch(
-                  value: isOnline,
-                  onChanged: (_) => delivery.toggleOnlineStatus(),
-                  activeColor: AppColors.success,
-                  activeTrackColor: AppColors.success.withOpacity(0.3),
-                ),
-              ],
-            ),
+          IconButton(
+            onPressed: () => NotificationBottomSheet.show(context, stream: NotificationRepository().getUserNotifications(user.id, userRole: 'deliveryPartner')),
+            icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+            tooltip: 'Notifications',
+          ),
+          IconButton(
+            onPressed: () => _showQuickHelpDialog(context),
+            icon: const Icon(Icons.help_outline_rounded, color: Colors.white),
+            tooltip: 'Partner Help',
           ),
           IconButton(
             onPressed: () => auth.logout(),
-            icon: const Icon(Icons.logout_rounded, color: AppColors.error),
+            icon: const Icon(Icons.logout_rounded, color: Color(0xFFF87171)),
+            tooltip: 'Logout',
           ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Partner greeting banner
+            // Hero Emerald Partner Duty Banner
             Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: isOnline ? AppColors.success : AppColors.grey300,
-                borderRadius: BorderRadius.circular(20),
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF0B3C26), Color(0xFF13653F), Color(0xFF052B1B)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
               ),
-              child: Row(
+              child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor: Colors.white24,
-                    backgroundImage: user.photoUrl != null
-                        ? NetworkImage(user.photoUrl!)
-                        : null,
-                    child: user.photoUrl == null
-                        ? Text(
-                            user.name.isNotEmpty ? user.name[0].toUpperCase() : 'P',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.white,
-                                fontSize: 22),
-                          )
-                        : null,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Welcome back,',
-                            style: TextStyle(color: Colors.white70, fontSize: 12)),
-                        Text(user.name,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 18,
-                                color: AppColors.white)),
-                        const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: Colors.white24,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            isOnline
-                                ? '● Looking for orders...'
-                                : '● You are offline',
-                            style: const TextStyle(
-                                color: AppColors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600),
+                  Row(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isOnline ? const Color(0xFF34D399) : Colors.white24,
+                            width: 2,
                           ),
                         ),
-                      ],
-                    ),
+                        child: CircleAvatar(
+                          radius: 26,
+                          backgroundColor: Colors.white.withValues(alpha: 0.15),
+                          backgroundImage: user.photoUrl != null ? NetworkImage(user.photoUrl!) : null,
+                          child: user.photoUrl == null
+                              ? Text(
+                                  user.name.isNotEmpty ? user.name[0].toUpperCase() : 'P',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                  ),
+                                )
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Welcome back,',
+                              style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500),
+                            ),
+                            Text(
+                              user.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 18,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: isOnline ? const Color(0xFF34D399) : const Color(0xFF94A3B8),
+                                    shape: BoxShape.circle,
+                                    boxShadow: isOnline
+                                        ? [
+                                            BoxShadow(
+                                              color: const Color(0xFF34D399).withValues(alpha: 0.6),
+                                              blurRadius: 6,
+                                              spreadRadius: 2,
+                                            ),
+                                          ]
+                                        : null,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    isOnline ? 'ON DUTY • Active & Ready' : 'OFF DUTY • Tap to go online',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: isOnline ? const Color(0xFF34D399) : Colors.white60,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Duty Toggle Switch Pill
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: isOnline ? Colors.white : Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              isOnline ? 'ONLINE' : 'OFFLINE',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                                color: isOnline ? const Color(0xFF0B3C26) : Colors.white70,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Switch(
+                              value: isOnline,
+                              onChanged: (_) => delivery.toggleOnlineStatus(),
+                              activeThumbColor: const Color(0xFF059669),
+                              activeTrackColor: const Color(0xFFA7F3D0),
+                              inactiveThumbColor: Colors.grey.shade400,
+                              inactiveTrackColor: Colors.white24,
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-            // Stats row
-            StreamBuilder<List<OrderModel>>(
-              stream: delivery.getActiveDeliveries(user.id),
-              builder: (context, snapshot) {
-                final orders = snapshot.data ?? [];
-                final active = orders
-                    .where((o) =>
-                        o.status != OrderStatus.delivered &&
-                        o.status != OrderStatus.cancelled)
-                    .length;
-                final delivered =
-                    orders.where((o) => o.status == OrderStatus.delivered).length;
-                final earned = delivered * 45.0;
 
-                return Row(
-                  children: [
-                    Expanded(
-                        child: StatCard(
-                      title: "Today's Earnings",
-                      value: '₹${earned.toStringAsFixed(0)}',
-                      icon: Icons.account_balance_wallet_rounded,
-                      color: AppColors.success,
-                    )),
-                    const SizedBox(width: 16),
-                    Expanded(
-                        child: StatCard(
-                      title: 'Active Orders',
-                      value: active.toString(),
-                      icon: Icons.local_shipping_rounded,
-                      color: AppColors.primary,
-                      onTap: () => context.push('/active-deliveries'),
-                    )),
-                  ],
-                );
-              },
-            ),
-            const SizedBox(height: 32),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Expanded(
-                  child: Text('New Delivery Requests',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                ),
-                if (!isOnline)
-                  Flexible(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.grey200,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Text('Go online to see requests',
-                          style: TextStyle(
-                              color: AppColors.textSecondary, fontSize: 10),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            if (!isOnline)
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.grey200),
-                ),
-                child: const Center(
-                  child: Column(
-                    children: [
-                      Icon(Icons.wifi_off_rounded,
-                          size: 48, color: AppColors.grey300),
-                      SizedBox(height: 12),
-                      Text('You are currently offline',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textSecondary)),
-                      SizedBox(height: 4),
-                      Text('Toggle Online to receive new delivery requests',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: AppColors.textSecondary, fontSize: 13)),
-                    ],
-                  ),
-                ),
-              )
-            else
-              StreamBuilder<List<OrderModel>>(
-                stream: delivery.getNewRequests(),
+            const SizedBox(height: 20),
+
+            // Performance Stats Grid
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: StreamBuilder<List<OrderModel>>(
+                stream: delivery.getActiveDeliveries(user.id),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const AppLoader();
-                  }
-                  final requests = snapshot.data ?? [];
-                  if (requests.isEmpty) {
-                    return Container(
-                      padding: const EdgeInsets.all(32),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.grey200),
-                      ),
-                      child: const Center(
-                        child: Column(
-                          children: [
-                            Icon(Icons.check_circle_outline_rounded,
-                                size: 48, color: AppColors.success),
-                            SizedBox(height: 12),
-                            Text('No new requests!',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textSecondary)),
-                            SizedBox(height: 4),
-                            Text('New orders will appear here automatically',
-                                style: TextStyle(
-                                    color: AppColors.textSecondary,
-                                    fontSize: 13)),
-                          ],
+                  final orders = snapshot.data ?? [];
+                  final activeCount = orders.where((o) => o.status != OrderStatus.delivered && o.status != OrderStatus.cancelled).length;
+                  final deliveredCount = orders.where((o) => o.status == OrderStatus.delivered).length;
+                  final todayEarned = deliveredCount * 45.0;
+
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: _StatCard(
+                          title: "Today's Earnings",
+                          value: '₹${todayEarned.toStringAsFixed(0)}',
+                          subtitle: '$deliveredCount Completed',
+                          icon: Icons.account_balance_wallet_rounded,
+                          color: const Color(0xFF10B981),
+                          onTap: () => context.push('/earnings'),
                         ),
                       ),
-                    );
-                  }
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: requests.length,
-                    itemBuilder: (context, index) {
-                      final o = requests[index];
-                      return _DeliveryCard(
-                        orderId: o.id.substring(0, 8).toUpperCase(),
-                        distance: '2.4 km',
-                        pickup: o.dealerName ?? 'Local Store',
-                        dropoff: o.deliveryAddress.fullAddress,
-                        earnings: '₹45',
-                        total: '₹${o.total.toStringAsFixed(0)}',
-                        itemCount: o.itemCount,
-                        onAccept: () =>
-                            context.read<DeliveryProvider>().acceptDelivery(
-                                  orderId: o.id,
-                                  partnerId: user.id,
-                                  partnerName: user.name,
-                                  partnerPhone: user.phone,
-                                ),
-                        onReject: () {},
-                      );
-                    },
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _StatCard(
+                          title: 'Active Trips',
+                          value: '$activeCount',
+                          subtitle: 'In Progress',
+                          icon: Icons.local_shipping_rounded,
+                          color: const Color(0xFF3B82F6),
+                          onTap: () => context.push('/active-deliveries'),
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Daily Target Goal & Surge Bonus Card
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: DailyGoalCard(
+                currentEarnings: user.totalEarnings,
+                completedOrders: user.totalDeliveries,
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            // New Delivery Requests Section Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Available Delivery Requests',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF0F172A)),
+                  ),
+                  if (isOnline)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.radar_rounded, size: 12, color: Color(0xFF059669)),
+                          SizedBox(width: 4),
+                          Text(
+                            'Scanning Near You',
+                            style: TextStyle(color: Color(0xFF059669), fontSize: 10, fontWeight: FontWeight.w800),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
+            // Offline vs Requests Stream State
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: !isOnline
+                  ? Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(28),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF94A3B8).withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.wifi_off_rounded, size: 36, color: Color(0xFF64748B)),
+                          ),
+                          const SizedBox(height: 14),
+                          const Text(
+                            'You are currently Offline',
+                            style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A)),
+                          ),
+                          const SizedBox(height: 6),
+                          const Text(
+                            'Switch your duty status to Online at the top banner to start receiving high-paying order requests near your location.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 12, color: Color(0xFF64748B), height: 1.4),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: () => delivery.toggleOnlineStatus(),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF059669),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            ),
+                            icon: const Icon(Icons.power_settings_new_rounded, size: 18),
+                            label: const Text('Go Online Now', style: TextStyle(fontWeight: FontWeight.w900)),
+                          ),
+                        ],
+                      ),
+                    )
+                  : StreamBuilder<List<OrderModel>>(
+                      stream: delivery.getNewRequests(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator(color: Color(0xFF059669))));
+                        }
+                        final requests = snapshot.data ?? [];
+                        if (requests.isEmpty) {
+                          return Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(28),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                            ),
+                            child: Column(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF059669).withValues(alpha: 0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.check_circle_outline_rounded, size: 36, color: Color(0xFF059669)),
+                                ),
+                                const SizedBox(height: 14),
+                                const Text(
+                                  'No Pending Requests Right Now',
+                                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF0F172A)),
+                                ),
+                                const SizedBox(height: 6),
+                                const Text(
+                                  'Stay online! New customer orders will pop up here in real-time.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: requests.length,
+                          itemBuilder: (context, index) {
+                            final o = requests[index];
+                            return _DeliveryCard(
+                              orderId: o.id.length >= 8 ? o.id.substring(0, 8).toUpperCase() : o.id.toUpperCase(),
+                              distance: '2.4 km',
+                              estTime: '12 min delivery',
+                              pickup: o.dealerName ?? 'GroceryGo Darkstore #12',
+                              dropoff: o.deliveryAddress.fullAddress,
+                              earnings: '₹45',
+                              total: '₹${o.total.toStringAsFixed(0)}',
+                              itemCount: o.itemCount,
+                              onAccept: () {
+                                context.read<DeliveryProvider>().acceptDelivery(
+                                      orderId: o.id,
+                                      partnerId: user.id,
+                                      partnerName: user.name,
+                                      partnerPhone: user.phone,
+                                    );
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('🎉 Accepted Delivery #${o.id.substring(0, 8).toUpperCase()}!'),
+                                    backgroundColor: const Color(0xFF059669),
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                );
+                              },
+                              onReject: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text('Order request passed'),
+                                    duration: const Duration(seconds: 1),
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        );
+                      },
+                    ),
+            ),
+
+            const SizedBox(height: 40),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _showQuickHelpDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Row(
+          children: [
+            Icon(Icons.headset_mic_rounded, color: Color(0xFF059669)),
+            SizedBox(width: 10),
+            Text('Partner Support Hotline', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Need help with an active pickup or delivery route?'),
+            SizedBox(height: 12),
+            SelectableText('📞 Toll-Free: 1800-476-2379', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF059669))),
+            SizedBox(height: 4),
+            Text('Dedicated partner dispatch desk available 24/7', style: TextStyle(fontSize: 11, color: Colors.grey)),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close')),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _StatCard({
+    required this.title,
+    required this.value,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(icon, color: color, size: 20),
+                    ),
+                    Icon(Icons.chevron_right_rounded, color: Colors.grey.shade400, size: 18),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  value,
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: color, letterSpacing: -0.5),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF0F172A)),
+                ),
+                Text(
+                  subtitle,
+                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: Color(0xFF64748B)),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -282,6 +530,7 @@ class DeliveryDashboard extends StatelessWidget {
 class _DeliveryCard extends StatelessWidget {
   final String orderId;
   final String distance;
+  final String estTime;
   final String pickup;
   final String dropoff;
   final String earnings;
@@ -293,6 +542,7 @@ class _DeliveryCard extends StatelessWidget {
   const _DeliveryCard({
     required this.orderId,
     required this.distance,
+    required this.estTime,
     required this.pickup,
     required this.dropoff,
     required this.earnings,
@@ -306,112 +556,220 @@ class _DeliveryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.grey200),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          )
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('#$orderId',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w800, fontSize: 16)),
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                        color: AppColors.success.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20)),
-                    child: Text(earnings,
-                        style: const TextStyle(
-                            color: AppColors.success,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 13)),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(distance,
-                      style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500)),
-                ],
-              ),
-            ],
-          ),
-          const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Divider(height: 1)),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Column(
-                children: [
-                  const Icon(Icons.store_rounded,
-                      color: AppColors.primary, size: 20),
-                  Container(
-                      height: 30,
-                      width: 2,
-                      color: AppColors.grey300,
-                      margin: const EdgeInsets.symmetric(vertical: 4)),
-                  const Icon(Icons.location_on_rounded,
-                      color: AppColors.error, size: 20),
-                ],
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          // Top Header Bar
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
                   children: [
-                    Text(pickup,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 14)),
-                    const SizedBox(height: 30),
-                    Text(dropoff,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 14),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis),
+                    Text(
+                      '#$orderId',
+                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF0F172A)),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        estTime,
+                        style: const TextStyle(color: Color(0xFF3B82F6), fontSize: 10, fontWeight: FontWeight.w700),
+                      ),
+                    ),
                   ],
                 ),
-              ),
-            ],
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '$earnings Pay',
+                    style: const TextStyle(
+                      color: Color(0xFF059669),
+                      fontWeight: FontWeight.w900,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              const Icon(Icons.shopping_bag_outlined,
-                  size: 14, color: AppColors.textSecondary),
-              const SizedBox(width: 4),
-              Text('$itemCount items • Order value $total',
-                  style: const TextStyle(
-                      color: AppColors.textSecondary, fontSize: 12)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                  child: AppButton(
-                      label: 'Reject',
-                      variant: AppButtonVariant.outlined,
-                      onTap: onReject)),
-              const SizedBox(width: 12),
-              Expanded(
-                  child: AppButton(label: 'Accept', onTap: onAccept)),
-            ],
+
+          // Route Timeline Details
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFDCFCE7),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.store_rounded, color: Color(0xFF059669), size: 16),
+                        ),
+                        Container(
+                          height: 32,
+                          width: 2,
+                          color: const Color(0xFFCBD5E1),
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFFEE2E2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.location_on_rounded, color: Color(0xFFEF4444), size: 16),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Pickup Store
+                          const Text(
+                            'PICKUP STORE',
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8), letterSpacing: 0.5),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            pickup,
+                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF0F172A)),
+                          ),
+                          const SizedBox(height: 18),
+
+                          // Dropoff Customer
+                          const Text(
+                            'DELIVER TO CUSTOMER',
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8), letterSpacing: 0.5),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            dropoff,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF0F172A)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 14),
+
+                // Order Metadata Row
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFF1F5F9)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.shopping_bag_outlined, size: 14, color: Color(0xFF64748B)),
+                          const SizedBox(width: 6),
+                          Text(
+                            '$itemCount Items • $total Order Value',
+                            style: const TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          const Icon(Icons.near_me_rounded, size: 14, color: Color(0xFF059669)),
+                          const SizedBox(width: 4),
+                          Text(
+                            distance,
+                            style: const TextStyle(color: Color(0xFF059669), fontSize: 12, fontWeight: FontWeight.w800),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Action Buttons Row
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: onReject,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF64748B),
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        child: const Text('Decline', style: TextStyle(fontWeight: FontWeight.w800)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton(
+                        onPressed: onAccept,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF059669),
+                          foregroundColor: Colors.white,
+                          elevation: 2,
+                          shadowColor: const Color(0xFF059669).withValues(alpha: 0.3),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.check_circle_rounded, size: 18),
+                            SizedBox(width: 6),
+                            Text('Accept Delivery', style: TextStyle(fontWeight: FontWeight.w900)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),

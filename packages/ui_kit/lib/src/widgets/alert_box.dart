@@ -21,22 +21,22 @@ class AlertBox extends StatelessWidget {
 
     switch (type) {
       case AlertType.info:
-        bgColor = AppColors.primary.withOpacity(0.08);
+        bgColor = AppColors.primary.withValues(alpha: 0.08);
         iconColor = AppColors.primary;
         icon = Icons.info_outline_rounded;
         break;
       case AlertType.success:
-        bgColor = AppColors.success.withOpacity(0.08);
+        bgColor = AppColors.success.withValues(alpha: 0.08);
         iconColor = AppColors.success;
         icon = Icons.check_circle_outline_rounded;
         break;
       case AlertType.warning:
-        bgColor = AppColors.warning.withOpacity(0.08);
+        bgColor = AppColors.warning.withValues(alpha: 0.08);
         iconColor = AppColors.warning;
         icon = Icons.warning_amber_rounded;
         break;
       case AlertType.error:
-        bgColor = AppColors.error.withOpacity(0.08);
+        bgColor = AppColors.error.withValues(alpha: 0.08);
         iconColor = AppColors.error;
         icon = Icons.error_outline_rounded;
         break;
@@ -47,7 +47,7 @@ class AlertBox extends StatelessWidget {
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: iconColor.withOpacity(0.2)),
+        border: Border.all(color: iconColor.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [

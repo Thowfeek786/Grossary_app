@@ -11,7 +11,7 @@ class AppLoader extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const CircularProgressIndicator(color: AppColors.primary),
+          CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
           if (message != null) ...[
             const SizedBox(height: 12),
             Text(message!, style: const TextStyle(color: AppColors.textSecondary, fontSize: 14)),
@@ -39,10 +39,10 @@ class AppFullScreenLoader extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.white,
                 shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.15), blurRadius: 20)],
+                boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15), blurRadius: 20)],
               ),
-              child: const CircularProgressIndicator(
-                color: AppColors.primary,
+              child: CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.primary,
                 strokeWidth: 3,
               ),
             ),

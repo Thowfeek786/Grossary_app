@@ -25,12 +25,14 @@ class _DealerOrdersScreenState extends State<DealerOrdersScreen> {
     if (user == null) return const SizedBox.shrink();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: CustomAppBar(
-        title: 'Store Orders',
+        title: 'Store Orders Fulfillments',
+        backgroundColor: const Color(0xFF0B3C26),
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
-            icon: const Icon(Icons.download_rounded, color: AppColors.primary),
+            icon: const Icon(Icons.download_rounded, color: Color(0xFF34D399)),
             tooltip: 'Export Store Orders (CSV/PDF)',
             onPressed: () async {
               final orders = await _orderRepo.getOrdersByDealer(user.id).first;
@@ -41,7 +43,7 @@ class _DealerOrdersScreenState extends State<DealerOrdersScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.filter_list_rounded, color: AppColors.primary),
+            icon: const Icon(Icons.filter_list_rounded, color: Colors.white),
             onPressed: () => _showFilterSheet(context),
           ),
         ],
@@ -54,7 +56,7 @@ class _DealerOrdersScreenState extends State<DealerOrdersScreen> {
               stream: _orderRepo.getOrdersByDealer(user.id),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const AppLoader();
+                  return const Center(child: CircularProgressIndicator(color: Color(0xFF059669)));
                 }
                 if (snapshot.hasError) {
                   return AppErrorWidget(message: snapshot.error.toString());
@@ -62,25 +64,46 @@ class _DealerOrdersScreenState extends State<DealerOrdersScreen> {
 
                 var orders = snapshot.data ?? [];
 
-                // Apply filter
                 if (_filterStatus != null) {
                   orders = orders.where((o) => o.status == _filterStatus).toList();
                 }
 
                 if (orders.isEmpty) {
-                  return EmptyState(
-                    icon: Icons.receipt_long_outlined,
-                    title: _filterStatus == null
-                        ? 'No Orders Yet'
-                        : 'No ${_statusLabel(_filterStatus!)} Orders',
-                    subtitle: 'Orders assigned to your store will appear here.',
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF059669).withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.receipt_long_outlined, size: 48, color: Color(0xFF059669)),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            _filterStatus == null ? 'No Store Orders Yet' : 'No ${_statusLabel(_filterStatus!)} Orders',
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF0F172A)),
+                          ),
+                          const SizedBox(height: 6),
+                          const Text(
+                            'Incoming customer orders for your store will appear here for packing.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                          ),
+                        ],
+                      ),
+                    ),
                   );
                 }
 
                 return ListView.separated(
                   padding: const EdgeInsets.all(16),
                   itemCount: orders.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  separatorBuilder: (_, _) => const SizedBox(height: 14),
                   itemBuilder: (ctx, i) {
                     final order = orders[i];
                     return _DealerOrderCard(
@@ -89,8 +112,7 @@ class _DealerOrdersScreenState extends State<DealerOrdersScreen> {
                       onTap: () => context.push('/order/${order.id}'),
                       onAccept: () => _updateStatus(order.id, OrderStatus.processing),
                       onReject: () => _showRejectDialog(context, order.id),
-                      onReadyForPickup: () =>
-                          _updateStatus(order.id, OrderStatus.accepted),
+                      onReadyForPickup: () => _updateStatus(order.id, OrderStatus.accepted),
                     );
                   },
                 );
@@ -111,21 +133,19 @@ class _DealerOrdersScreenState extends State<DealerOrdersScreen> {
         final processing = orders.where((o) => o.status == OrderStatus.processing).length;
         final today = orders.where((o) {
           final now = DateTime.now();
-          return o.createdAt.year == now.year &&
-              o.createdAt.month == now.month &&
-              o.createdAt.day == now.day;
+          return o.createdAt.year == now.year && o.createdAt.month == now.month && o.createdAt.day == now.day;
         }).length;
 
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          color: AppColors.white,
+          color: Colors.white,
           child: Row(
             children: [
-              _SummaryChip('Pending', pending.toString(), AppColors.warning),
-              const SizedBox(width: 12),
-              _SummaryChip('Processing', processing.toString(), AppColors.info),
-              const SizedBox(width: 12),
-              _SummaryChip("Today's", today.toString(), AppColors.primary),
+              _SummaryChip('Pending', pending.toString(), const Color(0xFFF59E0B)),
+              const SizedBox(width: 10),
+              _SummaryChip('Processing', processing.toString(), const Color(0xFF3B82F6)),
+              const SizedBox(width: 10),
+              _SummaryChip("Today's Total", today.toString(), const Color(0xFF059669)),
             ],
           ),
         );
@@ -141,7 +161,9 @@ class _DealerOrdersScreenState extends State<DealerOrdersScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Order status updated to ${_statusLabel(status)}'),
-            backgroundColor: AppColors.success,
+            backgroundColor: const Color(0xFF059669),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       }
@@ -150,7 +172,9 @@ class _DealerOrdersScreenState extends State<DealerOrdersScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error: ${e.toString()}'),
-            backgroundColor: AppColors.error,
+            backgroundColor: const Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       }
@@ -164,17 +188,21 @@ class _DealerOrdersScreenState extends State<DealerOrdersScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Reject Order'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Reject Order', style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
         content: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Please provide a reason for rejecting this order:'),
+            const Text('Please state why your store cannot fulfill this order:', style: TextStyle(fontSize: 13, color: Color(0xFF64748B))),
             const SizedBox(height: 12),
             TextField(
               controller: reasonCtrl,
-              decoration: const InputDecoration(
-                hintText: 'e.g. Out of stock, Cannot fulfill',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: 'e.g. Items out of stock',
+                filled: true,
+                fillColor: const Color(0xFFF1F5F9),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               ),
               maxLines: 2,
             ),
@@ -183,76 +211,61 @@ class _DealerOrdersScreenState extends State<DealerOrdersScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w700)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-            child: const Text('Reject Order'),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFEF4444), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+            child: const Text('Reject', style: TextStyle(fontWeight: FontWeight.w900)),
           ),
         ],
       ),
     );
+
     if (confirm == true) {
-      setState(() => _isUpdating = true);
-      try {
-        await _orderRepo.cancelOrder(orderId, reasonCtrl.text.trim().isEmpty
-            ? 'Cancelled by dealer'
-            : reasonCtrl.text.trim());
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Order rejected'),
-              backgroundColor: AppColors.error,
-            ),
-          );
-        }
-      } finally {
-        if (mounted) setState(() => _isUpdating = false);
-      }
+      await _updateStatus(orderId, OrderStatus.cancelled);
     }
   }
 
   void _showFilterSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Filter Orders',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            const Text('Filter Orders', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
             const SizedBox(height: 16),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                null,
-                OrderStatus.pending,
-                OrderStatus.accepted,
-                OrderStatus.processing,
-                OrderStatus.delivered,
-                OrderStatus.cancelled,
-              ].map((status) {
-                final label = status == null ? 'All Orders' : _statusLabel(status);
-                final isSelected = _filterStatus == status;
-                return FilterChip(
-                  label: Text(label),
-                  selected: isSelected,
-                  onSelected: (_) {
-                    setState(() => _filterStatus = status);
+                ChoiceChip(
+                  label: const Text('All Orders'),
+                  selected: _filterStatus == null,
+                  onSelected: (selected) {
+                    if (selected) setState(() => _filterStatus = null);
                     Navigator.pop(ctx);
                   },
-                  selectedColor: AppColors.primarySurface,
-                  checkmarkColor: AppColors.primary,
-                );
-              }).toList(),
+                ),
+                ...OrderStatus.values.map((s) {
+                  final isSel = _filterStatus == s;
+                  return ChoiceChip(
+                    label: Text(_statusLabel(s)),
+                    selected: isSel,
+                    onSelected: (selected) {
+                      if (selected) setState(() => _filterStatus = s);
+                      Navigator.pop(ctx);
+                    },
+                    selectedColor: const Color(0xFF059669),
+                    labelStyle: TextStyle(color: isSel ? Colors.white : const Color(0xFF0F172A), fontWeight: FontWeight.w800),
+                  );
+                }),
+              ],
             ),
-            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -261,13 +274,20 @@ class _DealerOrdersScreenState extends State<DealerOrdersScreen> {
 
   String _statusLabel(OrderStatus status) {
     switch (status) {
-      case OrderStatus.pending: return 'Pending';
-      case OrderStatus.accepted: return 'Ready for Pickup';
-      case OrderStatus.processing: return 'Processing';
-      case OrderStatus.shipped: return 'Shipped';
-      case OrderStatus.outForDelivery: return 'Out for Delivery';
-      case OrderStatus.delivered: return 'Delivered';
-      case OrderStatus.cancelled: return 'Cancelled';
+      case OrderStatus.pending:
+        return 'Pending';
+      case OrderStatus.accepted:
+        return 'Ready for Pickup';
+      case OrderStatus.processing:
+        return 'Packing';
+      case OrderStatus.shipped:
+        return 'Dispatched';
+      case OrderStatus.outForDelivery:
+        return 'Out for Delivery';
+      case OrderStatus.delivered:
+        return 'Delivered';
+      case OrderStatus.cancelled:
+        return 'Cancelled';
     }
   }
 }
@@ -285,16 +305,13 @@ class _SummaryChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(10),
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           children: [
-            Text(count,
-                style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 20)),
-            Text(label,
-                style:
-                    TextStyle(color: color.withOpacity(0.8), fontSize: 11, fontWeight: FontWeight.w500)),
+            Text(count, style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 20)),
+            Text(label, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w700)),
           ],
         ),
       ),
@@ -321,151 +338,136 @@ class _DealerOrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: order.status == OrderStatus.pending
-                ? AppColors.warning.withOpacity(0.5)
-                : AppColors.grey200,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.black.withOpacity(0.03),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            )
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Order #${order.id.substring(0, 8).toUpperCase()}',
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+    final code = order.id.length >= 8 ? order.id.substring(0, 8).toUpperCase() : order.id.toUpperCase();
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 2)),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF059669).withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.receipt_rounded, color: Color(0xFF059669), size: 18),
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('#$code', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF0F172A))),
+                                Text(order.userName.isNotEmpty ? order.userName : 'Customer', style: const TextStyle(color: Color(0xFF64748B), fontSize: 12)),
+                              ],
+                            ),
+                          ],
+                        ),
+                        Text(
+                          '₹${order.total.toStringAsFixed(0)}',
+                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Color(0xFF059669)),
+                        ),
+                      ],
+                    ),
+
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Divider(color: Color(0xFFF1F5F9)),
+                    ),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Text('${order.itemCount} items to pack', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF334155))),
+                            const SizedBox(width: 8),
+                            const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Color(0xFF059669)),
+                          ],
+                        ),
+                        OrderStatusBadge(status: order.statusString, isSmall: true),
+                      ],
+                    ),
+                  ],
                 ),
-                OrderStatusBadge(status: order.statusString, isSmall: true),
-              ],
-            ),
-            const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12), child: Divider(height: 1)),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+
+              // Action buttons bar if pending or processing
+              if (order.status == OrderStatus.pending) ...[
+                Container(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Row(
                     children: [
-                      const Text('Customer',
-                          style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
-                      const SizedBox(height: 2),
-                      Text(order.userName,
-                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(Icons.inventory_outlined,
-                              size: 13, color: AppColors.textSecondary),
-                          const SizedBox(width: 4),
-                          Text('${order.itemCount} items',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w500, fontSize: 13)),
-                        ],
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: isUpdating ? null : onAccept,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF059669),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
+                          icon: const Icon(Icons.check_rounded, size: 16),
+                          label: const Text('Accept & Pack', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      OutlinedButton(
+                        onPressed: isUpdating ? null : onReject,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFFEF4444),
+                          side: const BorderSide(color: Color(0xFFFCA5A5)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        ),
+                        child: const Text('Reject', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
                       ),
                     ],
                   ),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    const Text('Order Value',
-                        style:
-                            TextStyle(color: AppColors.textSecondary, fontSize: 11)),
-                    const SizedBox(height: 2),
-                    Text(
-                      '₹${order.total.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 20),
+              ] else if (order.status == OrderStatus.processing) ...[
+                Container(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: isUpdating ? null : onReadyForPickup,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF3B82F6),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
+                      icon: const Icon(Icons.local_shipping_rounded, size: 16),
+                      label: const Text('Mark Packed & Ready for Pickup', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      AppHelpers.formatDateTime(order.createdAt),
-                      style: const TextStyle(
-                          color: AppColors.textSecondary, fontSize: 11),
-                    ),
-                  ],
+                  ),
                 ),
               ],
-            ),
-            // Order items preview
-            const SizedBox(height: 10),
-            Text(
-              order.items.take(3).map((i) => '${i.quantity}x ${i.productName}').join(' · '),
-              style: const TextStyle(
-                  color: AppColors.textSecondary, fontSize: 11),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            // Action buttons
-            if (order.status == OrderStatus.pending) ...[
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  Expanded(
-                    child: AppButton(
-                      label: 'Reject',
-                      variant: AppButtonVariant.outlined,
-                      isLoading: isUpdating,
-                      onTap: onReject,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: AppButton(
-                      label: 'Accept & Prepare',
-                      isLoading: isUpdating,
-                      onTap: onAccept,
-                    ),
-                  ),
-                ],
-              ),
-            ] else if (order.status == OrderStatus.processing) ...[
-              const SizedBox(height: 14),
-              SizedBox(
-                width: double.infinity,
-                child: AppButton(
-                  label: 'Mark Ready for Pickup',
-                  isLoading: isUpdating,
-                  onTap: onReadyForPickup,
-                ),
-              ),
-            ] else if (order.status == OrderStatus.cancelled) ...[
-              const SizedBox(height: 10),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.error.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  'Cancelled${order.cancellationReason != null ? ': ${order.cancellationReason}' : ''}',
-                  style: const TextStyle(
-                      color: AppColors.error,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500),
-                ),
-              ),
             ],
-          ],
+          ),
         ),
       ),
     );

@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:models/models.dart';
 import 'package:repository/repository.dart';
 import 'package:ui_kit/ui_kit.dart';
 import 'package:intl/intl.dart';
+import '../../widgets/admin_drawer.dart';
 
 class FlashSaleManagementScreen extends StatefulWidget {
   const FlashSaleManagementScreen({super.key});
@@ -151,13 +151,23 @@ class _FlashSaleManagementScreenState extends State<FlashSaleManagementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: const Text('Flash Sale Management', style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF1E293B))),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1E293B)),
-          onPressed: () => context.pop(),
+      drawer: const AdminDrawer(),
+      appBar: CustomAppBar(
+        title: 'Flash Sale Management',
+        backgroundColor: const Color(0xFF0F172A),
+        foregroundColor: Colors.white,
+        leading: Builder(
+          builder: (ctx) => IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.menu_rounded, size: 20, color: Colors.white),
+            ),
+            onPressed: () => Scaffold.of(ctx).openDrawer(),
+          ),
         ),
       ),
       body: _isLoading
@@ -179,19 +189,19 @@ class _FlashSaleManagementScreenState extends State<FlashSaleManagementScreen> {
                     ),
                     child: SwitchListTile(
                       value: _isActive,
-                      activeColor: const Color(0xFF059669),
+                      activeThumbColor: const Color(0xFF6366F1),
                       onChanged: (val) {
                         setState(() => _isActive = val);
                       },
                       title: const Text('Flash Sale Banner Active', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
                       subtitle: Text(
                         _isActive ? 'Visible to users on Home Screen' : 'Hidden from users',
-                        style: TextStyle(color: _isActive ? const Color(0xFF059669) : Colors.grey, fontWeight: FontWeight.w600, fontSize: 12),
+                        style: TextStyle(color: _isActive ? const Color(0xFF6366F1) : Colors.grey, fontWeight: FontWeight.w600, fontSize: 12),
                       ),
                       secondary: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: _isActive ? const Color(0xFFECFDF5) : Colors.grey.shade100,
+                          color: _isActive ? const Color(0xFF6366F1).withValues(alpha: 0.1) : Colors.grey.shade100,
                           shape: BoxShape.circle,
                         ),
                         child: Icon(Icons.local_fire_department_rounded, color: _isActive ? const Color(0xFFF59E0B) : Colors.grey),
@@ -206,13 +216,13 @@ class _FlashSaleManagementScreenState extends State<FlashSaleManagementScreen> {
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF064E3B), Color(0xFF047857)],
+                        colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
-                        BoxShadow(color: const Color(0xFF059669).withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 5)),
+                        BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 5)),
                       ],
                     ),
                     child: Column(
@@ -254,7 +264,7 @@ class _FlashSaleManagementScreenState extends State<FlashSaleManagementScreen> {
                             label: const Text('Change Sale End Time'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
-                              foregroundColor: const Color(0xFF064E3B),
+                              foregroundColor: const Color(0xFF0F172A),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
@@ -340,12 +350,12 @@ class _FlashSaleManagementScreenState extends State<FlashSaleManagementScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFECFDF5),
+                                color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 '${_selectedProductIds.length} Selected',
-                                style: const TextStyle(color: Color(0xFF059669), fontWeight: FontWeight.w800, fontSize: 12),
+                                style: const TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.w800, fontSize: 12),
                               ),
                             ),
                           ],
@@ -365,7 +375,7 @@ class _FlashSaleManagementScreenState extends State<FlashSaleManagementScreen> {
                           stream: _productRepo.getProducts(),
                           builder: (context, snapshot) {
                             if (!snapshot.hasData) {
-                              return const SizedBox(height: 120, child: Center(child: CircularProgressIndicator(color: Color(0xFF059669))));
+                              return const SizedBox(height: 120, child: Center(child: CircularProgressIndicator(color: Color(0xFF6366F1))));
                             }
                             final allProducts = snapshot.data!;
                             final filtered = allProducts.where((p) => p.name.toLowerCase().contains(_searchQuery)).toList();
@@ -385,14 +395,14 @@ class _FlashSaleManagementScreenState extends State<FlashSaleManagementScreen> {
                               ),
                               child: ListView.separated(
                                 itemCount: filtered.length,
-                                separatorBuilder: (_, __) => const Divider(height: 1),
+                                separatorBuilder: (_, _) => const Divider(height: 1),
                                 itemBuilder: (ctx, i) {
                                   final p = filtered[i];
                                   final isSelected = _selectedProductIds.contains(p.id);
 
                                   return CheckboxListTile(
                                     value: isSelected,
-                                    activeColor: const Color(0xFF059669),
+                                    activeColor: const Color(0xFF6366F1),
                                     title: Text(p.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                                     subtitle: Text('₹${p.price.toStringAsFixed(0)} / ${p.unit}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
                                     onChanged: (val) {
@@ -423,7 +433,7 @@ class _FlashSaleManagementScreenState extends State<FlashSaleManagementScreen> {
                     child: ElevatedButton(
                       onPressed: _isSaving ? null : _saveFlashSale,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF059669),
+                        backgroundColor: const Color(0xFF0F172A),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         elevation: 4,
                       ),

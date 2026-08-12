@@ -57,8 +57,23 @@ class _AddUserScreenState extends State<AddUserScreen> {
     final isLoading = context.watch<AdminManagementProvider>().isLoading;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Add New User'),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: CustomAppBar(
+        title: 'Add New User',
+        backgroundColor: const Color(0xFF0F172A),
+        foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.arrow_back_rounded, size: 18, color: Colors.white),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -116,7 +131,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
                           value: role,
                           groupValue: _selectedRole,
                           onChanged: (v) => setState(() => _selectedRole = v!),
-                          activeColor: AppColors.primary,
+                          activeColor: const Color(0xFF6366F1),
                         ),
                         if (!isLast) const Divider(height: 1, indent: 16, endIndent: 16),
                       ],
@@ -125,10 +140,21 @@ class _AddUserScreenState extends State<AddUserScreen> {
                 ),
               ),
               const SizedBox(height: 40),
-              AppButton(
-                label: 'Create User',
-                isLoading: isLoading,
-                onTap: _submit,
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: isLoading ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0F172A),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: isLoading
+                      ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                      : const Text('Create User', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+                ),
               ),
             ],
           ),

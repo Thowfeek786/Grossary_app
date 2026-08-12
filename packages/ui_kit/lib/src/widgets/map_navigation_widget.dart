@@ -8,11 +8,11 @@ class MapNavigationWidget extends StatefulWidget {
   final LatLng? currentLocation;
 
   const MapNavigationWidget({
-    Key? key,
+    super.key,
     required this.startLocation,
     required this.endLocation,
     this.currentLocation,
-  }) : super(key: key);
+  });
 
   @override
   State<MapNavigationWidget> createState() => _MapNavigationWidgetState();

@@ -5,6 +5,7 @@ import 'package:ui_kit/ui_kit.dart';
 import 'package:models/models.dart';
 import 'package:repository/repository.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/admin_drawer.dart';
 
 class AdminProfileScreen extends StatelessWidget {
   const AdminProfileScreen({super.key});
@@ -16,8 +17,26 @@ class AdminProfileScreen extends StatelessWidget {
     if (user == null) return const SizedBox.shrink();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Admin Profile'),
+      backgroundColor: const Color(0xFFF8FAFC),
+      drawer: const AdminDrawer(),
+      appBar: CustomAppBar(
+        title: 'Admin Profile',
+        backgroundColor: const Color(0xFF0F172A),
+        foregroundColor: Colors.white,
+        leading: Builder(
+          builder: (ctx) => IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.menu_rounded, size: 20, color: Colors.white),
+            ),
+            onPressed: () => Scaffold.of(ctx).openDrawer(),
+          ),
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -31,7 +50,7 @@ class AdminProfileScreen extends StatelessWidget {
                 border: Border.all(color: AppColors.grey200),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.black.withOpacity(0.04),
+                    color: AppColors.black.withValues(alpha: 0.04),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -44,10 +63,11 @@ class AdminProfileScreen extends StatelessWidget {
                     height: 88,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
+                        colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF334155)],
                       ),
                       borderRadius: BorderRadius.circular(22),
                     ),
+                    alignment: Alignment.center,
                     child: user.photoUrl != null
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(22),
@@ -60,7 +80,6 @@ class AdminProfileScreen extends StatelessWidget {
                                 fontSize: 36,
                                 fontWeight: FontWeight.w900),
                           ),
-                    alignment: Alignment.center,
                   ),
                   const SizedBox(height: 16),
                   Text(user.name,
@@ -264,9 +283,9 @@ class AdminProfileScreen extends StatelessWidget {
                     );
                   }
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.white,
+                 style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0F172A),
+                  foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
@@ -294,7 +313,6 @@ class AdminProfileScreen extends StatelessWidget {
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) {
-          bool isLoading = false;
           return Padding(
             padding: EdgeInsets.fromLTRB(
                 24, 24, 24, 24 + MediaQuery.of(ctx).viewInsets.bottom),
@@ -399,7 +417,7 @@ class AdminProfileScreen extends StatelessWidget {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: const Color(0xFF0F172A),
                       foregroundColor: AppColors.white,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
@@ -428,7 +446,7 @@ class AdminProfileScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.error.withOpacity(0.1),
+                color: AppColors.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(Icons.logout_rounded,
@@ -493,28 +511,28 @@ class AdminProfileScreen extends StatelessWidget {
                 onChanged: (v) => setModalState(() => pushOrders = v),
                 title: const Text('New Order Alerts', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                 subtitle: const Text('Instant notification when customer places an order', style: TextStyle(fontSize: 11)),
-                activeColor: AppColors.primary,
+                activeThumbColor: const Color(0xFF6366F1),
               ),
               SwitchListTile(
                 value: pushDelivery,
                 onChanged: (v) => setModalState(() => pushDelivery = v),
                 title: const Text('Delivery Partner Updates', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                 subtitle: const Text('Alerts when orders are picked up or delivered', style: TextStyle(fontSize: 11)),
-                activeColor: AppColors.primary,
+                activeThumbColor: const Color(0xFF6366F1),
               ),
               SwitchListTile(
                 value: pushPromos,
                 onChanged: (v) => setModalState(() => pushPromos = v),
                 title: const Text('Promotional Notifications', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                 subtitle: const Text('Marketing broadcasts sent to customers', style: TextStyle(fontSize: 11)),
-                activeColor: AppColors.primary,
+                activeThumbColor: const Color(0xFF6366F1),
               ),
               SwitchListTile(
                 value: pushAlerts,
                 onChanged: (v) => setModalState(() => pushAlerts = v),
                 title: const Text('System Health & Security', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                 subtitle: const Text('Critical errors, low inventory & login alerts', style: TextStyle(fontSize: 11)),
-                activeColor: AppColors.primary,
+                activeThumbColor: const Color(0xFF6366F1),
               ),
               const SizedBox(height: 20),
               SizedBox(
@@ -526,13 +544,13 @@ class AdminProfileScreen extends StatelessWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: const Text('Notification preferences saved!'),
-                        backgroundColor: AppColors.success,
+                        backgroundColor: const Color(0xFF10B981),
                         behavior: SnackBarBehavior.floating,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                     );
                   },
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0F172A), foregroundColor: Colors.white),
                   child: const Text('Save Preferences', style: TextStyle(fontWeight: FontWeight.w700)),
                 ),
               ),
@@ -564,28 +582,28 @@ class AdminProfileScreen extends StatelessWidget {
                 onChanged: (v) => setModalState(() => twoFactor = v),
                 title: const Text('Two-Factor Authentication (2FA)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                 subtitle: const Text('Require OTP on new admin login attempts', style: TextStyle(fontSize: 11)),
-                activeColor: AppColors.primary,
+                activeThumbColor: const Color(0xFF6366F1),
               ),
               const Divider(height: 24),
               const Text('Active Login Session', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: AppColors.grey100, borderRadius: BorderRadius.circular(12)),
+                decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(12)),
                 child: const Row(
                   children: [
-                    Icon(Icons.phone_android_rounded, color: AppColors.primary, size: 22),
+                    Icon(Icons.phone_android_rounded, color: Color(0xFF6366F1), size: 22),
                     SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Android Admin Device (CPH2527)', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                          Text('Current active session · Verified IP', style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
+                          Text('Current active session · Verified IP', style: TextStyle(color: Color(0xFF64748B), fontSize: 11)),
                         ],
                       ),
                     ),
-                    Icon(Icons.check_circle_rounded, color: AppColors.success, size: 18),
+                    Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
                   ],
                 ),
               ),
@@ -601,8 +619,8 @@ class AdminProfileScreen extends StatelessWidget {
                   icon: const Icon(Icons.lock_reset_rounded, size: 18),
                   label: const Text('Change Account Password', style: TextStyle(fontWeight: FontWeight.w700)),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    side: const BorderSide(color: AppColors.primary),
+                    foregroundColor: const Color(0xFF6366F1),
+                    side: const BorderSide(color: Color(0xFF6366F1)),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
@@ -704,7 +722,7 @@ class AdminProfileScreen extends StatelessWidget {
       applicationVersion: '1.0.0 (Build 101)',
       applicationIcon: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(color: const Color(0xFF0F172A), borderRadius: BorderRadius.circular(12)),
         child: const Icon(Icons.admin_panel_settings_rounded, color: Colors.white, size: 28),
       ),
       children: [
@@ -738,7 +756,7 @@ class _SectionHeader extends StatelessWidget {
           width: 3,
           height: 16,
           decoration: BoxDecoration(
-            color: AppColors.primary,
+            color: const Color(0xFF6366F1),
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -763,7 +781,7 @@ class _MiniStat extends StatelessWidget {
             style: const TextStyle(
                 fontWeight: FontWeight.w900,
                 fontSize: 16,
-                color: AppColors.primary)),
+                color: Color(0xFF6366F1))),
         const SizedBox(height: 2),
         Text(label,
             style: const TextStyle(
@@ -807,10 +825,10 @@ class _ProfileTile extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.primarySurface,
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: AppColors.primary, size: 20),
+                child: Icon(icon, color: const Color(0xFF6366F1), size: 20),
               ),
               const SizedBox(width: 14),
               Expanded(

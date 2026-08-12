@@ -12,11 +12,16 @@ import '../screens/order_detail_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/delivery_settings_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
+import '../screens/dealer_payout_screen.dart';
 import '../screens/splash/splash_screen.dart';
+import '../screens/main_shell.dart';
 
 class AppRouter {
+  static final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
+
   static GoRouter router(DealerAuthProvider auth) {
     return GoRouter(
+      navigatorKey: _rootNavigatorKey,
       refreshListenable: auth,
       initialLocation: '/splash',
       redirect: (context, state) {
@@ -34,47 +39,66 @@ class AppRouter {
       routes: [
         GoRoute(
           path: '/splash',
-          builder: (_, __) => const DealerSplashScreen(),
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, _) => const DealerSplashScreen(),
         ),
         GoRoute(
           path: '/onboarding',
-          builder: (_, __) => const DealerOnboardingScreen(),
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, _) => const DealerOnboardingScreen(),
         ),
         GoRoute(
           path: '/delivery-settings',
-          builder: (_, __) => const DealerDeliverySettingsScreen(),
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, _) => const DealerDeliverySettingsScreen(),
+        ),
+        GoRoute(
+          path: '/dealer-payouts',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, _) => const DealerPayoutScreen(),
         ),
         GoRoute(
           path: '/login',
-          builder: (_, __) => const LoginScreen(),
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, _) => const LoginScreen(),
         ),
         GoRoute(
           path: '/signup',
-          builder: (_, __) => const DealerSignupScreen(),
-        ),
-        GoRoute(
-          path: '/dashboard',
-          builder: (_, __) => const DealerDashboard(),
-        ),
-        GoRoute(
-          path: '/inventory',
-          builder: (_, __) => const InventoryScreen(),
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, _) => const DealerSignupScreen(),
         ),
         GoRoute(
           path: '/add-product',
+          parentNavigatorKey: _rootNavigatorKey,
           builder: (context, state) => AddProductScreen(product: state.extra as ProductModel?),
         ),
         GoRoute(
-          path: '/orders',
-          builder: (_, __) => const DealerOrdersScreen(),
-        ),
-        GoRoute(
           path: '/order/:orderId',
+          parentNavigatorKey: _rootNavigatorKey,
           builder: (context, state) => OrderDetailScreen(orderId: state.pathParameters['orderId']!),
         ),
-        GoRoute(
-          path: '/profile',
-          builder: (_, __) => const ProfileScreen(),
+
+        // Shell route for persistent bottom nav
+        ShellRoute(
+          builder: (context, state, child) => DealerMainShell(child: child),
+          routes: [
+            GoRoute(
+              path: '/dashboard',
+              builder: (_, _) => const DealerDashboard(),
+            ),
+            GoRoute(
+              path: '/inventory',
+              builder: (_, _) => const InventoryScreen(),
+            ),
+            GoRoute(
+              path: '/orders',
+              builder: (_, _) => const DealerOrdersScreen(),
+            ),
+            GoRoute(
+              path: '/profile',
+              builder: (_, _) => const ProfileScreen(),
+            ),
+          ],
         ),
       ],
     );

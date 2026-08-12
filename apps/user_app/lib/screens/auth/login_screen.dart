@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:core/core.dart';
-import 'package:ui_kit/ui_kit.dart';
 import '../../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -16,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   bool _obscurePassword = true;
+  bool _agreedToTerms = true;
 
   @override
   void dispose() {
@@ -25,6 +25,18 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
+    if (!_agreedToTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please accept the Terms & Conditions to proceed.'),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) return;
     final auth = context.read<AuthProvider>();
     final ok = await auth.login(_emailCtrl.text.trim(), _passCtrl.text);
@@ -62,30 +74,6 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF34D399).withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFF34D399).withValues(alpha: 0.4)),
-                        ),
-                        child: const Icon(Icons.shopping_basket_rounded, color: Color(0xFF34D399), size: 30),
-                      ),
-                      const SizedBox(width: 14),
-                      const Text(
-                        'GroceryGo',
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
                   const Text(
                     'Welcome back! 👋',
                     style: TextStyle(
@@ -182,7 +170,47 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
+
+                    // Active Terms & Conditions Checkbox
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: Checkbox(
+                            value: _agreedToTerms,
+                            onChanged: (val) => setState(() => _agreedToTerms = val ?? false),
+                            activeColor: const Color(0xFF059669),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              const Text('I agree to the ', style: TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
+                              GestureDetector(
+                                onTap: () => context.push('/terms'),
+                                child: const Text(
+                                  'Terms & Conditions',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF059669),
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                              const Text(' & Privacy Policy', style: TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
 
                     // Sign In Button
                     SizedBox(
@@ -224,9 +252,21 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: auth.isLoading
                             ? null
                             : () async {
+                                if (!_agreedToTerms) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: const Text('Please accept the Terms & Conditions to proceed.'),
+                                      backgroundColor: AppColors.error,
+                                      behavior: SnackBarBehavior.floating,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                  );
+                                  return;
+                                }
+                                final messenger = ScaffoldMessenger.of(context);
                                 final ok = await auth.signInWithGoogle();
                                 if (!ok && mounted && auth.error != null) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
+                                  messenger.showSnackBar(
                                     SnackBar(content: Text(auth.error!), backgroundColor: AppColors.error),
                                   );
                                 }

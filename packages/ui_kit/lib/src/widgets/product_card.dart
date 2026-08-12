@@ -57,8 +57,8 @@ class ProductCard extends StatelessWidget {
                           ? CachedNetworkImage(
                               imageUrl: sanitizeUrl(product.imageUrls.first),
                               fit: BoxFit.cover,
-                              placeholder: (_, __) => _placeholder(),
-                              errorWidget: (_, __, ___) => _placeholder(),
+                              placeholder: (_, _) => _placeholder(),
+                              errorWidget: (_, _, _) => _placeholder(),
                             )
                           : _placeholder(),
                     ),
@@ -172,10 +172,10 @@ class ProductCard extends StatelessWidget {
                             children: [
                               Text(
                                 '₹${product.effectivePrice.toStringAsFixed(0)}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w900,
-                                  color: Color(0xFF059669),
+                                  color: Theme.of(context).colorScheme.primary,
                                 ),
                               ),
                               if (product.hasDiscount) ...[
@@ -200,15 +200,11 @@ class ProductCard extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                             decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF059669), Color(0xFF047857)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
+                              color: Theme.of(context).colorScheme.primary,
                               borderRadius: BorderRadius.circular(10),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF059669).withValues(alpha: 0.35),
+                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.35),
                                   blurRadius: 6,
                                   offset: const Offset(0, 3),
                                 ),

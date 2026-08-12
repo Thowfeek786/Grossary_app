@@ -4,6 +4,7 @@ import 'package:core/core.dart';
 import 'package:models/models.dart';
 import 'package:ui_kit/ui_kit.dart';
 import '../../providers/management_provider.dart';
+import '../../widgets/admin_drawer.dart';
 
 class DealerManagementScreen extends StatefulWidget {
   const DealerManagementScreen({super.key});
@@ -34,18 +35,35 @@ class _DealerManagementScreenState extends State<DealerManagementScreen>
     final management = context.watch<AdminManagementProvider>();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFF8FAFC),
+      drawer: const AdminDrawer(),
       appBar: CustomAppBar(
         title: 'Dealers & Vendors',
+        backgroundColor: const Color(0xFF0F172A),
+        foregroundColor: Colors.white,
+        leading: Builder(
+          builder: (ctx) => IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.menu_rounded, size: 20, color: Colors.white),
+            ),
+            onPressed: () => Scaffold.of(ctx).openDrawer(),
+          ),
+        ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppColors.primary,
-          unselectedLabelColor: AppColors.textSecondary,
-          indicatorColor: AppColors.primary,
+          labelColor: const Color(0xFF818CF8),
+          unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
+          indicatorColor: const Color(0xFF6366F1),
+          indicatorWeight: 3,
           tabs: const [
-            Tab(text: 'All'),
+            Tab(text: 'All Dealers'),
+            Tab(text: 'Pending Approval'),
             Tab(text: 'Approved'),
-            Tab(text: 'Pending'),
           ],
         ),
       ),
@@ -135,7 +153,7 @@ class _DealerManagementScreenState extends State<DealerManagementScreen>
         return ListView.separated(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           itemCount: dealers.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          separatorBuilder: (_, _) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
             final d = dealers[index];
             return _DealerCard(
@@ -152,10 +170,11 @@ class _DealerManagementScreenState extends State<DealerManagementScreen>
 
   Future<void> _toggleApproval(BuildContext context, UserModel dealer,
       AdminManagementProvider management, bool approved) async {
+    final messenger = ScaffoldMessenger.of(context);
     try {
       await management.setUserApproval(dealer.id, approved);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text(approved
                 ? '${dealer.name} has been approved'
@@ -167,7 +186,7 @@ class _DealerManagementScreenState extends State<DealerManagementScreen>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
               content: Text('Error: $e'),
               backgroundColor: AppColors.error),
@@ -237,8 +256,8 @@ class _DealerManagementScreenState extends State<DealerManagementScreen>
                                   horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
                                 color: dealer.isApproved
-                                    ? AppColors.success.withOpacity(0.1)
-                                    : AppColors.warning.withOpacity(0.1),
+                                    ? AppColors.success.withValues(alpha: 0.1)
+                                    : AppColors.warning.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
@@ -270,7 +289,7 @@ class _DealerManagementScreenState extends State<DealerManagementScreen>
               _DetailRow(Icons.phone_rounded, 'Phone', dealer.phone),
               const SizedBox(height: 12),
               _DetailRow(Icons.star_rounded, 'Rating',
-                  '${dealer.rating?.toStringAsFixed(1) ?? 'N/A'}'),
+                  dealer.rating?.toStringAsFixed(1) ?? 'N/A'),
               const SizedBox(height: 24),
               Row(
                 children: [
@@ -322,7 +341,7 @@ class _DealerCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: !dealer.isApproved
-                ? AppColors.warning.withOpacity(0.4)
+                ? AppColors.warning.withValues(alpha: 0.4)
                 : AppColors.grey200,
           ),
         ),
@@ -356,8 +375,8 @@ class _DealerCard extends StatelessWidget {
                                 horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
                               color: dealer.isApproved
-                                  ? AppColors.success.withOpacity(0.1)
-                                  : AppColors.warning.withOpacity(0.1),
+                                  ? AppColors.success.withValues(alpha: 0.1)
+                                  : AppColors.warning.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
@@ -397,17 +416,27 @@ class _DealerCard extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: AppButton(
-                      label: 'Reject',
-                      variant: AppButtonVariant.outlined,
-                      onTap: onSuspend,
+                    child: OutlinedButton(
+                      onPressed: onSuspend,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFFEF4444),
+                        side: const BorderSide(color: Color(0xFFEF4444)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text('Reject', style: TextStyle(fontWeight: FontWeight.w800)),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: AppButton(
-                      label: 'Approve',
-                      onTap: onApprove,
+                    child: ElevatedButton(
+                      onPressed: onApprove,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0F172A),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text('Approve', style: TextStyle(fontWeight: FontWeight.w800)),
                     ),
                   ),
                 ],

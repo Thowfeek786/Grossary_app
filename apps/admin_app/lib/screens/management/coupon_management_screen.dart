@@ -4,6 +4,8 @@ import 'package:ui_kit/ui_kit.dart';
 import 'package:models/models.dart';
 import 'package:repository/repository.dart';
 
+import '../../widgets/admin_drawer.dart';
+
 class CouponManagementScreen extends StatefulWidget {
   const CouponManagementScreen({super.key});
 
@@ -31,21 +33,41 @@ class _CouponManagementScreenState extends State<CouponManagementScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFF8FAFC),
+      drawer: const AdminDrawer(),
       appBar: CustomAppBar(
         title: 'Coupon Management',
+        backgroundColor: const Color(0xFF0F172A),
+        foregroundColor: Colors.white,
+        leading: Builder(
+          builder: (ctx) => IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.menu_rounded, size: 20, color: Colors.white),
+            ),
+            onPressed: () => Scaffold.of(ctx).openDrawer(),
+          ),
+        ),
         bottom: TabBar(
           controller: _tabCtrl,
-          labelColor: AppColors.primary,
-          unselectedLabelColor: AppColors.textSecondary,
-          indicatorColor: AppColors.primary,
-          labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-          tabs: const [Tab(text: 'Active'), Tab(text: 'Expired'), Tab(text: 'All')],
+          labelColor: const Color(0xFF818CF8),
+          unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
+          indicatorColor: const Color(0xFF6366F1),
+          indicatorWeight: 3,
+          tabs: const [
+            Tab(text: 'All Coupons'),
+            Tab(text: 'Active'),
+            Tab(text: 'Expired'),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCouponForm(context),
-        backgroundColor: AppColors.primary,
+        backgroundColor: const Color(0xFF0F172A),
         icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: const Text('Add Coupon', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
       ),
@@ -53,7 +75,7 @@ class _CouponManagementScreenState extends State<CouponManagementScreen>
         stream: _couponRepo.getAllCoupons(),
         builder: (context, snap) {
           if (snap.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+            return const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1)));
           }
           final all = snap.data ?? [];
           final active = all.where((c) => c.isValid).toList();
@@ -176,13 +198,13 @@ class _CouponManagementScreenState extends State<CouponManagementScreen>
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
-                          color: discountType == DiscountType.percentage ? AppColors.primarySurface : AppColors.grey100,
+                          color: discountType == DiscountType.percentage ? const Color(0xFF6366F1).withValues(alpha: 0.1) : AppColors.grey100,
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: discountType == DiscountType.percentage ? AppColors.primary : AppColors.grey200),
+                          border: Border.all(color: discountType == DiscountType.percentage ? const Color(0xFF6366F1) : AppColors.grey200),
                         ),
                         child: Center(child: Text('Percentage %',
                             style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13,
-                                color: discountType == DiscountType.percentage ? AppColors.primary : AppColors.textSecondary))),
+                                color: discountType == DiscountType.percentage ? const Color(0xFF6366F1) : AppColors.textSecondary))),
                       ),
                     ),
                   ),
@@ -193,13 +215,13 @@ class _CouponManagementScreenState extends State<CouponManagementScreen>
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
-                          color: discountType == DiscountType.fixed ? AppColors.primarySurface : AppColors.grey100,
+                          color: discountType == DiscountType.fixed ? const Color(0xFF6366F1).withValues(alpha: 0.1) : AppColors.grey100,
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: discountType == DiscountType.fixed ? AppColors.primary : AppColors.grey200),
+                          border: Border.all(color: discountType == DiscountType.fixed ? const Color(0xFF6366F1) : AppColors.grey200),
                         ),
                         child: Center(child: Text('Fixed ₹',
                             style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13,
-                                color: discountType == DiscountType.fixed ? AppColors.primary : AppColors.textSecondary))),
+                                color: discountType == DiscountType.fixed ? const Color(0xFF6366F1) : AppColors.textSecondary))),
                       ),
                     ),
                   ),
@@ -295,7 +317,7 @@ class _CouponManagementScreenState extends State<CouponManagementScreen>
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary, foregroundColor: Colors.white,
+                      backgroundColor: const Color(0xFF0F172A), foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), elevation: 0),
                     child: Text(isEdit ? 'Update Coupon' : 'Create Coupon',
                         style: const TextStyle(fontWeight: FontWeight.w700)),
@@ -318,7 +340,7 @@ class _CouponManagementScreenState extends State<CouponManagementScreen>
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.grey300)),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
+          borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     );
   }
@@ -341,15 +363,15 @@ class _CouponCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isValid = coupon.isValid;
-    final color = isValid ? AppColors.primary : AppColors.grey400;
+    final color = isValid ? const Color(0xFF6366F1) : AppColors.grey400;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isValid ? AppColors.primary.withOpacity(0.2) : AppColors.grey200),
-        boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.03), blurRadius: 8)],
+        border: Border.all(color: isValid ? const Color(0xFF6366F1).withValues(alpha: 0.2) : AppColors.grey200),
+        boxShadow: [BoxShadow(color: AppColors.black.withValues(alpha: 0.03), blurRadius: 8)],
       ),
       child: Column(
         children: [
@@ -357,14 +379,14 @@ class _CouponCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.05),
+              color: color.withValues(alpha: 0.05),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             ),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(7),
-                  decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                  decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                   child: Icon(Icons.confirmation_num_rounded, color: color, size: 18),
                 ),
                 const SizedBox(width: 10),
@@ -382,9 +404,9 @@ class _CouponCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: isValid
-                        ? AppColors.success.withOpacity(0.1)
+                        ? AppColors.success.withValues(alpha: 0.1)
                         : coupon.isExpired
-                            ? AppColors.error.withOpacity(0.1)
+                            ? AppColors.error.withValues(alpha: 0.1)
                             : AppColors.grey200,
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -412,7 +434,7 @@ class _CouponCard extends StatelessWidget {
                       const Color(0xFF6366F1),
                     ),
                     const SizedBox(width: 8),
-                    _infoChip('Min ₹${coupon.minSubtotal.toStringAsFixed(0)}', const Color(0xFF10B981)),
+                    _infoChip('Min ₹${coupon.minSubtotal.toStringAsFixed(0)}', const Color(0xFF6366F1)),
                     if (coupon.maxDiscount != null) ...[
                       const SizedBox(width: 8),
                       _infoChip('Max ₹${coupon.maxDiscount!.toStringAsFixed(0)}', const Color(0xFFF59E0B)),
@@ -438,7 +460,7 @@ class _CouponCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     IconButton(icon: const Icon(Icons.edit_rounded, size: 18), onPressed: onEdit,
-                        color: AppColors.primary, tooltip: 'Edit'),
+                        color: const Color(0xFF6366F1), tooltip: 'Edit'),
                     IconButton(
                       icon: Icon(coupon.isActive ? Icons.toggle_on_rounded : Icons.toggle_off_rounded, size: 28),
                       onPressed: onToggle,
@@ -460,7 +482,7 @@ class _CouponCard extends StatelessWidget {
   Widget _infoChip(String text, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(color: color.withOpacity(0.08), borderRadius: BorderRadius.circular(6)),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(6)),
       child: Text(text, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: color)),
     );
   }

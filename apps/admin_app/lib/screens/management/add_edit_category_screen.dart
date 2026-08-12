@@ -38,6 +38,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     
+    final messenger = ScaffoldMessenger.of(context);
     final management = context.read<AdminManagementProvider>();
     management.setLoading(true);
     
@@ -51,7 +52,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
       }
 
       if (imageUrl.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select an image'), backgroundColor: AppColors.error));
+        messenger.showSnackBar(const SnackBar(content: Text('Please select an image'), backgroundColor: AppColors.error));
         return;
       }
 
@@ -86,9 +87,22 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
     final isLoading = context.watch<AdminManagementProvider>().isLoading;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: CustomAppBar(
         title: widget.category == null ? 'Add Category' : 'Edit Category',
+        backgroundColor: const Color(0xFF0F172A),
+        foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.arrow_back_rounded, size: 18, color: Colors.white),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -106,9 +120,9 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                     : widget.category?.imageUrl != null
                       ? ClipRRect(borderRadius: BorderRadius.circular(16), child: Image.network(widget.category!.imageUrl!, fit: BoxFit.cover))
                       : const Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                          Icon(Icons.add_photo_alternate_rounded, color: AppColors.primary, size: 48),
+                          Icon(Icons.add_photo_alternate_rounded, color: Color(0xFF6366F1), size: 48),
                           SizedBox(height: 8),
-                          Text('Add Category Image', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700)),
+                          Text('Add Category Image', style: TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.w700)),
                         ]),
                 ),
               ),
@@ -126,7 +140,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                   Switch(
                     value: _isActive,
                     onChanged: (v) => setState(() => _isActive = v),
-                    activeColor: AppColors.primary,
+                    activeThumbColor: const Color(0xFF6366F1),
                   ),
                 ],
               ),

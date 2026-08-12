@@ -26,6 +26,11 @@ class UserModel {
   final String? accountHolder;
   final String? accountNumber;
   final String? ifscCode;
+  final String? upiId;
+  final String? vehicleType;
+  final String? dlNumber;
+  final String? rcNumber;
+  final String? docVerificationStatus; // 'pending', 'approved', 'rejected'
 
   const UserModel({
     required this.id,
@@ -50,6 +55,11 @@ class UserModel {
     this.accountHolder,
     this.accountNumber,
     this.ifscCode,
+    this.upiId,
+    this.vehicleType,
+    this.dlNumber,
+    this.rcNumber,
+    this.docVerificationStatus,
   });
 
   String get roleString => role.name;
@@ -87,6 +97,11 @@ class UserModel {
       accountHolder: data['accountHolder'],
       accountNumber: data['accountNumber'],
       ifscCode: data['ifscCode'],
+      upiId: data['upiId'],
+      vehicleType: data['vehicleType'],
+      dlNumber: data['dlNumber'],
+      rcNumber: data['rcNumber'],
+      docVerificationStatus: data['docVerificationStatus'],
     );
   }
 
@@ -113,6 +128,11 @@ class UserModel {
       'accountHolder': accountHolder,
       'accountNumber': accountNumber,
       'ifscCode': ifscCode,
+      'upiId': upiId,
+      'vehicleType': vehicleType,
+      'dlNumber': dlNumber,
+      'rcNumber': rcNumber,
+      'docVerificationStatus': docVerificationStatus,
     };
   }
 
@@ -136,6 +156,11 @@ class UserModel {
     String? accountHolder,
     String? accountNumber,
     String? ifscCode,
+    String? upiId,
+    String? vehicleType,
+    String? dlNumber,
+    String? rcNumber,
+    String? docVerificationStatus,
   }) {
     return UserModel(
       id: id,
@@ -160,6 +185,11 @@ class UserModel {
       accountHolder: accountHolder ?? this.accountHolder,
       accountNumber: accountNumber ?? this.accountNumber,
       ifscCode: ifscCode ?? this.ifscCode,
+      upiId: upiId ?? this.upiId,
+      vehicleType: vehicleType ?? this.vehicleType,
+      dlNumber: dlNumber ?? this.dlNumber,
+      rcNumber: rcNumber ?? this.rcNumber,
+      docVerificationStatus: docVerificationStatus ?? this.docVerificationStatus,
     );
   }
 }

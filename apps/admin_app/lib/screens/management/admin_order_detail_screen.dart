@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:core/core.dart';
 import 'package:models/models.dart';
 import 'package:ui_kit/ui_kit.dart';
@@ -18,9 +19,28 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: CustomAppBar(
         title: 'Order #${widget.orderId.length > 8 ? widget.orderId.substring(0, 8).toUpperCase() : widget.orderId}',
+        backgroundColor: const Color(0xFF0F172A),
+        foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.arrow_back_rounded, size: 18, color: Colors.white),
+          ),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/management/orders');
+            }
+          },
+        ),
       ),
       body: StreamBuilder<OrderModel?>(
         stream: _orderRepo.getOrderStream(widget.orderId),
@@ -83,19 +103,22 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
     final statusColor = _getStatusColor(order.status);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.grey200),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 3)),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+              color: statusColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(Icons.shopping_bag_rounded, color: statusColor, size: 24),
           ),
@@ -105,29 +128,29 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Status: ${_formatStatus(order.status)}',
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: statusColor),
+                  _formatStatus(order.status),
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17, color: statusColor),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'Placed on ${_formatDateTime(order.createdAt)}',
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
+                  style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: order.isPaid ? AppColors.success.withOpacity(0.1) : AppColors.error.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              color: order.isPaid ? const Color(0xFF10B981).withValues(alpha: 0.1) : const Color(0xFFEF4444).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
               order.isPaid ? 'PAID' : 'UNPAID',
               style: TextStyle(
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w900,
                 fontSize: 11,
-                color: order.isPaid ? AppColors.success : AppColors.error,
+                color: order.isPaid ? const Color(0xFF059669) : const Color(0xFFEF4444),
               ),
             ),
           ),
@@ -138,17 +161,20 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
 
   Widget _buildCustomerCard(OrderModel order) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.grey200),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 3)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _cardTitle('Customer Information', Icons.person_rounded, const Color(0xFF6366F1)),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           _infoRow(Icons.person_outline, 'Name', order.userName),
           _infoRow(Icons.phone_outlined, 'Phone', order.userPhone),
           _infoRow(Icons.email_outlined, 'Email', order.userEmail),
@@ -160,22 +186,29 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
   Widget _buildAddressCard(OrderModel order) {
     final addr = order.deliveryAddress;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.grey200),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 3)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _cardTitle('Delivery Address', Icons.location_on_rounded, const Color(0xFFEF4444)),
-          const SizedBox(height: 12),
-          Text(addr.fullName.isNotEmpty ? addr.fullName : order.userName,
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+          const SizedBox(height: 14),
+          Text(
+            addr.fullName.isNotEmpty ? addr.fullName : order.userName,
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: Color(0xFF0F172A)),
+          ),
           const SizedBox(height: 4),
-          Text(addr.fullAddress,
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+          Text(
+            addr.fullAddress,
+            style: const TextStyle(color: Color(0xFF64748B), fontSize: 13, height: 1.4),
+          ),
         ],
       ),
     );
@@ -183,48 +216,56 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
 
   Widget _buildItemsCard(OrderModel order) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.grey200),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 3)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _cardTitle('Items Ordered (${order.itemCount})', Icons.inventory_2_rounded, const Color(0xFF3B82F6)),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           ...order.items.map((item) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Row(
                   children: [
                     Container(
-                      width: 40, height: 40,
+                      width: 48,
+                      height: 48,
                       decoration: BoxDecoration(
-                        color: AppColors.grey100,
-                        borderRadius: BorderRadius.circular(8),
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
                       child: (item.imageUrl != null && item.imageUrl!.isNotEmpty)
                           ? ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.network(item.imageUrl!, fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => const Icon(Icons.fastfood, size: 20, color: AppColors.grey400)),
+                              borderRadius: BorderRadius.circular(11),
+                              child: Image.network(
+                                item.imageUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) => const Icon(Icons.fastfood_rounded, size: 20, color: Color(0xFF94A3B8)),
+                              ),
                             )
-                          : const Icon(Icons.fastfood, size: 20, color: AppColors.grey400),
+                          : const Icon(Icons.fastfood_rounded, size: 20, color: Color(0xFF94A3B8)),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(item.productName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                          Text(item.productName, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: Color(0xFF0F172A))),
                           Text('₹${item.price.toStringAsFixed(0)} × ${item.quantity}',
-                              style: const TextStyle(color: AppColors.textSecondary, fontSize: 11)),
+                              style: const TextStyle(color: Color(0xFF64748B), fontSize: 12, fontWeight: FontWeight.w600)),
                         ],
                       ),
                     ),
                     Text('₹${(item.price * item.quantity).toStringAsFixed(0)}',
-                        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+                        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF0F172A))),
                   ],
                 ),
               )),
@@ -235,32 +276,38 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
 
   Widget _buildPaymentCard(OrderModel order) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.grey200),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 3)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _cardTitle('Payment Breakdown', Icons.account_balance_wallet_rounded, const Color(0xFF10B981)),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           _priceRow('Subtotal', order.subtotal),
           _priceRow('Delivery Fee', order.deliveryFee),
           if (order.discount > 0) _priceRow('Discount (${order.couponCode ?? ''})', -order.discount, isDiscount: true),
-          const Divider(height: 20),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 10),
+            child: Divider(height: 1, color: Color(0xFFF1F5F9)),
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Total Amount', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
+              const Text('Total Amount', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A))),
               Text('₹${order.total.toStringAsFixed(0)}',
-                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: AppColors.primary)),
+                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: Color(0xFF6366F1))),
             ],
           ),
           const SizedBox(height: 8),
           Text('Payment Method: ${order.paymentMethod}',
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w500)),
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 12, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -268,17 +315,20 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
 
   Widget _buildDeliveryPartnerCard(OrderModel order) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.grey200),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 3)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _cardTitle('Delivery Partner', Icons.delivery_dining_rounded, const Color(0xFF8B5CF6)),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           _infoRow(Icons.person_outline, 'Name', order.deliveryPartnerName ?? 'Unassigned'),
           _infoRow(Icons.phone_outlined, 'Phone', order.deliveryPartnerPhone ?? 'N/A'),
         ],
@@ -291,30 +341,31 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
       children: [
         SizedBox(
           width: double.infinity,
-          height: 48,
+          height: 50,
           child: ElevatedButton.icon(
             onPressed: () => _showUpdateStatusModal(order),
             icon: const Icon(Icons.edit_rounded, size: 18),
-            label: const Text('Update Order Status', style: TextStyle(fontWeight: FontWeight.w700)),
+            label: const Text('Update Order Status', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: const Color(0xFF0F172A),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         SizedBox(
           width: double.infinity,
-          height: 48,
+          height: 50,
           child: OutlinedButton.icon(
             onPressed: () => _showAssignDeliveryModal(order),
             icon: const Icon(Icons.delivery_dining_rounded, size: 18),
-            label: const Text('Assign Delivery Partner', style: TextStyle(fontWeight: FontWeight.w700)),
+            label: const Text('Assign Delivery Partner', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.primary,
-              side: const BorderSide(color: AppColors.primary),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              foregroundColor: const Color(0xFF6366F1),
+              side: const BorderSide(color: Color(0xFF6366F1)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
           ),
         ),
@@ -410,6 +461,7 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
                           subtitle: Text(partner.phone),
                           onTap: () async {
                             Navigator.pop(ctx);
+                            final messenger = ScaffoldMessenger.of(context);
                             await _orderRepo.assignDeliveryPartner(
                               orderId: order.id,
                               partnerId: partner.id,
@@ -417,7 +469,7 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
                               partnerPhone: partner.phone,
                             );
                             if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              messenger.showSnackBar(
                                 SnackBar(
                                   content: Text('Assigned to ${partner.name}'),
                                   backgroundColor: AppColors.success,
@@ -445,7 +497,7 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
       children: [
         Container(
           padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
           child: Icon(icon, color: color, size: 16),
         ),
         const SizedBox(width: 10),

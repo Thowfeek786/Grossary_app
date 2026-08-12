@@ -35,17 +35,30 @@ class _AddEditUserScreenState extends State<AddEditUserScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: CustomAppBar(
         title: 'Manage User',
+        backgroundColor: const Color(0xFF0F172A),
+        foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.arrow_back_rounded, size: 18, color: Colors.white),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
             CircleAvatar(
-              radius: 40, backgroundColor: AppColors.primarySurface,
-              child: Text(widget.user.name.isNotEmpty ? widget.user.name[0].toUpperCase() : 'U', style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary, fontSize: 32)),
+              radius: 40, backgroundColor: const Color(0xFF6366F1).withValues(alpha: 0.1),
+              child: Text(widget.user.name.isNotEmpty ? widget.user.name[0].toUpperCase() : 'U', style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF6366F1), fontSize: 32)),
             ),
             const SizedBox(height: 16),
             Text(widget.user.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
@@ -61,7 +74,7 @@ class _AddEditUserScreenState extends State<AddEditUserScreen> {
               value: role,
               groupValue: _selectedRole,
               onChanged: (v) => setState(() => _selectedRole = v!),
-              activeColor: AppColors.primary,
+              activeColor: const Color(0xFF6366F1),
             )),
             const SizedBox(height: 40),
             AppButton(

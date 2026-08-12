@@ -4,6 +4,8 @@ import 'package:ui_kit/ui_kit.dart';
 import 'package:models/models.dart';
 import 'package:repository/repository.dart';
 
+import '../../widgets/admin_drawer.dart';
+
 class WalletManagementScreen extends StatefulWidget {
   const WalletManagementScreen({super.key});
 
@@ -19,8 +21,26 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'User Wallets'),
+      backgroundColor: const Color(0xFFF8FAFC),
+      drawer: const AdminDrawer(),
+      appBar: CustomAppBar(
+        title: 'User Wallets',
+        backgroundColor: const Color(0xFF0F172A),
+        foregroundColor: Colors.white,
+        leading: Builder(
+          builder: (ctx) => IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.menu_rounded, size: 20, color: Colors.white),
+            ),
+            onPressed: () => Scaffold.of(ctx).openDrawer(),
+          ),
+        ),
+      ),
       body: Column(
         children: [
           // Search Bar
@@ -43,7 +63,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
               stream: _userRepo.getAllUsers(),
               builder: (context, snap) {
                 if (snap.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                  return const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1)));
                 }
                 var users = snap.data ?? [];
                 if (_searchQuery.isNotEmpty) {
@@ -75,26 +95,29 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: AppColors.white,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: AppColors.grey200),
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            boxShadow: [
+                              BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 2)),
+                            ],
                           ),
                           child: Row(
                             children: [
                               CircleAvatar(
                                 radius: 20,
-                                backgroundColor: AppColors.primarySurface,
+                                backgroundColor: const Color(0xFF6366F1).withValues(alpha: 0.1),
                                 child: Text(user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
-                                    style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary)),
+                                    style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF6366F1))),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(user.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                                    Text(user.name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: Color(0xFF0F172A))),
                                     Text('${user.role.name.toUpperCase()} · ${user.phone}',
-                                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 11)),
+                                        style: const TextStyle(color: Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.w600)),
                                   ],
                                 ),
                               ),
@@ -102,15 +125,15 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text('₹${balance.toStringAsFixed(0)}',
-                                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: AppColors.primary)),
+                                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A))),
                                   const SizedBox(height: 4),
                                   InkWell(
                                     onTap: () => _showAddCreditModal(user),
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                       decoration: BoxDecoration(
-                                        color: AppColors.primary,
-                                        borderRadius: BorderRadius.circular(6),
+                                        color: const Color(0xFF0F172A),
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: const Text('+ Credit',
                                           style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800)),
@@ -193,7 +216,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: const Color(0xFF0F172A),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),

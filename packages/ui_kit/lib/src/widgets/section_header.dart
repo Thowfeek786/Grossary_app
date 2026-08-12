@@ -33,7 +33,7 @@ class SectionHeader extends StatelessWidget {
             onPressed: onAction,
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 4),
-              foregroundColor: AppColors.primary,
+              foregroundColor: Theme.of(context).colorScheme.primary,
             ),
             child: Row(
               children: [

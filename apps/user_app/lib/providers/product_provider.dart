@@ -6,9 +6,9 @@ class ProductProvider extends ChangeNotifier {
   final ProductRepository _repo = ProductRepository();
   final CategoryRepository _catRepo = CategoryRepository();
 
-  List<ProductModel> _featured = [];
-  List<ProductModel> _allProducts = [];
-  List<CategoryModel> _categories = [];
+  final List<ProductModel> _featured = [];
+  final List<ProductModel> _allProducts = [];
+  final List<CategoryModel> _categories = [];
   List<ProductModel> _searchResults = [];
   bool _isSearching = false;
   String? _error;

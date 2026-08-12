@@ -57,7 +57,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                       Container(
                         width: 32, height: 32,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
+                          color: Colors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(Icons.local_grocery_store_rounded, color: Colors.white, size: 18),
@@ -98,7 +98,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                             borderRadius: BorderRadius.circular(28),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.25),
+                                color: Colors.black.withValues(alpha: 0.25),
                                 blurRadius: 20,
                                 offset: const Offset(0, 8),
                               ),
@@ -109,8 +109,8 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                             child: Image.asset(
                               data.imagePath,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Container(
-                                color: Colors.white.withOpacity(0.1),
+                              errorBuilder: (_, _, _) => Container(
+                                color: Colors.white.withValues(alpha: 0.1),
                                 child: const Icon(Icons.shopping_basket_rounded, color: Colors.white, size: 80),
                               ),
                             ),
@@ -137,7 +137,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                           data.subtitle,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.75),
+                            color: Colors.white.withValues(alpha: 0.75),
                             fontSize: 14,
                             height: 1.5,
                           ),
@@ -194,7 +194,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.greenAccent.withOpacity(0.3),
+                            color: Colors.greenAccent.withValues(alpha: 0.3),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),

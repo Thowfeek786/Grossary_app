@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:core/core.dart';
 import 'package:ui_kit/ui_kit.dart';
 import '../../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -14,57 +14,259 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  bool _obscurePassword = true;
+  bool _acceptedTerms = true;
 
   Future<void> _login() async {
-    final auth = context.read<DeliveryAuthProvider>();
-    final ok = await auth.login(_emailCtrl.text.trim(), _passCtrl.text);
-    if (!ok && mounted && auth.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(auth.error!), backgroundColor: AppColors.error),
-      );
+    final email = _emailCtrl.text.trim();
+    final pass = _passCtrl.text;
+
+    if (email.isEmpty || pass.isEmpty) {
+      _showSnack('Please enter both email and password', isError: true);
+      return;
     }
+
+    if (!_acceptedTerms) {
+      _showSnack('Please accept the Partner Terms & Safety Guidelines to sign in', isError: true);
+      return;
+    }
+
+    final auth = context.read<DeliveryAuthProvider>();
+    final ok = await auth.login(email, pass);
+    if (!ok && mounted && auth.error != null) {
+      _showSnack(auth.error!, isError: true);
+    }
+  }
+
+  void _showSnack(String msg, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: isError ? const Color(0xFFEF4444) : const Color(0xFF059669),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final isLoading = context.watch<DeliveryAuthProvider>().isLoading;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(color: AppColors.primarySurface, borderRadius: BorderRadius.circular(16)),
-                child: const Icon(Icons.two_wheeler_rounded, color: AppColors.primary, size: 48),
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Dark Emerald Hero Header Banner
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(24, 56, 24, 36),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF0B3C26), Color(0xFF13653F), Color(0xFF052B1B)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
               ),
-              const SizedBox(height: 24),
-              const Text('Partner Portal', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
-              const Text('Login to start accepting deliveries', style: TextStyle(color: AppColors.textSecondary)),
-              const SizedBox(height: 40),
-              AppTextField(label: 'Partner Email', controller: _emailCtrl, prefixIcon: Icons.email_outlined),
-              const SizedBox(height: 16),
-              AppTextField(label: 'Password', controller: _passCtrl, obscureText: true, prefixIcon: Icons.lock_outline_rounded),
-              const SizedBox(height: 32),
-              AppButton(label: 'Login', isLoading: isLoading, onTap: _login),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Column(
                 children: [
-                  const Text('New partner?'),
-                  TextButton(
-                    onPressed: () => context.go('/signup'),
-                    child: const Text('Register', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.primary)),
+                  // App Branding Icon Ring
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF34D399).withValues(alpha: 0.4),
+                          blurRadius: 24,
+                          spreadRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.two_wheeler_rounded, color: Color(0xFF0B3C26), size: 42),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'GroceryGo Partner Portal',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Deliver fresh groceries & earn on every trip',
+                    style: TextStyle(color: Color(0xFF34D399), fontSize: 13, fontWeight: FontWeight.w700),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Benefit Pills Wrap
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildPill('⚡ Instant Payouts'),
+                      _buildPill('📍 Live GPS Routes'),
+                      _buildPill('🛡️ Insured Trips'),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+
+            // Form Body Card Container
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Partner Sign In',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF0F172A)),
+                  ),
+                  const Text(
+                    'Sign in with your registered delivery partner account',
+                    style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                  ),
+                  const SizedBox(height: 22),
+
+                  // Email Field
+                  AppTextField(
+                    label: 'Partner Email',
+                    controller: _emailCtrl,
+                    hint: 'e.g. driver@grocerygo.com',
+                    prefixIcon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Password Field with Eye Toggle
+                  TextFormField(
+                    controller: _passCtrl,
+                    obscureText: _obscurePassword,
+                    style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF0F172A), fontSize: 15),
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      hintText: 'Enter your password',
+                      prefixIcon: const Icon(Icons.lock_outline_rounded, color: Color(0xFF64748B), size: 20),
+                      suffixIcon: IconButton(
+                        icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: const Color(0xFF64748B), size: 20),
+                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFFCBD5E1))),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFFCBD5E1))),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFF059669), width: 2)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  // Terms & Safety Checkbox
+                  Row(
+                    children: [
+                      SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: Checkbox(
+                          value: _acceptedTerms,
+                          onChanged: (val) => setState(() => _acceptedTerms = val ?? false),
+                          activeColor: const Color(0xFF059669),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Text(
+                          'I agree to the Partner Terms of Service & Road Safety Guidelines',
+                          style: TextStyle(fontSize: 12, color: Color(0xFF475569), fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 28),
+
+                  // CTA Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : _login,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF059669),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        elevation: 2,
+                      ),
+                      child: isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.login_rounded, size: 18),
+                                SizedBox(width: 8),
+                                Text('Sign In & Go Online', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+                              ],
+                            ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Register Redirection Footer
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Want to join as a delivery partner?',
+                        style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                      ),
+                      TextButton(
+                        onPressed: () => context.go('/signup'),
+                        child: const Text(
+                          'Register Now',
+                          style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF059669), fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPill(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800),
       ),
     );
   }

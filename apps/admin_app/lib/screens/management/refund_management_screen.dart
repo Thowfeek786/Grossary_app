@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:core/core.dart';
 import 'package:ui_kit/ui_kit.dart';
-import 'package:repository/repository.dart';
+import '../../widgets/admin_drawer.dart';
 
 class RefundManagementScreen extends StatefulWidget {
   const RefundManagementScreen({super.key});
@@ -17,8 +17,26 @@ class _RefundManagementScreenState extends State<RefundManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Refund Requests'),
+      backgroundColor: const Color(0xFFF8FAFC),
+      drawer: const AdminDrawer(),
+      appBar: CustomAppBar(
+        title: 'Refund Requests',
+        backgroundColor: const Color(0xFF0F172A),
+        foregroundColor: Colors.white,
+        leading: Builder(
+          builder: (ctx) => IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.menu_rounded, size: 20, color: Colors.white),
+            ),
+            onPressed: () => Scaffold.of(ctx).openDrawer(),
+          ),
+        ),
+      ),
       body: StreamBuilder<QuerySnapshot>(
         stream: _db.collection('refunds').snapshots(),
         builder: (context, snap) {
@@ -39,7 +57,6 @@ class _RefundManagementScreenState extends State<RefundManagementScreen> {
             itemCount: docs.length,
             itemBuilder: (context, i) {
               final data = docs[i].data() as Map<String, dynamic>;
-              final id = docs[i].id;
               final orderId = data['orderId'] ?? '';
               final amount = (data['amount'] as num?)?.toDouble() ?? 0.0;
               final reason = data['reason'] ?? 'No reason provided';
@@ -65,8 +82,8 @@ class _RefundManagementScreenState extends State<RefundManagementScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: status == 'processed'
-                                ? AppColors.success.withOpacity(0.1)
-                                : AppColors.warning.withOpacity(0.1),
+                                ? AppColors.success.withValues(alpha: 0.1)
+                                : AppColors.warning.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(

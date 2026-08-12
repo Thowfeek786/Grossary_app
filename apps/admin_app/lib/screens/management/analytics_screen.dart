@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:core/core.dart';
-import 'package:ui_kit/ui_kit.dart';
 import 'package:models/models.dart';
 import 'package:repository/repository.dart';
+
+import '../../widgets/admin_drawer.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -19,7 +20,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFF8FAFC),
+      drawer: const AdminDrawer(),
       body: CustomScrollView(
         slivers: [
           // Sticky header
@@ -27,12 +29,25 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             expandedHeight: 100,
             pinned: true,
             elevation: 0,
-            backgroundColor: const Color(0xFF1B5E20),
+            backgroundColor: const Color(0xFF0F172A),
+            leading: Builder(
+              builder: (ctx) => IconButton(
+                icon: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.menu_rounded, size: 20, color: Colors.white),
+                ),
+                onPressed: () => Scaffold.of(ctx).openDrawer(),
+              ),
+            ),
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Color(0xFF0D3B0F), Color(0xFF1B5E20), Color(0xFF2E7D32)],
+                    colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF334155)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -40,12 +55,19 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               ),
             ),
             title: const Text('Analytics & Insights',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16)),
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 17)),
             centerTitle: true,
             iconTheme: const IconThemeData(color: Colors.white),
             actions: [
               IconButton(
-                icon: const Icon(Icons.download_rounded, color: Colors.white),
+                icon: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.download_rounded, color: Colors.white, size: 18),
+                ),
                 tooltip: 'Export Report (CSV/PDF)',
                 onPressed: () async {
                   final orders = await _orderRepo.getAllOrders().first;
@@ -130,13 +152,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.2)),
-        boxShadow: [BoxShadow(color: color.withOpacity(0.06), blurRadius: 10, offset: const Offset(0, 3))],
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 3))],
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Container(
           padding: const EdgeInsets.all(5),
-          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(7)),
+          decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(7)),
           child: Icon(Icons.trending_up_rounded, color: color, size: 14),
         ),
         const SizedBox(height: 8),
@@ -178,7 +200,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               color: AppColors.white,
               borderRadius: BorderRadius.circular(18),
               border: Border.all(color: AppColors.grey200),
-              boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.03), blurRadius: 10)],
+              boxShadow: [BoxShadow(color: AppColors.black.withValues(alpha: 0.03), blurRadius: 10)],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,7 +342,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               color: AppColors.white,
               borderRadius: BorderRadius.circular(18),
               border: Border.all(color: AppColors.grey200),
-              boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.03), blurRadius: 10)],
+              boxShadow: [BoxShadow(color: AppColors.black.withValues(alpha: 0.03), blurRadius: 10)],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -423,7 +445,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               color: AppColors.white,
               borderRadius: BorderRadius.circular(18),
               border: Border.all(color: AppColors.grey200),
-              boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.03), blurRadius: 10)],
+              boxShadow: [BoxShadow(color: AppColors.black.withValues(alpha: 0.03), blurRadius: 10)],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -496,7 +518,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                           isStrokeCapRound: true,
                           dotData: FlDotData(
                             show: true,
-                            getDotPainter: (spot, _, __, ___) => FlDotCirclePainter(
+                            getDotPainter: (spot, _, _, _) => FlDotCirclePainter(
                               radius: 4,
                               color: const Color(0xFF3B82F6),
                               strokeWidth: 2,
@@ -507,8 +529,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             show: true,
                             gradient: LinearGradient(
                               colors: [
-                                const Color(0xFF3B82F6).withOpacity(0.15),
-                                const Color(0xFF3B82F6).withOpacity(0.01),
+                                const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                                const Color(0xFF3B82F6).withValues(alpha: 0.01),
                               ],
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
@@ -594,7 +616,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                           Container(
                             width: 22, height: 22,
                             decoration: BoxDecoration(
-                              color: colors[i].withOpacity(0.1),
+                              color: colors[i].withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Center(
@@ -682,9 +704,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.12)),
+        border: Border.all(color: color.withValues(alpha: 0.12)),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(count.toString(), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: color)),
@@ -692,7 +714,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         const SizedBox(height: 6),
         ClipRRect(
           borderRadius: BorderRadius.circular(3),
-          child: LinearProgressIndicator(value: pct, backgroundColor: color.withOpacity(0.1),
+          child: LinearProgressIndicator(value: pct, backgroundColor: color.withValues(alpha: 0.1),
               valueColor: AlwaysStoppedAnimation(color), minHeight: 4),
         ),
       ]),
@@ -713,7 +735,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return Row(children: [
       Container(
         padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
         child: Icon(icon, color: color, size: 16),
       ),
       const SizedBox(width: 10),

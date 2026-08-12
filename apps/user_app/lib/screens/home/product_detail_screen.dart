@@ -6,6 +6,7 @@ import 'package:ui_kit/ui_kit.dart';
 import 'package:repository/repository.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/cart_provider.dart';
+import '../../providers/auth_provider.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final String productId;
@@ -18,7 +19,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   final ProductRepository _repo = ProductRepository();
   int _quantity = 1;
   int _selectedImage = 0;
-  bool _isFavorite = false;
 
   @override
   Widget build(BuildContext context) {
@@ -71,13 +71,49 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           padding: const EdgeInsets.only(right: 8),
           child: CircleAvatar(
             backgroundColor: Colors.white.withValues(alpha: 0.9),
-            child: IconButton(
-              icon: Icon(
-                _isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                size: 20,
-                color: _isFavorite ? const Color(0xFFEF4444) : const Color(0xFF111827),
-              ),
-              onPressed: () => setState(() => _isFavorite = !_isFavorite),
+            child: Builder(
+              builder: (context) {
+                final user = context.watch<AuthProvider>().user;
+                final favRepo = FavoriteRepository();
+
+                if (user == null) {
+                  return AnimatedHeartButton(
+                    isFavorite: false,
+                    size: 20,
+                    onTap: () => context.push('/login'),
+                  );
+                }
+
+                return StreamBuilder<bool>(
+                  stream: favRepo.isFavorite(user.id, p.id),
+                  builder: (context, snapshot) {
+                    final isFav = snapshot.data ?? false;
+                    return AnimatedHeartButton(
+                      isFavorite: isFav,
+                      size: 20,
+                      onTap: () async {
+                        final nowFav = await favRepo.toggleFavorite(user.id, p.id);
+                        if (context.mounted) {
+                          AppSnackBar.show(
+                            context,
+                            message: nowFav
+                                ? '${p.name} added to favorites ❤️'
+                                : '${p.name} removed from favorites',
+                            backgroundColor: nowFav
+                                ? const Color(0xFFEF4444)
+                                : const Color(0xFF64748B),
+                            icon: Icon(
+                              nowFav ? Icons.favorite_rounded : Icons.heart_broken_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          );
+                        }
+                      },
+                    );
+                  },
+                );
+              },
             ),
           ),
         ),
@@ -108,7 +144,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         child: CachedNetworkImage(
                           imageUrl: p.imageUrls[i],
                           fit: BoxFit.contain,
-                          errorWidget: (_, __, ___) => const Center(
+                          errorWidget: (_, _, _) => const Center(
                             child: Icon(Icons.local_grocery_store_rounded, size: 80, color: Color(0xFF10B981)),
                           ),
                         ),
@@ -151,25 +187,31 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 10-Min Delivery Banner Badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.bolt_rounded, color: Color(0xFF047857), size: 16),
-                SizedBox(width: 4),
-                Text(
-                  'Superfast 10-Min Delivery',
-                  style: TextStyle(color: Color(0xFF047857), fontSize: 12, fontWeight: FontWeight.w800),
+          // Dynamic Admin Delivery Banner Badge
+          StreamBuilder<StoreSettingsModel>(
+            stream: SettingsRepository().getGlobalSettings(),
+            builder: (context, settingsSnap) {
+              final timingLabel = settingsSnap.data?.estimatedDeliveryTime ?? '20 to 30 minutes';
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
                 ),
-              ],
-            ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.bolt_rounded, color: Color(0xFF047857), size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Superfast $timingLabel Delivery',
+                      style: const TextStyle(color: Color(0xFF047857), fontSize: 12, fontWeight: FontWeight.w800),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
           const SizedBox(height: 14),
 
@@ -425,13 +467,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           for (int i = 0; i < _quantity; i++) {
                             context.read<CartProvider>().addItem(p);
                           }
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${p.name} added to cart'),
-                              backgroundColor: const Color(0xFF059669),
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
+                          AppSnackBar.show(
+                            context,
+                            message: '${p.name} added to cart',
+                            backgroundColor: const Color(0xFF059669),
+                            icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white, size: 18),
                           );
                         }
                       : null,

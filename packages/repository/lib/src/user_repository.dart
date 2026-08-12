@@ -73,15 +73,27 @@ class UserRepository {
   }
 
   // Address subcollection
+  static final Map<String, List<AddressModel>> _addressCache = {};
+
   CollectionReference _addressCol(String userId) =>
       _users.doc(userId).collection('addresses');
+
+  List<AddressModel> getCachedAddresses(String userId) {
+    return _addressCache[userId] ?? [];
+  }
 
   Stream<List<AddressModel>> getAddresses(String userId) {
     return _addressCol(userId)
         .snapshots()
-        .map((s) => s.docs
-            .map((d) => AddressModel.fromMap(d.data() as Map<String, dynamic>))
-            .toList());
+        .map((s) {
+          final list = s.docs
+              .map((d) => AddressModel.fromMap(d.data() as Map<String, dynamic>, docId: d.id))
+              .toList();
+          if (list.isNotEmpty) {
+            _addressCache[userId] = list;
+          }
+          return list;
+        });
   }
 
   Future<String> addAddress(String userId, AddressModel address) async {

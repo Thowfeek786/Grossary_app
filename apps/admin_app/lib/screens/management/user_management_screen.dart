@@ -5,6 +5,7 @@ import 'package:core/core.dart';
 import 'package:models/models.dart';
 import 'package:ui_kit/ui_kit.dart';
 import '../../providers/management_provider.dart';
+import '../../widgets/admin_drawer.dart';
 
 class UserManagementScreen extends StatefulWidget {
   const UserManagementScreen({super.key});
@@ -52,14 +53,31 @@ class _UserManagementScreenState extends State<UserManagementScreen>
     final management = context.watch<AdminManagementProvider>();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFF8FAFC),
+      drawer: const AdminDrawer(),
       appBar: CustomAppBar(
         title: 'User Management',
+        backgroundColor: const Color(0xFF0F172A),
+        foregroundColor: Colors.white,
+        leading: Builder(
+          builder: (ctx) => IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.menu_rounded, size: 20, color: Colors.white),
+            ),
+            onPressed: () => Scaffold.of(ctx).openDrawer(),
+          ),
+        ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppColors.primary,
-          unselectedLabelColor: AppColors.textSecondary,
-          indicatorColor: AppColors.primary,
+          labelColor: const Color(0xFF818CF8),
+          unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
+          indicatorColor: const Color(0xFF6366F1),
+          indicatorWeight: 3,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
           tabs: _roleLabels.values.map((l) => Tab(text: l)).toList(),
@@ -130,7 +148,7 @@ class _UserManagementScreenState extends State<UserManagementScreen>
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   itemCount: users.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  separatorBuilder: (_, _) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
                     final u = users[index];
                     return _UserCard(
@@ -148,9 +166,9 @@ class _UserManagementScreenState extends State<UserManagementScreen>
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/management/users/add'),
-        backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.person_add_rounded, color: AppColors.white),
-        label: const Text('Add User', style: TextStyle(color: AppColors.white, fontWeight: FontWeight.w700)),
+        backgroundColor: const Color(0xFF0F172A),
+        icon: const Icon(Icons.person_add_rounded, color: Colors.white),
+        label: const Text('Add User', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
       ),
     );
   }
@@ -177,7 +195,7 @@ class _UserManagementScreenState extends State<UserManagementScreen>
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.grey300,
+                    color: const Color(0xFFCBD5E1),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -187,7 +205,7 @@ class _UserManagementScreenState extends State<UserManagementScreen>
                 children: [
                   CircleAvatar(
                     radius: 32,
-                    backgroundColor: AppColors.primarySurface,
+                    backgroundColor: const Color(0xFF6366F1).withValues(alpha: 0.1),
                     backgroundImage: user.photoUrl != null
                         ? NetworkImage(user.photoUrl!)
                         : null,
@@ -197,7 +215,7 @@ class _UserManagementScreenState extends State<UserManagementScreen>
                                 ? user.name[0].toUpperCase()
                                 : 'U',
                             style: const TextStyle(
-                                color: AppColors.primary,
+                                color: Color(0xFF6366F1),
                                 fontWeight: FontWeight.w800,
                                 fontSize: 26))
                         : null,
@@ -209,14 +227,14 @@ class _UserManagementScreenState extends State<UserManagementScreen>
                       children: [
                         Text(user.name,
                             style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w800)),
+                                fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF0F172A))),
                         Text(user.email,
                             style: const TextStyle(
-                                color: AppColors.textSecondary,
+                                color: Color(0xFF64748B),
                                 fontSize: 13)),
                         Text(user.phone,
                             style: const TextStyle(
-                                color: AppColors.textSecondary,
+                                color: Color(0xFF64748B),
                                 fontSize: 13)),
                       ],
                     ),
@@ -239,24 +257,25 @@ class _UserManagementScreenState extends State<UserManagementScreen>
                     onSelected: (selected) async {
                       if (selected && !isSelected) {
                         Navigator.pop(ctx);
+                        final messenger = ScaffoldMessenger.of(context);
                         await management.updateUserRole(user.id, role);
                         if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
+                          messenger.showSnackBar(
                             SnackBar(
                               content: Text(
                                   '${user.name}\'s role updated to ${role.name}'),
-                              backgroundColor: AppColors.success,
+                              backgroundColor: const Color(0xFF0F172A),
                             ),
                           );
                         }
                       }
                     },
-                    selectedColor: AppColors.primarySurface,
-                    checkmarkColor: AppColors.primary,
+                    selectedColor: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                    checkmarkColor: const Color(0xFF6366F1),
                     labelStyle: TextStyle(
                       color: isSelected
-                          ? AppColors.primary
-                          : AppColors.textPrimary,
+                          ? const Color(0xFF6366F1)
+                          : const Color(0xFF0F172A),
                       fontWeight: isSelected
                           ? FontWeight.w700
                           : FontWeight.normal,
@@ -276,7 +295,7 @@ class _UserManagementScreenState extends State<UserManagementScreen>
                   style: const TextStyle(fontSize: 12),
                 ),
                 value: user.isActive,
-                activeColor: AppColors.success,
+                activeThumbColor: const Color(0xFF6366F1),
                 onChanged: (v) async {
                   Navigator.pop(ctx);
                   await management.setUserActive(user.id, v);
@@ -311,9 +330,9 @@ class _UserCard extends StatelessWidget {
   Color _roleColor(UserRole role) {
     switch (role) {
       case UserRole.admin: return AppColors.error;
-      case UserRole.dealer: return AppColors.primary;
+      case UserRole.dealer: return const Color(0xFF6366F1);
       case UserRole.deliveryPartner: return AppColors.info;
-      case UserRole.customer: return AppColors.success;
+      case UserRole.customer: return const Color(0xFF3B82F6);
     }
   }
 
@@ -328,7 +347,7 @@ class _UserCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: !user.isActive
-                ? AppColors.error.withOpacity(0.3)
+                ? AppColors.error.withValues(alpha: 0.3)
                 : AppColors.grey200,
           ),
         ),
@@ -336,7 +355,7 @@ class _UserCard extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 22,
-              backgroundColor: _roleColor(user.role).withOpacity(0.1),
+              backgroundColor: _roleColor(user.role).withValues(alpha: 0.1),
               backgroundImage: user.photoUrl != null
                   ? NetworkImage(user.photoUrl!)
                   : null,
@@ -367,7 +386,7 @@ class _UserCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: _roleColor(user.role).withOpacity(0.1),
+                          color: _roleColor(user.role).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(5),
                         ),
                         child: Text(
@@ -384,7 +403,7 @@ class _UserCard extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: AppColors.error.withOpacity(0.1),
+                            color: AppColors.error.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(5),
                           ),
                           child: const Text('BLOCKED',

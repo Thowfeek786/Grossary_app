@@ -7,6 +7,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Widget? leading;
   final bool showBackButton;
   final Color? backgroundColor;
+  final Color? foregroundColor;
   final bool centerTitle;
   final double elevation;
   final PreferredSizeWidget? bottom;
@@ -18,6 +19,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.leading,
     this.showBackButton = true,
     this.backgroundColor,
+    this.foregroundColor,
     this.centerTitle = false,
     this.elevation = 0,
     this.bottom,
@@ -25,8 +27,15 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkBackground = backgroundColor != null &&
+        backgroundColor != AppColors.white &&
+        backgroundColor != Colors.white;
+    final fgColor = foregroundColor ?? (isDarkBackground ? Colors.white : AppColors.textPrimary);
+
     return AppBar(
       backgroundColor: backgroundColor ?? AppColors.white,
+      foregroundColor: fgColor,
+      iconTheme: IconThemeData(color: fgColor),
       elevation: elevation,
       scrolledUnderElevation: 1,
       centerTitle: centerTitle,
@@ -38,22 +47,26 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   icon: Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: AppColors.grey100,
+                      color: isDarkBackground ? Colors.white.withValues(alpha: 0.16) : AppColors.grey100,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.arrow_back_ios_new_rounded,
-                        size: 16, color: AppColors.textPrimary),
+                    child: Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: fgColor),
                   ),
                   onPressed: () => Navigator.pop(context),
                 )
               : null),
       title: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 19,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w800,
+          color: fgColor,
         ),
+      ),
+      titleTextStyle: TextStyle(
+        fontSize: 19,
+        fontWeight: FontWeight.w800,
+        color: fgColor,
       ),
       actions: actions,
     );

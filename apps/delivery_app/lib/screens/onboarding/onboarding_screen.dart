@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:core/core.dart';
 
-
 class DeliveryOnboardingScreen extends StatefulWidget {
   const DeliveryOnboardingScreen({super.key});
 
@@ -11,102 +10,237 @@ class DeliveryOnboardingScreen extends StatefulWidget {
 }
 
 class _DeliveryOnboardingScreenState extends State<DeliveryOnboardingScreen> {
+  final PageController _pageCtrl = PageController();
+  int _currentPage = 0;
+
+  final List<_DeliverySlideData> _slides = const [
+    _DeliverySlideData(
+      icon: Icons.bolt_rounded,
+      accentColor: Color(0xFF34D399),
+      title: 'Ultra-Fast Grocery Delivery',
+      subtitle: 'Deliver fresh groceries from nearby darkstores within minutes. Earn up to ₹45+ on every successful delivery trip.',
+    ),
+    _DeliverySlideData(
+      icon: Icons.account_balance_wallet_rounded,
+      accentColor: Color(0xFF60A5FA),
+      title: 'Instant Payouts & Bonuses',
+      subtitle: 'Track your daily earnings in real-time. Direct bank or UPI deposits with zero hidden fees and extra peak-hour incentives.',
+    ),
+    _DeliverySlideData(
+      icon: Icons.schedule_rounded,
+      accentColor: Color(0xFFFBBF24),
+      title: 'Flexible On-Duty Schedule',
+      subtitle: 'Be your own boss! Toggle your duty status Online whenever you are ready to deliver, supported by 24/7 dispatch helpline.',
+    ),
+  ];
+
   void _onFinish() async {
     await OnboardingService.setOnboardingCompleted('delivery');
     if (mounted) context.go('/login');
   }
 
   @override
+  void dispose() {
+    _pageCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFF0B3C26),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+        child: Column(
+          children: [
+            // Top Bar with App Branding & Skip Button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.delivery_dining_rounded, color: Colors.blueAccent, size: 28),
-                  ),
-                  const SizedBox(width: 10),
-                  const Text('GroceryGo Delivery', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20)),
-                ],
-              ),
-              const Spacer(),
-
-              // Image
-              Container(
-                height: MediaQuery.of(context).size.height * 0.38,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 8)),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: Image.asset(
-                    'assets/images/onboarding_delivery.png',
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      color: Colors.white.withValues(alpha: 0.05),
-                      child: const Icon(Icons.delivery_dining_rounded, color: Colors.white54, size: 80),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 36),
-
-              const Text(
-                'Deliver & Earn Flexibly',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Turn your vehicle into income. Accept nearby orders, follow optimized routes, and earn competitive payouts with daily payouts.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14, height: 1.5),
-              ),
-
-              const Spacer(),
-
-              // Button
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: _onFinish,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    elevation: 4,
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Row(
                     children: [
-                      Text('Start Delivering Today', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-                      SizedBox(width: 8),
-                      Icon(Icons.arrow_forward_rounded, size: 20),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                        ),
+                        child: const Icon(Icons.two_wheeler_rounded, color: Color(0xFF34D399), size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      const Text(
+                        'GroceryGo Partner',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -0.3),
+                      ),
                     ],
                   ),
-                ),
+                  if (_currentPage < _slides.length - 1)
+                    TextButton(
+                      onPressed: _onFinish,
+                      child: const Text('Skip', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w700, fontSize: 14)),
+                    ),
+                ],
               ),
-              const SizedBox(height: 12),
-            ],
-          ),
+            ),
+
+            // PageView Slides Carousel
+            Expanded(
+              child: PageView.builder(
+                controller: _pageCtrl,
+                itemCount: _slides.length,
+                onPageChanged: (idx) => setState(() => _currentPage = idx),
+                itemBuilder: (ctx, i) {
+                  final slide = _slides[i];
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Animated Glowing Hero Icon Container
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 400),
+                          curve: Curves.easeOutCubic,
+                          width: 160,
+                          height: 160,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: 0.08),
+                            border: Border.all(color: slide.accentColor.withValues(alpha: 0.4), width: 3),
+                            boxShadow: [
+                              BoxShadow(
+                                color: slide.accentColor.withValues(alpha: 0.3),
+                                blurRadius: 36,
+                                spreadRadius: 6,
+                              ),
+                            ],
+                          ),
+                          child: Icon(slide.icon, size: 76, color: slide.accentColor),
+                        ),
+
+                        const SizedBox(height: 44),
+
+                        // Title
+                        Text(
+                          slide.title,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 26,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.5,
+                            height: 1.2,
+                          ),
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // Subtitle Description
+                        Text(
+                          slide.subtitle,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.78),
+                            fontSize: 14,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            // Bottom Navigation Controls
+            Padding(
+              padding: const EdgeInsets.all(28),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Animated Page Indicator Dots
+                  Row(
+                    children: List.generate(_slides.length, (idx) {
+                      final isSelected = _currentPage == idx;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.only(right: 6),
+                        width: isSelected ? 28 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: isSelected ? const Color(0xFF34D399) : Colors.white24,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      );
+                    }),
+                  ),
+
+                  // Continue / Finish Action Button
+                  GestureDetector(
+                    onTap: () {
+                      if (_currentPage < _slides.length - 1) {
+                        _pageCtrl.nextPage(
+                          duration: const Duration(milliseconds: 350),
+                          curve: Curves.easeInOut,
+                        );
+                      } else {
+                        _onFinish();
+                      }
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF059669), Color(0xFF047857)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF34D399).withValues(alpha: 0.35),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            _currentPage == _slides.length - 1 ? 'Start Delivering' : 'Continue',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 15,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
+
+class _DeliverySlideData {
+  final IconData icon;
+  final Color accentColor;
+  final String title;
+  final String subtitle;
+
+  const _DeliverySlideData({
+    required this.icon,
+    required this.accentColor,
+    required this.title,
+    required this.subtitle,
+  });
 }

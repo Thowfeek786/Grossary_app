@@ -63,17 +63,20 @@ class HelpSupportScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.grey200),
       ),
-      child: ListTile(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        onTap: onTap,
-        leading: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: AppColors.primarySurface, shape: BoxShape.circle),
-          child: Icon(icon, color: AppColors.primary, size: 24),
+      child: Material(
+        color: Colors.transparent,
+        child: ListTile(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          onTap: onTap,
+          leading: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: AppColors.primarySurface, shape: BoxShape.circle),
+            child: Icon(icon, color: AppColors.primary, size: 24),
+          ),
+          title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+          trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.grey400),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-        subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.grey400),
       ),
     );
   }

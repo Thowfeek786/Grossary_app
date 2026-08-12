@@ -128,9 +128,6 @@ class DeliveryAuthProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      final updatedUser = _user!.copyWith(isApproved: available); // Re-using isApproved or adding a new field?
-      // Actually common to use isActive or a dedicated 'isOnline' field.
-      // Let's use isActive for 'Work Mode' in this context.
       await _userRepo.updateUser(_user!.copyWith(isActive: available));
       _user = _user!.copyWith(isActive: available);
     } catch (e) {
@@ -146,6 +143,7 @@ class DeliveryAuthProvider extends ChangeNotifier {
     required String accountHolder,
     required String accountNumber,
     required String ifscCode,
+    String? upiId,
   }) async {
     if (_user == null) return;
     _isLoading = true;
@@ -156,6 +154,7 @@ class DeliveryAuthProvider extends ChangeNotifier {
         accountHolder: accountHolder,
         accountNumber: accountNumber,
         ifscCode: ifscCode,
+        upiId: upiId,
       );
       await _userRepo.updateUser(updatedUser);
       _user = updatedUser;

@@ -233,7 +233,7 @@ class _SplashScreenState extends State<SplashScreen>
                             child: Image.asset(
                               'assets/logos/logo.png',
                               fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => const Icon(
+                              errorBuilder: (_, _, _) => const Icon(
                                 Icons.shopping_cart_rounded,
                                 size: 70,
                                 color: AppColors.primary,

@@ -1,4 +1,4 @@
-library ui_kit;
+library;
 
 export 'src/widgets/app_button.dart';
 export 'src/widgets/app_text_field.dart';
@@ -16,3 +16,6 @@ export 'src/widgets/alert_box.dart';
 export 'src/widgets/location_picker.dart';
 export 'src/widgets/map_navigation_widget.dart';
 export 'src/widgets/network_wrapper.dart';
+export 'src/widgets/notification_bottom_sheet.dart';
+export 'src/widgets/animated_heart_button.dart';
+export 'src/widgets/app_snackbar.dart';

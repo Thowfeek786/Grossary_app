@@ -3,6 +3,7 @@ import 'package:core/core.dart';
 import 'package:ui_kit/ui_kit.dart';
 import 'package:repository/repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../widgets/admin_drawer.dart';
 
 class NotificationManagementScreen extends StatefulWidget {
   const NotificationManagementScreen({super.key});
@@ -60,6 +61,12 @@ class _NotificationManagementScreenState
         topic: _selectedTopic,
       );
 
+      // Trigger system tray out-of-app notification
+      await NotificationService.showLocalNotification(
+        title: _titleController.text.trim(),
+        body: _bodyController.text.trim(),
+      );
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -67,10 +74,10 @@ class _NotificationManagementScreenState
               children: [
                 Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
                 SizedBox(width: 8),
-                Text('Notification sent successfully!'),
+                Text('Notification broadcast sent & displayed!'),
               ],
             ),
-            backgroundColor: AppColors.success,
+            backgroundColor: const Color(0xFF0F172A),
             behavior: SnackBarBehavior.floating,
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -99,8 +106,26 @@ class _NotificationManagementScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Broadcast Center'),
+      backgroundColor: const Color(0xFFF8FAFC),
+      drawer: const AdminDrawer(),
+      appBar: CustomAppBar(
+        title: 'Broadcast Center',
+        backgroundColor: const Color(0xFF0F172A),
+        foregroundColor: Colors.white,
+        leading: Builder(
+          builder: (ctx) => IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.menu_rounded, size: 20, color: Colors.white),
+            ),
+            onPressed: () => Scaffold.of(ctx).openDrawer(),
+          ),
+        ),
+      ),
       body: Column(
         children: [
           // Tab bar
@@ -117,7 +142,7 @@ class _NotificationManagementScreenState
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.black.withOpacity(0.06),
+                    color: AppColors.black.withValues(alpha: 0.06),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -125,7 +150,7 @@ class _NotificationManagementScreenState
               ),
               indicatorSize: TabBarIndicatorSize.tab,
               dividerColor: Colors.transparent,
-              labelColor: AppColors.primary,
+              labelColor: const Color(0xFF6366F1),
               unselectedLabelColor: AppColors.textSecondary,
               labelStyle:
                   const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
@@ -171,7 +196,7 @@ class _NotificationManagementScreenState
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.campaign_rounded,
@@ -219,7 +244,7 @@ class _NotificationManagementScreenState
                         const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? t.color.withOpacity(0.12)
+                          ? t.color.withValues(alpha: 0.12)
                           : AppColors.white,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
@@ -283,7 +308,7 @@ class _NotificationManagementScreenState
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide:
-                      const BorderSide(color: AppColors.primary, width: 1.5),
+                      const BorderSide(color: Color(0xFF6366F1), width: 1.5),
                 ),
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -320,7 +345,7 @@ class _NotificationManagementScreenState
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide:
-                      const BorderSide(color: AppColors.primary, width: 1.5),
+                      const BorderSide(color: Color(0xFF6366F1), width: 1.5),
                 ),
                 contentPadding: const EdgeInsets.all(16),
               ),
@@ -344,7 +369,7 @@ class _NotificationManagementScreenState
               child: ElevatedButton(
                 onPressed: _isSending ? null : _sendNotification,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: const Color(0xFF0F172A),
                   foregroundColor: AppColors.white,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
@@ -408,7 +433,7 @@ class _NotificationManagementScreenState
               borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.black.withOpacity(0.04),
+                  color: AppColors.black.withValues(alpha: 0.04),
                   blurRadius: 6,
                 ),
               ],
@@ -419,11 +444,11 @@ class _NotificationManagementScreenState
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: AppColors.primarySurface,
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(Icons.notifications_rounded,
-                      color: AppColors.primary, size: 18),
+                      color: Color(0xFF6366F1), size: 18),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -465,7 +490,7 @@ class _NotificationManagementScreenState
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
-              child: CircularProgressIndicator(color: AppColors.primary));
+              child: CircularProgressIndicator(color: Color(0xFF6366F1)));
         }
 
         final items = snapshot.data ?? [];
@@ -528,7 +553,7 @@ class _NotificationManagementScreenState
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: topicColor.withOpacity(0.1),
+                          color: topicColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(

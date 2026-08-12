@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:core/core.dart';
 import 'package:models/models.dart';
-import 'package:ui_kit/ui_kit.dart';
 import 'package:repository/repository.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/cart_provider.dart';
@@ -128,7 +126,7 @@ class _CartScreenState extends State<CartScreen> {
                     return ListView.separated(
                       padding: const EdgeInsets.all(16),
                       itemCount: coupons.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      separatorBuilder: (_, _) => const SizedBox(height: 12),
                       itemBuilder: (ctx, i) {
                         final coupon = coupons[i];
                         final isEligible = cart.subtotal >= coupon.minSubtotal;
@@ -260,28 +258,36 @@ class _CartScreenState extends State<CartScreen> {
           body: cart.isEmpty
               ? Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(32),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                            color: const Color(0xFF10B981).withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.shopping_cart_outlined, size: 64, color: Color(0xFF059669)),
+                          child: const Icon(
+                            Icons.shopping_cart_outlined,
+                            size: 72,
+                            color: Color(0xFF059669),
+                          ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 24),
                         const Text(
-                          'Your cart is empty',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF111827)),
+                          'Your Cart is Empty',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF111827),
+                          ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                          'Explore our fresh groceries and add items to get 10-minute superfast delivery!',
+                        Text(
+                          'Explore our fresh groceries and add items to get ${settingsSnap.data?.estimatedDeliveryTime ?? "20 to 30 minutes"} superfast delivery!',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+                          style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
                         ),
                         const SizedBox(height: 28),
                         ElevatedButton(
@@ -310,19 +316,19 @@ class _CartScreenState extends State<CartScreen> {
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.25)),
                         ),
-                        child: const Row(
+                        child: Row(
                           children: [
-                            Text('⚡', style: TextStyle(fontSize: 20)),
-                            SizedBox(width: 10),
+                            const Text('⚡', style: TextStyle(fontSize: 20)),
+                            const SizedBox(width: 10),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Superfast 10-Minute Delivery',
-                                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF065F46)),
+                                    'Superfast ${settingsSnap.data?.estimatedDeliveryTime ?? "20 to 30 Minutes"} Delivery',
+                                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF065F46)),
                                   ),
-                                  Text(
+                                  const Text(
                                     'Items will be packed fresh & dispatched immediately',
                                     style: TextStyle(fontSize: 11, color: Color(0xFF047857), fontWeight: FontWeight.w500),
                                   ),
@@ -339,7 +345,7 @@ class _CartScreenState extends State<CartScreen> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: cart.items.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        separatorBuilder: (_, _) => const SizedBox(height: 12),
                         itemBuilder: (ctx, i) {
                           final item = cart.items[i];
                           return _CartTile(item: item, cart: cart);
@@ -638,7 +644,7 @@ class _CartTile extends StatelessWidget {
                   ? CachedNetworkImage(
                       imageUrl: item.imageUrl!,
                       fit: BoxFit.cover,
-                      errorWidget: (_, __, ___) => const Icon(Icons.image_outlined, color: Colors.grey),
+                      errorWidget: (_, _, _) => const Icon(Icons.image_outlined, color: Colors.grey),
                     )
                   : const Icon(Icons.image_outlined, color: Colors.grey),
             ),

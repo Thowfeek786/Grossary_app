@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:core/core.dart';
+// import 'package:core/core.dart';
 import 'package:models/models.dart';
 import 'package:ui_kit/ui_kit.dart';
 import 'package:repository/repository.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../providers/auth_provider.dart';
 
 class WalletScreen extends StatefulWidget {
@@ -106,16 +107,31 @@ class _WalletScreenState extends State<WalletScreen> {
                           final finalAmt = inputAmt ?? selectedAmount;
                           if (finalAmt <= 0) return;
 
+                          final messenger = ScaffoldMessenger.of(context);
                           Navigator.pop(ctx);
                           setState(() => _isAddingFunds = true);
                           try {
+                            // Launch UPI app for wallet top-up to Admin UPI ID
+                            try {
+                              final settings = await SettingsRepository().getGlobalSettings().first;
+                              final upiVpa = settings.adminUpiId.isNotEmpty ? settings.adminUpiId : 'groceryadmin@upi';
+                              final payeeName = Uri.encodeComponent(settings.adminPayeeName.isNotEmpty ? settings.adminPayeeName : 'GroceryGo Admin');
+                              final amt = finalAmt.toStringAsFixed(2);
+                              final note = Uri.encodeComponent('GroceryGo Wallet TopUp');
+                              final upiUrl = 'upi://pay?pa=$upiVpa&pn=$payeeName&am=$amt&cu=INR&tn=$note';
+                              final uri = Uri.parse(upiUrl);
+                              if (await canLaunchUrl(uri)) {
+                                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                              }
+                            } catch (_) {}
+
                             await WalletRepository().addFunds(
                               userId: userId,
                               amount: finalAmt,
-                              description: 'Wallet Top Up via UPI/Online',
+                              description: 'Wallet Top Up via UPI',
                             );
                             if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              messenger.showSnackBar(
                                 SnackBar(
                                   content: Text('🎉 Successfully added ₹${finalAmt.toStringAsFixed(0)} to your wallet!'),
                                   backgroundColor: const Color(0xFF059669),
@@ -126,7 +142,7 @@ class _WalletScreenState extends State<WalletScreen> {
                             }
                           } catch (e) {
                             if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              messenger.showSnackBar(
                                 SnackBar(
                                   content: Text(e.toString()),
                                   backgroundColor: const Color(0xFFEF4444),
@@ -307,7 +323,7 @@ class _WalletScreenState extends State<WalletScreen> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: transactions.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      separatorBuilder: (_, _) => const SizedBox(height: 10),
                       itemBuilder: (ctx, i) {
                         final tx = transactions[i];
                         final isCredit = tx.type == TransactionType.credit;

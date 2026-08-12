@@ -7,7 +7,6 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:models/models.dart';
-import 'package:ui_kit/ui_kit.dart';
 import '../constants/app_colors.dart';
 
 class ExportService {
@@ -265,9 +264,7 @@ class ExportService {
         } catch (_) {}
       }
 
-      if (targetDir == null) {
-        targetDir = await getApplicationDocumentsDirectory();
-      }
+      targetDir ??= await getApplicationDocumentsDirectory();
 
       final file = File('${targetDir.path}/$fileTitle');
 
@@ -319,7 +316,7 @@ class ExportService {
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
                 child: const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 24),
               ),
               const SizedBox(width: 12),

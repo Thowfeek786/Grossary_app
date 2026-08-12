@@ -42,7 +42,7 @@ class ProductReviewsScreen extends StatelessWidget {
           return ListView.separated(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
             itemCount: reviews.length + 1,
-            separatorBuilder: (_, __) => const SizedBox(height: 14),
+            separatorBuilder: (_, _) => const SizedBox(height: 14),
             itemBuilder: (context, index) {
               if (index == 0) return _buildHeader();
               return _ReviewTile(review: reviews[index - 1]);

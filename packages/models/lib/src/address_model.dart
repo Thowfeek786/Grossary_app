@@ -48,17 +48,19 @@ class AddressModel {
     'isDefault': isDefault,
   };
 
-  factory AddressModel.fromMap(Map<String, dynamic> map) => AddressModel(
-    id: map['id'] ?? '',
-    userId: map['userId'] ?? '',
-    label: map['label'] ?? 'Home',
-    fullName: map['fullName'] ?? '',
-    phone: map['phone'] ?? '',
-    addressLine1: map['addressLine1'] ?? '',
-    addressLine2: map['addressLine2'],
-    city: map['city'] ?? '',
-    state: map['state'] ?? '',
-    pincode: map['pincode'] ?? '',
+  factory AddressModel.fromMap(Map<String, dynamic> map, {String? docId}) => AddressModel(
+    id: (map['id'] != null && map['id'].toString().isNotEmpty)
+        ? map['id'].toString()
+        : (docId ?? ''),
+    userId: map['userId']?.toString() ?? '',
+    label: map['label']?.toString() ?? 'Home',
+    fullName: (map['fullName'] ?? map['name'])?.toString() ?? '',
+    phone: (map['phone'] ?? map['mobile'] ?? map['userPhone'])?.toString() ?? '',
+    addressLine1: (map['addressLine1'] ?? map['address'] ?? map['street'])?.toString() ?? '',
+    addressLine2: (map['addressLine2'] ?? map['area'] ?? map['landmark'])?.toString(),
+    city: (map['city'] ?? map['town'])?.toString() ?? '',
+    state: (map['state'] ?? map['region'])?.toString() ?? '',
+    pincode: (map['pincode'] ?? map['zip'] ?? map['postalCode'])?.toString() ?? '',
     latitude: (map['latitude'] as num?)?.toDouble(),
     longitude: (map['longitude'] as num?)?.toDouble(),
     isDefault: map['isDefault'] ?? false,

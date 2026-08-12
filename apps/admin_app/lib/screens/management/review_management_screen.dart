@@ -4,6 +4,8 @@ import 'package:ui_kit/ui_kit.dart';
 import 'package:models/models.dart';
 import 'package:repository/repository.dart';
 
+import '../../widgets/admin_drawer.dart';
+
 class ReviewManagementScreen extends StatefulWidget {
   const ReviewManagementScreen({super.key});
 
@@ -18,8 +20,26 @@ class _ReviewManagementScreenState extends State<ReviewManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Review Moderation'),
+      backgroundColor: const Color(0xFFF8FAFC),
+      drawer: const AdminDrawer(),
+      appBar: CustomAppBar(
+        title: 'Review Moderation',
+        backgroundColor: const Color(0xFF0F172A),
+        foregroundColor: Colors.white,
+        leading: Builder(
+          builder: (ctx) => IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.menu_rounded, size: 20, color: Colors.white),
+            ),
+            onPressed: () => Scaffold.of(ctx).openDrawer(),
+          ),
+        ),
+      ),
       body: Column(
         children: [
           // Rating filter bar
@@ -29,7 +49,7 @@ class _ReviewManagementScreenState extends State<ReviewManagementScreen> {
               stream: _reviewRepo.getAllReviews(),
               builder: (context, snap) {
                 if (snap.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                  return const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1)));
                 }
                 var reviews = snap.data ?? [];
                 if (_filterRating != null) {
@@ -86,7 +106,7 @@ class _ReviewManagementScreenState extends State<ReviewManagementScreen> {
       child: ChoiceChip(
         label: Text(label, style: TextStyle(fontSize: 12, color: selected ? Colors.white : AppColors.textPrimary)),
         selected: selected,
-        selectedColor: AppColors.primary,
+        selectedColor: const Color(0xFF6366F1),
         backgroundColor: AppColors.grey100,
         onSelected: (val) => setState(() => _filterRating = val ? rating : null),
       ),
@@ -110,7 +130,7 @@ class _ReviewManagementScreenState extends State<ReviewManagementScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: const Text('Review removed successfully'),
-                    backgroundColor: AppColors.success,
+                    backgroundColor: const Color(0xFF0F172A),
                   ),
                 );
               }
@@ -147,9 +167,9 @@ class _ReviewCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 16,
-                backgroundColor: AppColors.primarySurface,
+                backgroundColor: const Color(0xFF6366F1).withValues(alpha: 0.1),
                 child: Text(review.userName.isNotEmpty ? review.userName[0].toUpperCase() : 'U',
-                    style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary, fontSize: 12)),
+                    style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF6366F1), fontSize: 12)),
               ),
               const SizedBox(width: 10),
               Expanded(

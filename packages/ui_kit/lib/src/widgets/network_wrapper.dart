@@ -7,7 +7,7 @@ import 'app_button.dart';
 class NetworkWrapper extends StatefulWidget {
   final Widget? child;
 
-  const NetworkWrapper({Key? key, this.child}) : super(key: key);
+  const NetworkWrapper({super.key, this.child});
 
   @override
   State<NetworkWrapper> createState() => _NetworkWrapperState();

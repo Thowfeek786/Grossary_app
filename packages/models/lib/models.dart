@@ -1,4 +1,4 @@
-library models;
+library;
 
 export 'src/user_model.dart';
 export 'src/product_model.dart';
@@ -13,4 +13,6 @@ export 'src/coupon_model.dart';
 export 'src/wallet_model.dart';
 export 'src/store_settings_model.dart';
 export 'src/flash_sale_model.dart';
+export 'src/payout_request_model.dart';
+export 'src/chat_model.dart';
 

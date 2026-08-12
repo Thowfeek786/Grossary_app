@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:core/core.dart';
-import 'package:models/models.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../providers/auth_provider.dart';
 
@@ -239,7 +238,7 @@ class _DealerSplashScreenState extends State<DealerSplashScreen>
                               child: Image.asset(
                                 'assets/logos/logo.png',
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const Icon(
+                                errorBuilder: (_, _, _) => const Icon(
                                   Icons.storefront_rounded,
                                   size: 70,
                                   color: AppColors.primary,

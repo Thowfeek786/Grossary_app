@@ -1,4 +1,4 @@
-library core;
+library;
 
 export 'src/constants/app_colors.dart';
 export 'src/constants/app_strings.dart';

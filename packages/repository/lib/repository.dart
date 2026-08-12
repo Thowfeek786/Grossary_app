@@ -1,4 +1,4 @@
-library repository;
+library;
 
 export 'src/auth_repository.dart';
 export 'src/user_repository.dart';
@@ -14,5 +14,8 @@ export 'src/wallet_repository.dart';
 export 'src/settings_repository.dart';
 export 'src/review_repository.dart';
 export 'src/flash_sale_repository.dart';
+export 'src/payout_repository.dart';
+export 'src/chat_repository.dart';
+export 'src/favorite_repository.dart';
 
 

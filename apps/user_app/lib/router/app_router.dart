@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:models/models.dart';
 import '../providers/auth_provider.dart';
@@ -22,12 +21,16 @@ import '../screens/profile/notifications_screen.dart';
 import '../screens/profile/help_support_screen.dart';
 import '../screens/profile/about_us_screen.dart';
 import '../screens/profile/wallet_screen.dart';
+import '../screens/profile/support_chat_screen.dart';
 import '../screens/orders/review_screen.dart';
 import '../screens/shell/main_shell.dart';
 import '../screens/home/categories_screen.dart';
 import '../screens/home/product_reviews_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/splash/splash_screen.dart';
+
+import '../screens/profile/terms_conditions_screen.dart';
+import '../screens/profile/favorites_screen.dart';
 
 class AppRouter {
   static GoRouter? _router;
@@ -41,22 +44,25 @@ class AppRouter {
         final isUnknown = auth.status == AuthStatus.unknown;
         final isSplash = state.matchedLocation == '/splash';
         final isOnboarding = state.matchedLocation == '/onboarding';
+        final isTerms = state.matchedLocation == '/terms';
         final isAuthRoute = state.matchedLocation.startsWith('/login') ||
             state.matchedLocation.startsWith('/register') ||
-            state.matchedLocation.startsWith('/forgot-password');
+            state.matchedLocation.startsWith('/forgot-password') ||
+            isTerms;
 
-        if (isSplash || isOnboarding || isUnknown) return null;
+        if (isSplash || isOnboarding || isUnknown || isTerms) return null;
         if (!isAuth && !isAuthRoute) return '/login';
-        if (isAuth && isAuthRoute) return '/home';
+        if (isAuth && isAuthRoute && !isTerms) return '/home';
         return null;
       },
       routes: [
-        GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
-        GoRoute(path: '/onboarding', builder: (_, __) => const UserOnboardingScreen()),
+        GoRoute(path: '/splash', builder: (_, _) => const SplashScreen()),
+        GoRoute(path: '/onboarding', builder: (_, _) => const UserOnboardingScreen()),
+        GoRoute(path: '/terms', builder: (_, _) => const TermsConditionsScreen()),
         // Auth routes
-        GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
-        GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
-        GoRoute(path: '/forgot-password', builder: (_, __) => const ForgotPasswordScreen()),
+        GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
+        GoRoute(path: '/register', builder: (_, _) => const RegisterScreen()),
+        GoRoute(path: '/forgot-password', builder: (_, _) => const ForgotPasswordScreen()),
 
         // Main shell with bottom nav (Top-Level Tabs only)
         ShellRoute(
@@ -64,19 +70,19 @@ class AppRouter {
           routes: [
             GoRoute(
               path: '/home',
-              builder: (_, __) => const HomeScreen(),
+              builder: (_, _) => const HomeScreen(),
             ),
             GoRoute(
               path: '/categories',
-              builder: (_, __) => const CategoriesScreen(),
+              builder: (_, _) => const CategoriesScreen(),
             ),
             GoRoute(
               path: '/orders',
-              builder: (_, __) => const OrdersScreen(),
+              builder: (_, _) => const OrdersScreen(),
             ),
             GoRoute(
               path: '/profile',
-              builder: (_, __) => const ProfileScreen(),
+              builder: (_, _) => const ProfileScreen(),
             ),
           ],
         ),
@@ -89,14 +95,16 @@ class AppRouter {
             categoryName: state.uri.queryParameters['name'] ?? '',
           ),
         ),
-        GoRoute(path: '/home/search', builder: (_, __) => const SearchScreen()),
-        GoRoute(path: '/profile/wallet', builder: (_, __) => const WalletScreen()),
-        GoRoute(path: '/profile/edit', builder: (_, __) => const EditProfileScreen()),
-        GoRoute(path: '/profile/addresses', builder: (_, __) => const AddressListScreen()),
-        GoRoute(path: '/profile/add-address', builder: (_, __) => const AddAddressScreen()),
-        GoRoute(path: '/profile/notifications', builder: (_, __) => const NotificationsScreen()),
-        GoRoute(path: '/profile/help', builder: (_, __) => const HelpSupportScreen()),
-        GoRoute(path: '/profile/about', builder: (_, __) => const AboutUsScreen()),
+        GoRoute(path: '/home/search', builder: (_, _) => const SearchScreen()),
+        GoRoute(path: '/profile/wallet', builder: (_, _) => const WalletScreen()),
+        GoRoute(path: '/profile/favorites', builder: (_, _) => const FavoritesScreen()),
+        GoRoute(path: '/profile/edit', builder: (_, _) => const EditProfileScreen()),
+        GoRoute(path: '/profile/addresses', builder: (_, _) => const AddressListScreen()),
+        GoRoute(path: '/profile/add-address', builder: (_, _) => const AddAddressScreen()),
+        GoRoute(path: '/profile/notifications', builder: (_, _) => const NotificationsScreen()),
+        GoRoute(path: '/profile/help', builder: (_, _) => const HelpSupportScreen()),
+        GoRoute(path: '/profile/support-chat', builder: (_, _) => const SupportChatScreen()),
+        GoRoute(path: '/profile/about', builder: (_, _) => const AboutUsScreen()),
 
         GoRoute(
           path: '/home/product/:id',
@@ -108,8 +116,8 @@ class AppRouter {
             ),
           ],
         ),
-        GoRoute(path: '/cart', builder: (_, __) => const CartScreen()),
-        GoRoute(path: '/checkout', builder: (_, __) => const CheckoutScreen()),
+        GoRoute(path: '/cart', builder: (_, _) => const CartScreen()),
+        GoRoute(path: '/checkout', builder: (_, _) => const CheckoutScreen()),
         GoRoute(
           path: '/order-success/:id',
           builder: (_, state) =>

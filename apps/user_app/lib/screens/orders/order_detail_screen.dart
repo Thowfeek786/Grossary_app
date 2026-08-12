@@ -3,8 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:core/core.dart';
 import 'package:models/models.dart';
+import 'package:repository/repository.dart';
 import 'package:ui_kit/ui_kit.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../providers/order_provider.dart';
 import '../../utils/invoice_generator.dart';
 
@@ -69,7 +71,7 @@ class OrderDetailScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 _buildItemsCard(context, order),
                 const SizedBox(height: 20),
-                _buildPaymentCard(order),
+                _buildPaymentCard(context, order),
                 const SizedBox(height: 20),
                 _buildInvoiceCard(context, order),
               ],
@@ -101,7 +103,7 @@ class OrderDetailScreen extends StatelessWidget {
               width: double.infinity,
               height: 52,
               child: OutlinedButton(
-                onPressed: () => _showCancelDialog(context, order.id, orderProvider),
+                onPressed: () => _showCancelModalSheet(context, order, orderProvider),
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Color(0xFFEF4444), width: 1.8),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -395,7 +397,7 @@ class OrderDetailScreen extends StatelessWidget {
                                   width: 48,
                                   height: 48,
                                   fit: BoxFit.cover,
-                                  errorWidget: (_, __, ___) => Container(
+                                  errorWidget: (_, _, _) => Container(
                                     width: 48,
                                     height: 48,
                                     color: const Color(0xFFF3F4F6),
@@ -472,29 +474,141 @@ class OrderDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPaymentCard(OrderModel order) {
+  Widget _buildPaymentCard(BuildContext context, OrderModel order) {
+    final isCancelled = order.status == OrderStatus.cancelled;
+
+    Color bg;
+    Color border;
+    Color iconColor;
+    IconData icon;
+    String title;
+    String subtitle = order.paymentMethod;
+
+    if (isCancelled) {
+      bg = const Color(0xFFEF4444).withValues(alpha: 0.08);
+      border = const Color(0xFFEF4444).withValues(alpha: 0.3);
+      iconColor = const Color(0xFFDC2626);
+      icon = Icons.cancel_rounded;
+      title = (order.isPaid || order.paymentMethod == 'GroceryGo Wallet')
+          ? 'Refunded to Wallet'
+          : 'Payment Cancelled';
+      subtitle = (order.isPaid || order.paymentMethod == 'GroceryGo Wallet')
+          ? '₹${order.total.toStringAsFixed(0)} credited to your wallet balance'
+          : 'Order was cancelled; no payment charged.';
+    } else if (order.isPaid) {
+      bg = const Color(0xFF10B981).withValues(alpha: 0.1);
+      border = const Color(0xFF10B981).withValues(alpha: 0.3);
+      iconColor = const Color(0xFF059669);
+      icon = Icons.check_circle_rounded;
+      title = 'Payment Confirmed';
+    } else {
+      bg = const Color(0xFFF59E0B).withValues(alpha: 0.1);
+      border = const Color(0xFFF59E0B).withValues(alpha: 0.3);
+      iconColor = const Color(0xFFD97706);
+      icon = Icons.info_rounded;
+      title = 'Payment Pending / On Delivery';
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: order.isPaid ? const Color(0xFF10B981).withValues(alpha: 0.1) : const Color(0xFFF59E0B).withValues(alpha: 0.1),
+        color: bg,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: order.isPaid ? const Color(0xFF10B981).withValues(alpha: 0.3) : const Color(0xFFF59E0B).withValues(alpha: 0.3)),
+        border: Border.all(color: border),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Icon(order.isPaid ? Icons.check_circle_rounded : Icons.info_rounded,
-              color: order.isPaid ? const Color(0xFF059669) : const Color(0xFFD97706), size: 22),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(order.isPaid ? 'Payment Confirmed' : 'Payment on Delivery',
-                    style: TextStyle(fontWeight: FontWeight.w900, color: order.isPaid ? const Color(0xFF059669) : const Color(0xFFD97706), fontSize: 14)),
-                Text(order.paymentMethod, style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12, fontWeight: FontWeight.w500)),
-              ],
-            ),
+          Row(
+            children: [
+              Icon(icon, color: iconColor, size: 22),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                            color: iconColor,
+                            fontSize: 14)),
+                    Text(subtitle,
+                        style: const TextStyle(
+                            color: Color(0xFF6B7280),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500)),
+                  ],
+                ),
+              ),
+            ],
           ),
+          if (!order.isPaid && !isCancelled) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 42,
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  try {
+                    final settings =
+                        await PaymentRepository().getPaymentSettings();
+                    final upiVpa = settings.upiId.isNotEmpty
+                        ? settings.upiId
+                        : 'sthowfeek65@okaxis';
+                    final payeeName = Uri.encodeComponent(
+                        settings.merchantName.isNotEmpty
+                            ? settings.merchantName
+                            : 'GroceryGo Official Store');
+                    final amt = order.total.toStringAsFixed(2);
+                    final note = Uri.encodeComponent(
+                        'Pay for Order #${order.id.substring(0, order.id.length > 6 ? 6 : order.id.length).toUpperCase()}');
+
+                    final upiUrl =
+                        'upi://pay?pa=$upiVpa&pn=$payeeName&am=$amt&cu=INR&tn=$note';
+                    final uri = Uri.parse(upiUrl);
+
+                    try {
+                      final launched = await launchUrl(
+                        uri,
+                        mode: LaunchMode.externalNonBrowserApplication,
+                      );
+                      if (!launched) {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      }
+                    } catch (_) {
+                      try {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      } catch (err) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  'Payee UPI VPA: $upiVpa. Please transfer ₹$amt directly.'),
+                              backgroundColor: const Color(0xFF6366F1),
+                            ),
+                          );
+                        }
+                      }
+                    }
+                  } catch (e) {
+                    debugPrint('Error launching UPI retry: $e');
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF059669),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                icon: const Icon(Icons.flash_on_rounded, size: 18),
+                label: Text(
+                  'Pay ₹${order.total.toStringAsFixed(0)} Now via UPI',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w900, fontSize: 13),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -568,52 +682,364 @@ class OrderDetailScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _showCancelDialog(BuildContext context, String orderId, OrderProvider provider) async {
+  Future<void> _showCancelModalSheet(
+      BuildContext context, OrderModel order, OrderProvider provider) async {
+    final reasons = [
+      'Delivery time is too long',
+      'Ordered wrong item(s) by mistake',
+      'Incorrect delivery address selected',
+      'Payment or pricing issue',
+      'Forgot to apply coupon code',
+      'Other reason',
+    ];
 
-    final reasonCtrl = TextEditingController();
-    final confirm = await showDialog<bool>(
+    String? selectedReason;
+    final feedbackCtrl = TextEditingController();
+    bool isSubmitting = false;
+
+    await showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Cancel Order?', style: TextStyle(fontWeight: FontWeight.w900)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Are you sure you want to cancel this order? This action cannot be undone.'),
-            const SizedBox(height: 14),
-            TextField(
-              controller: reasonCtrl,
-              decoration: InputDecoration(
-                hintText: 'Reason for cancellation (optional)',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Go Back', style: TextStyle(fontWeight: FontWeight.w700))),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFEF4444)),
-            child: const Text('Cancel Order', style: TextStyle(fontWeight: FontWeight.w900)),
-          ),
-        ],
-      ),
-    );
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final isPaid = order.isPaid || order.paymentMethod == 'GroceryGo Wallet';
 
-    if (confirm == true) {
-      await provider.cancelOrder(orderId, reasonCtrl.text.trim());
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Order Cancelled Successfully'),
-            backgroundColor: const Color(0xFF3B82F6),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
+            return Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+                top: 20,
+                left: 20,
+                right: 20,
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 44,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.cancel_rounded,
+                            color: Color(0xFFEF4444),
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Cancel Order',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF0F172A),
+                              ),
+                            ),
+                            Text(
+                              'Please select a reason to cancel your order',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    const Text(
+                      'Select Reason',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF334155),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    ...reasons.map((reason) {
+                      final isSelected = selectedReason == reason;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: InkWell(
+                          onTap: () {
+                            setModalState(() => selectedReason = reason);
+                          },
+                          borderRadius: BorderRadius.circular(14),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? const Color(0xFFFEF2F2)
+                                  : const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: isSelected
+                                    ? const Color(0xFFEF4444)
+                                    : const Color(0xFFE2E8F0),
+                                width: isSelected ? 1.5 : 1.0,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  isSelected
+                                      ? Icons.radio_button_checked_rounded
+                                      : Icons.radio_button_off_rounded,
+                                  color: isSelected
+                                      ? const Color(0xFFEF4444)
+                                      : const Color(0xFF94A3B8),
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    reason,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w800
+                                          : FontWeight.w600,
+                                      color: isSelected
+                                          ? const Color(0xFF991B1B)
+                                          : const Color(0xFF334155),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+
+                    const SizedBox(height: 14),
+
+                    const Text(
+                      'Additional Feedback (Optional)',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF334155),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: feedbackCtrl,
+                      maxLines: 2,
+                      decoration: InputDecoration(
+                        hintText:
+                            'Help us improve by providing extra feedback...',
+                        hintStyle: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF94A3B8),
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFFF8FAFC),
+                        contentPadding: const EdgeInsets.all(12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide:
+                              const BorderSide(color: Color(0xFFE2E8F0)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide:
+                              const BorderSide(color: Color(0xFFE2E8F0)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFEF4444),
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isPaid
+                            ? const Color(0xFFF0FDF4)
+                            : const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: isPaid
+                              ? const Color(0xFF86EFAC)
+                              : const Color(0xFFE2E8F0),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isPaid
+                                ? Icons.account_balance_wallet_rounded
+                                : Icons.info_outline_rounded,
+                            color: isPaid
+                                ? const Color(0xFF059669)
+                                : const Color(0xFF64748B),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              isPaid
+                                  ? 'Refund Policy: ₹${order.total.toStringAsFixed(0)} will be credited back to your GroceryGo Wallet immediately.'
+                                  : 'No cancellation fee applies.',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: isPaid
+                                    ? const Color(0xFF166534)
+                                    : const Color(0xFF475569),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              side: const BorderSide(color: Color(0xFFCBD5E1)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: const Text(
+                              'Keep Order',
+                              style: TextStyle(
+                                color: Color(0xFF475569),
+                                fontWeight: FontWeight.w800,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: selectedReason == null || isSubmitting
+                                ? null
+                                : () async {
+                                    setModalState(() => isSubmitting = true);
+                                    final messenger = ScaffoldMessenger.of(context);
+                                    final fullReason = feedbackCtrl
+                                            .text
+                                            .trim()
+                                            .isNotEmpty
+                                        ? '$selectedReason - ${feedbackCtrl.text.trim()}'
+                                        : selectedReason!;
+
+                                    await provider.cancelOrder(
+                                        order.id, fullReason);
+
+                                    if (context.mounted) {
+                                      Navigator.pop(ctx);
+                                      messenger.showSnackBar(
+                                        SnackBar(
+                                          content: Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.check_circle_outline_rounded,
+                                                color: Colors.white,
+                                                size: 18,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text(
+                                                  'Order cancelled. $selectedReason',
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          backgroundColor:
+                                              const Color(0xFFDC2626),
+                                          behavior: SnackBarBehavior.floating,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              backgroundColor: const Color(0xFFEF4444),
+                              disabledBackgroundColor:
+                                  const Color(0xFFFCA5A5),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: isSubmitting
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Confirm Cancel',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         );
-        context.pop();
-      }
-    }
+      },
+    );
   }
 }

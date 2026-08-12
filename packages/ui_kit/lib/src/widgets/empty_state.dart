@@ -29,10 +29,10 @@ class EmptyState extends StatelessWidget {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: AppColors.primarySurface,
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 52, color: AppColors.primary),
+              child: Icon(icon, size: 52, color: Theme.of(context).colorScheme.primary),
             ),
             const SizedBox(height: 20),
             Text(
@@ -63,7 +63,7 @@ class EmptyState extends StatelessWidget {
                 icon: const Icon(Icons.add_rounded),
                 label: Text(actionLabel!),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: AppColors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(

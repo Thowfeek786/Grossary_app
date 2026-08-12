@@ -6,9 +6,19 @@ class NotificationRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   CollectionReference get _col => _db.collection('notifications');
 
-  Stream<List<NotificationModel>> getUserNotifications(String userId) {
+  /// Stream notifications for a user including direct and broadcast notifications
+  Stream<List<NotificationModel>> getUserNotifications(String userId, {String? userRole}) {
+    final targets = <String>[
+      userId,
+      'broadcast_all_notifications',
+      if (userRole != null && userRole.isNotEmpty) 'broadcast_${userRole}_notifications',
+      if (userRole == 'customer') 'broadcast_user_notifications',
+      if (userRole == 'dealer') 'broadcast_dealer_notifications',
+      if (userRole == 'deliveryPartner') 'broadcast_delivery_notifications',
+    ];
+
     return _col
-        .where('userId', isEqualTo: userId)
+        .where('userId', whereIn: targets)
         .snapshots()
         .map((s) {
           final list = s.docs.map(NotificationModel.fromFirestore).toList();
@@ -29,7 +39,6 @@ class NotificationRepository {
         });
   }
 
-
   Future<void> sendNotification(NotificationModel notification) async {
     final ref = _col.doc();
     await ref.set({...notification.toFirestore(), 'createdAt': FieldValue.serverTimestamp()});
@@ -37,6 +46,14 @@ class NotificationRepository {
 
   Future<void> markAsRead(String notificationId) async {
     await _col.doc(notificationId).update({'isRead': true});
+  }
+
+  Future<void> deleteNotification(String notificationId) async {
+    try {
+      await _col.doc(notificationId).delete();
+    } catch (e) {
+      debugPrint('Error deleting notification $notificationId: $e');
+    }
   }
 
   Future<void> markAllAsRead(String userId) async {
@@ -61,10 +78,10 @@ class NotificationRepository {
   }
 
   /// Send broadcast notification:
-  /// 1. Saves to Firestore 'notifications' collection (for in-app display)
-  /// 2. Collects FCM tokens from matching users by role
-  /// 3. Writes to 'fcm_send_queue' collection for a Cloud Function to pick up and send
-  ///    (since direct FCM HTTP v1 API requires a service account key which shouldn't be in the app)
+  /// 1. Saves main broadcast record to 'notifications' collection
+  /// 2. Creates individual notification records for every targeted user
+  /// 3. Collects FCM tokens from matching users
+  /// 4. Writes to 'fcm_send_queue' for push delivery
   Future<void> sendBroadcastNotification({
     required String title,
     required String body,
@@ -74,7 +91,7 @@ class NotificationRepository {
   }) async {
     final batch = _db.batch();
 
-    // 1. Save the broadcast notification record
+    // 1. Save the main broadcast record
     final broadcastRef = _col.doc();
     batch.set(broadcastRef, {
       'title': title,
@@ -87,74 +104,69 @@ class NotificationRepository {
       'userId': 'broadcast_$topic',
     });
 
-    // 2. Get FCM tokens for targeted users
+    // 2. Query users and filter in Dart for maximum reliability
     List<String> fcmTokens = [];
     try {
-      QuerySnapshot usersSnap;
-      
-      if (topic == 'all_notifications') {
-        // All users with FCM tokens
-        usersSnap = await _db
-            .collection('users')
-            .where('fcmToken', isNull: false)
-            .get();
-      } else if (topic == 'user_notifications') {
-        usersSnap = await _db
-            .collection('users')
-            .where('role', isEqualTo: 'customer')
-            .get();
-      } else if (topic == 'dealer_notifications') {
-        usersSnap = await _db
-            .collection('users')
-            .where('role', isEqualTo: 'dealer')
-            .get();
-      } else if (topic == 'delivery_notifications') {
-        usersSnap = await _db
-            .collection('users')
-            .where('role', isEqualTo: 'deliveryPartner')
-            .get();
-      } else {
-        usersSnap = await _db
-            .collection('users')
-            .where('fcmToken', isNull: false)
-            .get();
-      }
+      final allUsersSnap = await _db.collection('users').get();
 
-      for (final doc in usersSnap.docs) {
-        final data = doc.data() as Map<String, dynamic>;
+      for (final doc in allUsersSnap.docs) {
+        final data = doc.data();
+        final role = data['role'] as String? ?? 'customer';
         final token = data['fcmToken'] as String?;
-        if (token != null && token.isNotEmpty) {
-          fcmTokens.add(token);
+        final userId = doc.id;
+
+        bool matchesTarget = false;
+        if (topic == 'all_notifications') {
+          matchesTarget = true;
+        } else if (topic == 'user_notifications' && (role == 'customer' || role == 'user')) {
+          matchesTarget = true;
+        } else if (topic == 'dealer_notifications' && role == 'dealer') {
+          matchesTarget = true;
+        } else if (topic == 'delivery_notifications' && (role == 'deliveryPartner' || role == 'delivery')) {
+          matchesTarget = true;
+        }
+
+        if (matchesTarget) {
+          if (token != null && token.isNotEmpty) {
+            fcmTokens.add(token);
+          }
+
+          // Create in-app notification doc for this user
+          final notifRef = _col.doc();
+          batch.set(notifRef, {
+            'title': title,
+            'body': body,
+            'type': type ?? 'promo',
+            'imageUrl': imageUrl,
+            'createdAt': FieldValue.serverTimestamp(),
+            'isRead': false,
+            'userId': userId,
+          });
         }
       }
     } catch (e) {
-      debugPrint('Error fetching FCM tokens: $e');
+      debugPrint('Error fetching users for broadcast: $e');
     }
 
-    // 3. Create individual notification entries for each user with a token
-    //    AND queue FCM push messages
-    if (fcmTokens.isNotEmpty) {
-      // Write to fcm_send_queue collection — a Cloud Function can listen
-      // to this and send the actual push notifications via FCM HTTP v1 API
-      final queueRef = _db.collection('fcm_send_queue').doc();
-      batch.set(queueRef, {
-        'title': title,
-        'body': body,
-        'tokens': fcmTokens,
-        'topic': topic,
-        'imageUrl': imageUrl,
-        'data': {
-          'type': type ?? 'broadcast',
-          'notificationId': broadcastRef.id,
-        },
-        'status': 'pending',
-        'createdAt': FieldValue.serverTimestamp(),
-        'tokenCount': fcmTokens.length,
-      });
-    }
+    // 3. Queue FCM push messages for devices
+    final queueRef = _db.collection('fcm_send_queue').doc();
+    batch.set(queueRef, {
+      'title': title,
+      'body': body,
+      'tokens': fcmTokens,
+      'topic': topic,
+      'imageUrl': imageUrl,
+      'data': {
+        'type': type ?? 'broadcast',
+        'notificationId': broadcastRef.id,
+      },
+      'status': 'pending',
+      'createdAt': FieldValue.serverTimestamp(),
+      'tokenCount': fcmTokens.length,
+    });
 
     await batch.commit();
-    debugPrint('Broadcast notification sent. ${fcmTokens.length} FCM tokens queued.');
+    debugPrint('Broadcast notification sent successfully to topic $topic with ${fcmTokens.length} tokens.');
   }
 
   /// Send a targeted notification to a specific user

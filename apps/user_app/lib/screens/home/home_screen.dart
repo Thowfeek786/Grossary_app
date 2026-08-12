@@ -109,8 +109,9 @@ class HomeScreen extends StatelessWidget {
                       Expanded(
                         child: GestureDetector(
                           onTap: () {
-                            if (user != null)
+                            if (user != null) {
                               context.push('/profile/addresses');
+                            }
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(
@@ -260,9 +261,11 @@ class HomeScreen extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Container(
+                            StreamBuilder<StoreSettingsModel>(
+                              stream: SettingsRepository().getGlobalSettings(),
+                              builder: (context, settingsSnap) {
+                                final timingLabel = settingsSnap.data?.estimatedDeliveryTime.toUpperCase() ?? '20 TO 30 MINS';
+                                return Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 8,
                                     vertical: 3,
@@ -278,18 +281,18 @@ class HomeScreen extends StatelessWidget {
                                       ).withValues(alpha: 0.4),
                                     ),
                                   ),
-                                  child: const Row(
+                                  child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(
+                                      const Icon(
                                         Icons.bolt_rounded,
                                         color: Color(0xFFFDE047),
                                         size: 14,
                                       ),
-                                      SizedBox(width: 4),
+                                      const SizedBox(width: 4),
                                       Text(
-                                        '12-MIN EXPRESS DELIVERY',
-                                        style: TextStyle(
+                                        'DELIVERY IN $timingLabel',
+                                        style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 10,
                                           fontWeight: FontWeight.w800,
@@ -298,8 +301,8 @@ class HomeScreen extends StatelessWidget {
                                       ),
                                     ],
                                   ),
-                                ),
-                              ],
+                                );
+                              },
                             ),
                           ],
                         ),
@@ -517,86 +520,89 @@ class _BannerSliderState extends State<_BannerSlider> {
 class _PlaceholderBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 120,
-      margin: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF059669), Color(0xFF10B981), Color(0xFF047857)],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF059669).withValues(alpha: 0.25),
-            blurRadius: 14,
-            offset: const Offset(0, 5),
+    return GestureDetector(
+      onTap: () => context.go('/categories'),
+      child: Container(
+        height: 120,
+        margin: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF059669), Color(0xFF10B981), Color(0xFF047857)],
           ),
-        ],
-      ),
-      clipBehavior: Clip.hardEdge,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF059669).withValues(alpha: 0.25),
+              blurRadius: 14,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.hardEdge,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.22),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text(
+                        '🌿 FRESH DAILY HARVEST',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                     ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.22),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Text(
-                      '🌿 FRESH DAILY HARVEST',
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Up to 40% OFF Organic Veggies',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 9,
-                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        height: 1.15,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Up to 40% OFF Organic Veggies',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w900,
-                      height: 1.15,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Text(
-                      'Shop Deals →',
-                      style: TextStyle(
-                        color: Color(0xFF047857),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Text(
+                        'Shop Deals →',
+                        style: TextStyle(
+                          color: Color(0xFF047857),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const Text('🥦', style: TextStyle(fontSize: 48)),
-          ],
+              const Text('🥦', style: TextStyle(fontSize: 48)),
+            ],
+          ),
         ),
       ),
     );
@@ -611,12 +617,17 @@ class _BannerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        if (banner.categoryId != null) {
+        final catId = banner.categoryId?.trim() ?? '';
+        final prodId = banner.productId?.trim() ?? '';
+
+        if (catId.isNotEmpty) {
           context.push(
-            '/home/category/${banner.categoryId}?name=${Uri.encodeComponent(banner.title)}',
+            '/home/category/$catId?name=${Uri.encodeComponent(banner.title)}',
           );
-        } else if (banner.productId != null) {
-          context.push('/home/product/${banner.productId}');
+        } else if (prodId.isNotEmpty) {
+          context.push('/home/product/$prodId');
+        } else {
+          context.go('/categories');
         }
       },
       child: Container(
@@ -752,7 +763,7 @@ class _CategoriesSection extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 18),
                   itemCount: cats.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 14),
+                  separatorBuilder: (_, _) => const SizedBox(width: 14),
                   itemBuilder: (ctx, i) => _CategoryChip(
                     category: cats[i],
                     colorIndex: i,
@@ -831,7 +842,7 @@ class _CategoryChip extends StatelessWidget {
                     child: CachedNetworkImage(
                       imageUrl: category.imageUrl!,
                       fit: BoxFit.cover,
-                      errorWidget: (_, __, ___) =>
+                      errorWidget: (_, _, _) =>
                           Icon(Icons.category_rounded, color: accent, size: 28),
                     ),
                   )
@@ -959,15 +970,16 @@ class _FlashSaleSectionState extends State<_FlashSaleSection> {
           StreamBuilder<List<ProductModel>>(
             stream: ProductRepository().getProducts(featuredOnly: true),
             builder: (context, snapshot) {
-              if (!snapshot.hasData || snapshot.data!.isEmpty)
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return const SizedBox.shrink();
+              }
               final products = snapshot.data!;
               return SizedBox(
                 height: 195,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: products.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
                   itemBuilder: (ctx, i) => SizedBox(
                     width: 150,
                     child: ProductCard(
@@ -1002,15 +1014,16 @@ class _OrderAgainSection extends StatelessWidget {
         StreamBuilder<List<ProductModel>>(
           stream: ProductRepository().getProducts(),
           builder: (context, snapshot) {
-            if (!snapshot.hasData || snapshot.data!.isEmpty)
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
               return const SizedBox.shrink();
+            }
             final products = snapshot.data!.take(6).toList();
             return SizedBox(
               height: 110,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: products.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                separatorBuilder: (_, _) => const SizedBox(width: 12),
                 itemBuilder: (ctx, i) {
                   final p = products[i];
                   return GestureDetector(
@@ -1023,22 +1036,38 @@ class _OrderAgainSection extends StatelessWidget {
                         borderRadius: BorderRadius.circular(18),
                         border: Border.all(color: Colors.grey.shade200),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 3)),
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
                         ],
                       ),
                       child: Row(
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(12),
-                            child: p.imageUrls.isNotEmpty && p.imageUrls.first.isNotEmpty
+                            child:
+                                p.imageUrls.isNotEmpty &&
+                                    p.imageUrls.first.isNotEmpty
                                 ? CachedNetworkImage(
                                     imageUrl: p.imageUrls.first,
                                     width: 54,
                                     height: 54,
                                     fit: BoxFit.cover,
-                                    errorWidget: (_, __, ___) => Container(width: 54, height: 54, color: Colors.grey.shade100, child: const Icon(Icons.shopping_bag)),
+                                    errorWidget: (_, _, _) => Container(
+                                      width: 54,
+                                      height: 54,
+                                      color: Colors.grey.shade100,
+                                      child: const Icon(Icons.shopping_bag),
+                                    ),
                                   )
-                                : Container(width: 54, height: 54, color: Colors.grey.shade100, child: const Icon(Icons.shopping_bag)),
+                                : Container(
+                                    width: 54,
+                                    height: 54,
+                                    color: Colors.grey.shade100,
+                                    child: const Icon(Icons.shopping_bag),
+                                  ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
@@ -1050,11 +1079,19 @@ class _OrderAgainSection extends StatelessWidget {
                                   p.name,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF111827)),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 13,
+                                    color: Color(0xFF111827),
+                                  ),
                                 ),
                                 Text(
                                   '₹${p.price.toStringAsFixed(0)} / ${p.unit}',
-                                  style: const TextStyle(color: Color(0xFF059669), fontWeight: FontWeight.w900, fontSize: 12),
+                                  style: const TextStyle(
+                                    color: Color(0xFF059669),
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 12,
+                                  ),
                                 ),
                                 const SizedBox(height: 4),
                                 GestureDetector(
@@ -1062,17 +1099,36 @@ class _OrderAgainSection extends StatelessWidget {
                                     context.read<CartProvider>().addItem(p);
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text('${p.name} added to cart!'),
-                                        backgroundColor: const Color(0xFF059669),
+                                        content: Text(
+                                          '${p.name} added to cart!',
+                                        ),
+                                        backgroundColor: const Color(
+                                          0xFF059669,
+                                        ),
                                         duration: const Duration(seconds: 2),
                                         behavior: SnackBarBehavior.floating,
                                       ),
                                     );
                                   },
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                    decoration: BoxDecoration(color: const Color(0xFF10B981).withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
-                                    child: const Text('+ Reorder', style: TextStyle(color: Color(0xFF059669), fontSize: 10, fontWeight: FontWeight.w900)),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(
+                                        0xFF10B981,
+                                      ).withValues(alpha: 0.12),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Text(
+                                      '+ Reorder',
+                                      style: TextStyle(
+                                        color: Color(0xFF059669),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -1082,7 +1138,6 @@ class _OrderAgainSection extends StatelessWidget {
                       ),
                     ),
                   );
-
                 },
               ),
             );
@@ -1107,8 +1162,9 @@ class _FeaturedProductsSection extends StatelessWidget {
         StreamBuilder<List<ProductModel>>(
           stream: ProductRepository().getProducts(featuredOnly: true),
           builder: (context, snapshot) {
-            if (!snapshot.hasData)
+            if (!snapshot.hasData) {
               return const SizedBox(height: 195, child: AppLoader());
+            }
             if (snapshot.data!.isEmpty) return const SizedBox.shrink();
             final products = snapshot.data!;
             return SizedBox(
@@ -1116,7 +1172,7 @@ class _FeaturedProductsSection extends StatelessWidget {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: products.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 14),
+                separatorBuilder: (_, _) => const SizedBox(width: 14),
                 itemBuilder: (ctx, i) => SizedBox(
                   width: 155,
                   child: ProductCard(
@@ -1150,8 +1206,9 @@ class _AllProductsSection extends StatelessWidget {
         StreamBuilder<List<ProductModel>>(
           stream: ProductRepository().getProducts(),
           builder: (context, snapshot) {
-            if (!snapshot.hasData)
+            if (!snapshot.hasData) {
               return const SizedBox(height: 200, child: AppLoader());
+            }
             if (snapshot.data!.isEmpty) {
               return const EmptyState(
                 icon: Icons.shopping_bag_outlined,

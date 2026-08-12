@@ -210,8 +210,8 @@ class _CategoryTile4Col extends StatelessWidget {
                   ? CachedNetworkImage(
                       imageUrl: category.imageUrl!,
                       fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(color: const Color(0xFFF3F4F6)),
-                      errorWidget: (_, __, ___) => Center(
+                      placeholder: (_, _) => Container(color: const Color(0xFFF3F4F6)),
+                      errorWidget: (_, _, _) => Center(
                         child: Text(_getCategoryEmoji(category.name), style: const TextStyle(fontSize: 32)),
                       ),
                     )
@@ -279,7 +279,7 @@ class _CategoryShimmer4Grid extends StatelessWidget {
                 mainAxisSpacing: 16,
               ),
               itemCount: 8,
-              itemBuilder: (_, __) => Column(
+              itemBuilder: (_, _) => Column(
                 children: [
                   Container(
                     width: 72,
