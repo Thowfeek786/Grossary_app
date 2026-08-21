@@ -84,7 +84,7 @@ class ProfileScreen extends StatelessWidget {
                     backgroundImage: user.photoUrl != null ? NetworkImage(user.photoUrl!) : null,
                     child: user.photoUrl == null
                         ? Text(
-                            user.name[0].toUpperCase(),
+                            user.name.isNotEmpty ? user.name[0].toUpperCase() : 'P',
                             style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF059669), fontSize: 40),
                           )
                         : null,
@@ -119,24 +119,39 @@ class ProfileScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                user.name,
-                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 22, letterSpacing: -0.5, color: Color(0xFF0F172A)),
+              Flexible(
+                child: Text(
+                  user.name.isNotEmpty ? user.name : 'Delivery Partner',
+                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 22, letterSpacing: -0.5, color: Color(0xFF0F172A)),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               const SizedBox(width: 6),
               if (user.isApproved) const Icon(Icons.verified_rounded, color: Color(0xFF059669), size: 20),
             ],
           ),
           Text(
-            user.email,
+            user.email.isNotEmpty ? user.email : (user.phone.isNotEmpty ? user.phone : 'Delivery Partner Account'),
             style: const TextStyle(color: Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.w500),
           ),
+          if (user.phone.isNotEmpty && user.email.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                '📞 ${user.phone}',
+                style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.w600),
+              ),
+            ),
           const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 6,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: user.isApproved ? const Color(0xFF10B981).withValues(alpha: 0.12) : const Color(0xFFF59E0B).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
@@ -151,19 +166,38 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              if (user.vehicleType != null && user.vehicleType!.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.two_wheeler_rounded, size: 12, color: Color(0xFF475569)),
+                      const SizedBox(width: 4),
+                      Text(
+                        user.vehicleType!.toUpperCase(),
+                        style: const TextStyle(color: Color(0xFF475569), fontSize: 10, fontWeight: FontWeight.w800),
+                      ),
+                    ],
+                  ),
+                ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFEF3C7),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(Icons.star_rounded, size: 12, color: Color(0xFFD97706)),
                     const SizedBox(width: 3),
                     Text(
-                      '${user.rating ?? 4.9}',
+                      user.rating != null && user.rating! > 0 ? user.rating!.toStringAsFixed(1) : '4.9',
                       style: const TextStyle(color: Color(0xFFD97706), fontSize: 10, fontWeight: FontWeight.w900),
                     ),
                   ],
@@ -183,8 +217,8 @@ class ProfileScreen extends StatelessWidget {
       stream: delivery.getDeliveryHistory(user.id),
       builder: (context, snapshot) {
         final history = snapshot.data ?? [];
-        final completed = history.length;
-        final earnings = completed * 45.0;
+        final completed = history.length > user.totalDeliveries ? history.length : user.totalDeliveries;
+        final earnings = user.totalEarnings > 0 ? user.totalEarnings : (completed * 45.0);
 
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
