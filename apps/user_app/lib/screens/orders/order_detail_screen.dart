@@ -8,6 +8,7 @@ import 'package:ui_kit/ui_kit.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../providers/order_provider.dart';
+import '../../providers/cart_provider.dart';
 import '../../utils/invoice_generator.dart';
 
 class OrderDetailScreen extends StatelessWidget {
@@ -56,10 +57,20 @@ class OrderDetailScreen extends StatelessWidget {
                 if (isActive) ...[
                   _buildOtpCard(order),
                   const SizedBox(height: 16),
+                  if (order.deliveryPartnerId != null && order.deliveryPartnerId!.isNotEmpty) ...[
+                    _buildDriverContactCard(order),
+                    const SizedBox(height: 16),
+                  ],
+                ],
+                if (order.deliveryInstructions.isNotEmpty) ...[
+                  _buildDeliveryInstructionsCard(order),
+                  const SizedBox(height: 16),
                 ],
                 _buildOrderTimeline(order),
                 const SizedBox(height: 24),
                 if (order.status == OrderStatus.delivered) ...[
+                  _buildReorderCard(context, order),
+                  const SizedBox(height: 16),
                   _buildRatingSection(context, order),
                   const SizedBox(height: 24),
                 ],
@@ -212,6 +223,196 @@ class OrderDetailScreen extends StatelessWidget {
     );
   }
 
+
+  Widget _buildDriverContactCard(OrderModel order) {
+    final driverName = order.deliveryPartnerName ?? 'Assigned Delivery Partner';
+    final driverPhone = order.deliveryPartnerPhone ?? '';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(Icons.delivery_dining_rounded, color: Color(0xFF2563EB), size: 28),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  driverName,
+                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14.5, color: Color(0xFF111827)),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  'On the way to your address',
+                  style: TextStyle(fontSize: 11.5, color: Color(0xFF059669), fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
+          ),
+          if (driverPhone.isNotEmpty) ...[
+            IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEDF7EE),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.phone_rounded, color: Color(0xFF046A38), size: 20),
+              ),
+              onPressed: () => launchUrl(Uri.parse('tel:$driverPhone')),
+            ),
+            IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDCFCE7),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.chat_bubble_rounded, color: Color(0xFF16A34A), size: 20),
+              ),
+              onPressed: () => launchUrl(
+                Uri.parse('https://wa.me/${driverPhone.replaceAll(RegExp(r'\D'), '')}?text=Hi%20from%20GroceryGo'),
+                mode: LaunchMode.externalApplication,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDeliveryInstructionsCard(OrderModel order) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEDE9FE).withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.speaker_notes_outlined, size: 16, color: Color(0xFF7C3AED)),
+              SizedBox(width: 6),
+              Text(
+                'Delivery Instructions Provided:',
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12.5, color: Color(0xFF5B21B6)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: order.deliveryInstructions.map((inst) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.3)),
+                ),
+                child: Text(
+                  inst,
+                  style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFF5B21B6)),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReorderCard(BuildContext context, OrderModel order) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF046A38).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(Icons.repeat_rounded, color: Color(0xFF046A38), size: 24),
+          ),
+          const SizedBox(width: 14),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Order Again in 1-Click',
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Color(0xFF111827)),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Add all items from this order directly to cart',
+                  style: TextStyle(fontSize: 11, color: Color(0xFF6B7280), fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final cart = context.read<CartProvider>();
+              for (final item in order.items) {
+                cart.addItemById(item);
+              }
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('🛒 Added ${order.items.length} items to your cart!'),
+                  backgroundColor: const Color(0xFF046A38),
+                  action: SnackBarAction(
+                    label: 'View Cart',
+                    textColor: Colors.white,
+                    onPressed: () => context.go('/cart'),
+                  ),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF046A38),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Reorder', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12.5)),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildRatingSection(BuildContext context, OrderModel order) {
     return Container(

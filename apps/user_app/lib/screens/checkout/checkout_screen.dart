@@ -24,6 +24,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> with WidgetsBindingObse
   bool _isAwaitingUpiConfirmation = false;
   int _selectedDateIndex = 0;
   String _selectedSlotKey = 'asap';
+  final Set<String> _selectedInstructions = {};
 
   static const List<_DeliverySlotOption> _deliverySlots = [
     _DeliverySlotOption(
@@ -286,6 +287,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> with WidgetsBindingObse
 
                     // 2. Scheduled Delivery Card
                     _buildScheduledDeliveryCard(context, cart),
+
+                    const SizedBox(height: 16),
+
+                    // 2.5 Delivery Instructions Card
+                    _buildDeliveryInstructionsCard(),
 
                     const SizedBox(height: 16),
 
@@ -1065,6 +1071,83 @@ class _CheckoutScreenState extends State<CheckoutScreen> with WidgetsBindingObse
     );
   }
 
+  Widget _buildDeliveryInstructionsCard() {
+    const options = [
+      {'icon': Icons.notifications_off_outlined, 'title': "Don't ring bell", 'desc': 'Leave quietly'},
+      {'icon': Icons.door_front_door_outlined, 'title': 'Leave at door', 'desc': 'Drop at doorstep'},
+      {'icon': Icons.phone_callback_outlined, 'title': 'Call before reaching', 'desc': 'Notify 5m before'},
+      {'icon': Icons.shield_outlined, 'title': 'Leave with guard', 'desc': 'Security / reception'},
+    ];
+
+    return _buildCard(
+      title: 'Delivery Instructions (Optional)',
+      icon: Icons.speaker_notes_outlined,
+      iconColor: const Color(0xFF8B5CF6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Select instructions for your delivery partner',
+            style: TextStyle(fontSize: 12, color: Color(0xFF6B7280), fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: options.map((opt) {
+              final title = opt['title'] as String;
+              final icon = opt['icon'] as IconData;
+              final isSelected = _selectedInstructions.contains(title);
+
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    if (isSelected) {
+                      _selectedInstructions.remove(title);
+                    } else {
+                      _selectedInstructions.add(title);
+                    }
+                  });
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected ? const Color(0xFFEDE9FE) : Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected ? const Color(0xFF8B5CF6) : Colors.grey.shade200,
+                      width: isSelected ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(icon, size: 16, color: isSelected ? const Color(0xFF7C3AED) : const Color(0xFF6B7280)),
+                      const SizedBox(width: 6),
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                          color: isSelected ? const Color(0xFF5B21B6) : const Color(0xFF374151),
+                        ),
+                      ),
+                      if (isSelected) ...[
+                        const SizedBox(width: 4),
+                        const Icon(Icons.check_circle_rounded, size: 14, color: Color(0xFF7C3AED)),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPlaceOrderBar(
       BuildContext context, CartProvider cart, UserModel user, AddressModel? effectiveAddress) {
     final orderProvider = context.watch<OrderProvider>();
@@ -1312,6 +1395,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> with WidgetsBindingObse
       dealerName: cart.items.isNotEmpty ? cart.items.first.dealerName : null,
       notes: 'Scheduled: $_selectedSlotSummary',
       idempotencyKey: '${user.id}_${DateTime.now().millisecondsSinceEpoch}_${cart.items.length}',
+      deliveryInstructions: _selectedInstructions.toList(),
       createdAt: DateTime.now(),
     );
 

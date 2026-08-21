@@ -38,6 +38,7 @@ class OrderModel {
   final String? deliveryOtp;
   final String? digitalSignatureUrl;
   final String? idempotencyKey;
+  final List<String> deliveryInstructions;
   final DateTime createdAt;
   final DateTime? updatedAt;
   final DateTime? deliveredAt;
@@ -68,6 +69,7 @@ class OrderModel {
     this.deliveryOtp,
     this.digitalSignatureUrl,
     this.idempotencyKey,
+    this.deliveryInstructions = const [],
     required this.createdAt,
     this.updatedAt,
     this.deliveredAt,
@@ -110,6 +112,9 @@ class OrderModel {
       deliveryOtp: data['deliveryOtp'],
       digitalSignatureUrl: data['digitalSignatureUrl'],
       idempotencyKey: data['idempotencyKey'],
+      deliveryInstructions: (data['deliveryInstructions'] as List<dynamic>? ?? [])
+          .map((e) => e.toString())
+          .toList(),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
       deliveredAt: (data['deliveredAt'] as Timestamp?)?.toDate(),
@@ -141,6 +146,7 @@ class OrderModel {
     'deliveryOtp': deliveryOtp,
     'digitalSignatureUrl': digitalSignatureUrl,
     'idempotencyKey': idempotencyKey,
+    'deliveryInstructions': deliveryInstructions,
     'createdAt': Timestamp.fromDate(createdAt),
     'updatedAt': FieldValue.serverTimestamp(),
     'deliveredAt': deliveredAt != null ? Timestamp.fromDate(deliveredAt!) : null,
@@ -155,6 +161,7 @@ class OrderModel {
     String? cancellationReason,
     DateTime? deliveredAt,
     String? idempotencyKey,
+    List<String>? deliveryInstructions,
   }) {
     return OrderModel(
       id: id,
@@ -182,6 +189,7 @@ class OrderModel {
       deliveryOtp: deliveryOtp,
       digitalSignatureUrl: digitalSignatureUrl,
       idempotencyKey: idempotencyKey ?? this.idempotencyKey,
+      deliveryInstructions: deliveryInstructions ?? this.deliveryInstructions,
       createdAt: createdAt,
       updatedAt: DateTime.now(),
       deliveredAt: deliveredAt ?? this.deliveredAt,

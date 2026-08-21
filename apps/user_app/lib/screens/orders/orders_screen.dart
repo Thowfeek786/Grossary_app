@@ -8,6 +8,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/order_provider.dart';
+import '../../providers/cart_provider.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -351,9 +352,9 @@ class _OrderCard extends StatelessWidget {
                     foregroundColor: const Color(0xFF046A38),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
+                    children: [
                       Text(
                         'Track Order',
                         style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5),
@@ -363,6 +364,62 @@ class _OrderCard extends StatelessWidget {
                     ],
                   ),
                 ),
+              ),
+            ],
+
+            // Reorder button for delivered orders
+            if (order.status == OrderStatus.delivered) ...[
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 40,
+                      child: OutlinedButton(
+                        onPressed: onTap,
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Colors.grey.shade300),
+                          foregroundColor: const Color(0xFF374151),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text('View Details', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: SizedBox(
+                      height: 40,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.repeat_rounded, size: 16),
+                        label: const Text('Reorder', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+                        onPressed: () {
+                          final cart = context.read<CartProvider>();
+                          for (final item in order.items) {
+                            cart.addItemById(item);
+                          }
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('🛒 Added ${order.items.length} items to your cart!'),
+                              backgroundColor: const Color(0xFF046A38),
+                              action: SnackBarAction(
+                                label: 'Open Cart',
+                                textColor: Colors.white,
+                                onPressed: () => context.go('/cart'),
+                              ),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF046A38),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ],
