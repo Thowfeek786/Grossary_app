@@ -5,6 +5,8 @@ import 'package:models/models.dart';
 import 'package:repository/repository.dart';
 import 'package:core/core.dart';
 
+import '../services/dealer_order_alert_service.dart';
+
 enum AuthStatus { unknown, authenticated, unauthenticated }
 
 class DealerAuthProvider extends ChangeNotifier {
@@ -31,21 +33,25 @@ class DealerAuthProvider extends ChangeNotifier {
       if (firebaseUser == null) {
         _status = AuthStatus.unauthenticated;
         _user = null;
+        DealerOrderAlertService().stopListening();
       } else {
         try {
           final profile = await _authRepo.getUserProfile(firebaseUser.uid);
           if (profile != null && profile.role == UserRole.dealer) {
             _user = profile;
             _status = AuthStatus.authenticated;
+            DealerOrderAlertService().startListening(profile.id);
           } else {
             if (profile != null) {
               await _authRepo.signOut();
               _status = AuthStatus.unauthenticated;
               _error = 'Unauthorized. This app is for dealers only.';
+              DealerOrderAlertService().stopListening();
             }
           }
         } catch (_) {
            _status = AuthStatus.unauthenticated;
+           DealerOrderAlertService().stopListening();
         }
       }
       notifyListeners();

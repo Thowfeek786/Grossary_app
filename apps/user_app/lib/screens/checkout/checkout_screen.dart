@@ -1451,8 +1451,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> with WidgetsBindingObse
         } catch (_) {}
       }
 
-      // Trigger Out-App System Tray Notification
+      // Trigger Out-App System Tray Notification & Audio Sound
       try {
+        AudioService().playOrderSuccessSound();
         final shortId = id.substring(0, id.length > 6 ? 6 : id.length).toUpperCase();
         await NotificationService.showLocalNotification(
           title: 'Order Placed Successfully! 🎉',

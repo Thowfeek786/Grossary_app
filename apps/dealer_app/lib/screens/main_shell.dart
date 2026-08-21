@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../widgets/new_order_alert_overlay.dart';
 
 class DealerMainShell extends StatelessWidget {
   final Widget child;
@@ -35,7 +36,7 @@ class DealerMainShell extends StatelessWidget {
     final selectedIndex = _getSelectedIndex(location);
 
     return Scaffold(
-      body: child,
+      body: NewOrderAlertOverlay(child: child),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,

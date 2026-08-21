@@ -6,6 +6,8 @@ import 'package:models/models.dart';
 import 'package:repository/repository.dart';
 import 'package:core/core.dart';
 
+import '../services/delivery_order_alert_service.dart';
+
 enum AuthStatus { unknown, authenticated, unauthenticated }
 
 class DeliveryAuthProvider extends ChangeNotifier {
@@ -34,17 +36,21 @@ class DeliveryAuthProvider extends ChangeNotifier {
       if (firebaseUser == null) {
         _status = AuthStatus.unauthenticated;
         _user = null;
+        DeliveryOrderAlertService().stopListening();
         notifyListeners();
       } else {
         _userSub = _userRepo.getUserStream(firebaseUser.uid).listen((profile) {
           if (profile != null && profile.role == UserRole.deliveryPartner) {
             _user = profile;
             _status = AuthStatus.authenticated;
+            DeliveryOrderAlertService().startListening(profile.id);
           } else if (profile != null) {
             _status = AuthStatus.unauthenticated;
             _error = 'Unauthorized. This app is for delivery partners only.';
+            DeliveryOrderAlertService().stopListening();
           } else {
             _status = AuthStatus.unauthenticated;
+            DeliveryOrderAlertService().stopListening();
           }
           notifyListeners();
         });

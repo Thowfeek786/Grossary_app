@@ -12,5 +12,6 @@ export 'src/services/notification_service.dart';
 export 'src/services/haptic_service.dart';
 export 'src/services/onboarding_service.dart';
 export 'src/services/export_service.dart';
+export 'src/services/audio_service.dart';
 
 

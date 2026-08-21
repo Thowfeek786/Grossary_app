@@ -30,6 +30,7 @@ dependencies:
   shared_preferences: ^2.5.2
   shimmer: ^3.0.0
   google_maps_flutter: ^2.10.0
+  audioplayers: ^6.1.0
 
 dev_dependencies:
   flutter_test:

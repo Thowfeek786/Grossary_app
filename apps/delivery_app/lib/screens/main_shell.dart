@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../widgets/delivery_alert_overlay.dart';
 
 class MainShell extends StatelessWidget {
   final Widget child;
@@ -36,7 +37,7 @@ class MainShell extends StatelessWidget {
     final selectedIndex = _getSelectedIndex(context);
 
     return Scaffold(
-      body: child,
+      body: DeliveryAlertOverlay(child: child),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
