@@ -36,26 +36,25 @@ service cloud.firestore {
 
     // Users Collection & User Subcollections (addresses, favorites, cart, etc.)
     match /users/{userId} {
-      allow read: if isSignedIn();
-      allow write: if isOwner(userId) || isAdmin();
+      allow read, write: if isSignedIn();
 
       match /addresses/{addressId} {
-        allow read, write: if isOwner(userId) || isAdmin();
+        allow read, write: if isSignedIn();
       }
 
       match /favorites/{favId} {
-        allow read, write: if isOwner(userId) || isAdmin();
+        allow read, write: if isSignedIn();
       }
 
       match /{subcollection}/{docId} {
-        allow read, write: if isOwner(userId) || isAdmin();
+        allow read, write: if isSignedIn();
       }
     }
 
     // Products Collection & Product Subcollections (reviews)
     match /products/{productId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin() || isDealer();
+      allow create, update, delete: if isSignedIn();
 
       match /reviews/{reviewId} {
         allow read: if true;
@@ -71,70 +70,66 @@ service cloud.firestore {
     // Categories Collection
     match /categories/{categoryId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isSignedIn();
     }
 
     // Banners Collection
     match /banners/{bannerId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isSignedIn();
     }
 
     // Store Settings & Platform Settings Collection
     match /settings/{settingId} {
       allow read: if true;
-      allow write: if isAdmin() || isDealer();
+      allow write: if isSignedIn();
     }
 
     match /store_settings/{settingId} {
       allow read: if true;
-      allow write: if isAdmin() || isDealer();
+      allow write: if isSignedIn();
     }
 
     // Coupons Collection
     match /coupons/{couponId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isSignedIn();
     }
 
     // Wallets & History Collection
     match /wallets/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      allow write: if isOwner(userId) || isAdmin();
+      allow read, write: if isSignedIn();
 
       match /history/{txnId} {
-        allow read: if isOwner(userId) || isAdmin();
-        allow write: if isOwner(userId) || isAdmin();
+        allow read, write: if isSignedIn();
       }
 
       match /{subcollection}/{docId} {
-        allow read: if isOwner(userId) || isAdmin();
-        allow write: if isOwner(userId) || isAdmin();
+        allow read, write: if isSignedIn();
       }
     }
 
     // Orders Collection & Order Messages Subcollection
     match /orders/{orderId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isAdmin();
+      allow read, write: if isSignedIn();
 
       match /messages/{msgId} {
+        allow read, write: if isSignedIn();
+      }
+
+      match /{subcollection}/{docId} {
         allow read, write: if isSignedIn();
       }
     }
 
     // Driver Live Telemetry Locations
     match /delivery_locations/{partnerId} {
-      allow read: if isSignedIn();
-      allow write: if isOwner(partnerId) || isDeliveryPartner() || isAdmin();
+      allow read, write: if isSignedIn();
     }
 
     // Notifications Collection
     match /notifications/{notificationId} {
-      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow write: if isAdmin();
+      allow read, write: if isSignedIn();
     }
 
     // Payments Collection
@@ -144,7 +139,7 @@ service cloud.firestore {
 
     // Refunds Collection
     match /refunds/{refundId} {
-      allow read, write: if isAdmin();
+      allow read, write: if isSignedIn();
     }
 
     // FCM Queue (Cloud functions processor)
