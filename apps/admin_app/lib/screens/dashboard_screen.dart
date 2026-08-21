@@ -443,7 +443,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     return Column(
                       children: [
                         Material(
-                          color: Colors.transparent,
+                          type: MaterialType.transparency,
                           child: ListTile(
                             onTap: () => context.push('/management/orders/${o.id}'),
                             dense: true,
@@ -736,7 +736,7 @@ class _ModGroupWidgetState extends State<_ModGroupWidget> {
                   children: [
                     const Divider(height: 1, color: Color(0xFFF1F5F9), indent: 16, endIndent: 16),
                     Material(
-                      color: Colors.transparent,
+                      type: MaterialType.transparency,
                       child: ListTile(
                         dense: true,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),

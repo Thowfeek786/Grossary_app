@@ -166,8 +166,12 @@ class _DI extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-      child: Material(
+      decoration: BoxDecoration(
         color: isActive ? activeColor.withValues(alpha: 0.1) : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Material(
+        type: MaterialType.transparency,
         borderRadius: BorderRadius.circular(12),
         child: ListTile(
           dense: true,

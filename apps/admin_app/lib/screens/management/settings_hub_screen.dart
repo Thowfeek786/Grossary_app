@@ -326,7 +326,7 @@ class _SettingsTile extends StatelessWidget {
         ],
       ),
       child: Material(
-        color: Colors.transparent,
+        type: MaterialType.transparency,
         borderRadius: BorderRadius.circular(16),
         child: ListTile(
           onTap: onTap,

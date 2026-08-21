@@ -27,11 +27,14 @@ class _PartnerDetailsScreenState extends State<PartnerDetailsScreen> {
     final cleanPhone = phone.replaceAll(RegExp(r'[^0-9+]'), '');
     final uri = Uri.parse('tel:$cleanPhone');
     try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
       }
     } catch (e) {
-      debugPrint('Call error: $e');
+      try {
+        await launchUrl(uri);
+      } catch (_) {}
     }
   }
 
@@ -40,11 +43,14 @@ class _PartnerDetailsScreenState extends State<PartnerDetailsScreen> {
     final text = Uri.encodeComponent('Hello $name, this is GroceryGo Admin operations.');
     final uri = Uri.parse('https://wa.me/$cleanPhone?text=$text');
     try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
       }
     } catch (e) {
-      debugPrint('WhatsApp error: $e');
+      try {
+        await launchUrl(uri);
+      } catch (_) {}
     }
   }
 
