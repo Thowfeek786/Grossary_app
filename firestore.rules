@@ -11,29 +11,6 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    function getUserData() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
-    }
-
-    function hasRole(role) {
-      return isSignedIn() && (
-        request.auth.token.role == role || 
-        getUserData().role == role
-      );
-    }
-
-    function isAdmin() {
-      return hasRole('admin');
-    }
-
-    function isDealer() {
-      return hasRole('dealer');
-    }
-
-    function isDeliveryPartner() {
-      return hasRole('delivery_partner');
-    }
-
     // Users Collection & User Subcollections (addresses, favorites, cart, etc.)
     match /users/{userId} {
       allow read, write: if isSignedIn();
@@ -65,6 +42,12 @@ service cloud.firestore {
         allow read: if true;
         allow write: if isSignedIn();
       }
+    }
+
+    // Reviews Top-Level Collection
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow write: if isSignedIn();
     }
 
     // Categories Collection
@@ -137,6 +120,19 @@ service cloud.firestore {
       allow read, write: if isSignedIn();
     }
 
+    // Support Chats (Chat Management)
+    match /support_chats/{chatId} {
+      allow read, write: if isSignedIn();
+
+      match /messages/{msgId} {
+        allow read, write: if isSignedIn();
+      }
+
+      match /{subcollection}/{docId} {
+        allow read, write: if isSignedIn();
+      }
+    }
+
     // Payments Collection
     match /payments/{paymentId} {
       allow read, write: if isSignedIn();
@@ -156,19 +152,15 @@ service cloud.firestore {
       allow read, write: if isSignedIn();
     }
 
-    // Flash Sales Collection
-    match /flash_sales/{saleId} {
+    // Flash Sale Collection (both flash_sale and flash_sales)
+    match /flash_sale/{saleId} {
       allow read: if true;
       allow write: if isSignedIn();
     }
 
-    // Chats & Messages Collection
-    match /chats/{chatId} {
-      allow read, write: if isSignedIn();
-
-      match /{subcollection}/{docId} {
-        allow read, write: if isSignedIn();
-      }
+    match /flash_sales/{saleId} {
+      allow read: if true;
+      allow write: if isSignedIn();
     }
 
     // FCM Queue (Cloud functions processor)
