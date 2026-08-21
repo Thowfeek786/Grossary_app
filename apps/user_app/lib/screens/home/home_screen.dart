@@ -885,8 +885,12 @@ class _FlashSaleSectionState extends State<_FlashSaleSection> {
   void initState() {
     super.initState();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted && _secondsLeft > 0) {
+      if (!mounted) return;
+      if (_secondsLeft > 0) {
         setState(() => _secondsLeft--);
+      } else {
+        _timer.cancel();
+        setState(() {});
       }
     });
   }
@@ -906,96 +910,105 @@ class _FlashSaleSectionState extends State<_FlashSaleSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFFF7ED), Color(0xFFFFEDD5)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: const Color(0xFFF97316).withValues(alpha: 0.3),
-        ),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEA580C),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.local_fire_department_rounded,
-                  color: Colors.white,
-                  size: 18,
-                ),
+    if (_secondsLeft <= 0) {
+      return const SizedBox.shrink();
+    }
+
+    return StreamBuilder<List<ProductModel>>(
+      stream: ProductRepository().getProducts(featuredOnly: true),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        final products = snapshot.data!;
+
+        return AnimatedSize(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFFF7ED), Color(0xFFFFEDD5)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              const SizedBox(width: 10),
-              const Text(
-                'FLASH SALE',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 16,
-                  color: Color(0xFF9A3412),
-                ),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: const Color(0xFFF97316).withValues(alpha: 0.3),
               ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEA580C),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.local_fire_department_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    const Text(
+                      'FLASH SALE',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                        color: Color(0xFF9A3412),
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF9A3412),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'Ends in ${_formatTime()}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 11,
+                          fontFamily: 'monospace',
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF9A3412),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  'Ends in ${_formatTime()}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 11,
-                    fontFamily: 'monospace',
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          StreamBuilder<List<ProductModel>>(
-            stream: ProductRepository().getProducts(featuredOnly: true),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const SizedBox.shrink();
-              }
-              final products = snapshot.data!;
-              return SizedBox(
-                height: 195,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: products.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (ctx, i) => SizedBox(
-                    width: 150,
-                    child: ProductCard(
-                      product: products[i],
-                      onTap: () =>
-                          context.push('/home/product/${products[i].id}'),
-                      onAddToCart: () =>
-                          context.read<CartProvider>().addItem(products[i]),
+                const SizedBox(height: 14),
+                SizedBox(
+                  height: 195,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: products.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
+                    itemBuilder: (ctx, i) => SizedBox(
+                      width: 150,
+                      child: ProductCard(
+                        product: products[i],
+                        onTap: () =>
+                            context.push('/home/product/${products[i].id}'),
+                        onAddToCart: () =>
+                            context.read<CartProvider>().addItem(products[i]),
+                      ),
                     ),
                   ),
                 ),
-              );
-            },
+              ],
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

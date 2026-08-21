@@ -15,13 +15,23 @@ class InventoryScreen extends StatefulWidget {
 
 class _InventoryScreenState extends State<InventoryScreen> {
   String _stockFilter = 'All';
+  String _selectedCategoryId = 'All';
   String _searchQuery = '';
 
   List<ProductModel> _filterProducts(List<ProductModel> products) {
     var list = products;
+
+    // 1. Category Filter
+    if (_selectedCategoryId != 'All') {
+      list = list.where((p) => p.categoryId == _selectedCategoryId).toList();
+    }
+
+    // 2. Search Query
     if (_searchQuery.isNotEmpty) {
       list = list.where((p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
     }
+
+    // 3. Stock / Offer Status Filter
     switch (_stockFilter) {
       case 'In Stock':
         return list.where((p) => p.inStock && p.stockQuantity >= 10).toList();
@@ -29,6 +39,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
         return list.where((p) => p.stockQuantity < 10 && p.stockQuantity > 0).toList();
       case 'Out of Stock':
         return list.where((p) => !p.inStock || p.stockQuantity == 0).toList();
+      case 'Offers & BOGO':
+        return list.where((p) => p.hasSpecialOffer).toList();
       default:
         return list;
     }
@@ -55,7 +67,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       body: StreamBuilder<List<ProductModel>>(
         stream: ProductRepository().getProducts(dealerId: user.id, activeOnly: false),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
             return const Center(child: CircularProgressIndicator(color: Color(0xFF059669)));
           }
           final rawProducts = snapshot.data ?? [];
@@ -68,12 +80,13 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 color: Colors.white,
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Search Bar
                     TextField(
                       onChanged: (val) => setState(() => _searchQuery = val),
                       decoration: InputDecoration(
-                        hintText: 'Search products by name...',
+                        hintText: 'Search products by name or SKU...',
                         hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                         prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF64748B)),
                         filled: true,
@@ -83,41 +96,75 @@ class _InventoryScreenState extends State<InventoryScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
 
-                    // Filter Chips
+                    // Category Filter Chips
+                    StreamBuilder<List<CategoryModel>>(
+                      stream: CategoryRepository().getCategories(),
+                      builder: (context, catSnap) {
+                        final categories = catSnap.data ?? [];
+                        return SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _buildCategoryChip('All', 'All Categories', Icons.category_rounded),
+                              ...categories.map((c) => _buildCategoryChip(c.id, c.name, null)),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // Stock & Deals Status Filter Chips
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        children: ['All', 'In Stock', 'Low Stock', 'Out of Stock'].map((cat) {
-                          final isSelected = _stockFilter == cat;
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: ChoiceChip(
-                              label: Text(cat),
-                              selected: isSelected,
-                              onSelected: (selected) {
-                                if (selected) setState(() => _stockFilter = cat);
-                              },
-                              selectedColor: const Color(0xFF059669),
-                              backgroundColor: const Color(0xFFF1F5F9),
-                              labelStyle: TextStyle(
-                                color: isSelected ? Colors.white : const Color(0xFF475569),
-                                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                                fontSize: 12,
-                              ),
-                              side: BorderSide(color: isSelected ? const Color(0xFF059669) : const Color(0xFFE2E8F0)),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                            ),
-                          );
-                        }).toList(),
+                        children: [
+                          _buildStatusChip('All', Icons.apps_rounded),
+                          _buildStatusChip('In Stock', Icons.check_circle_outline_rounded),
+                          _buildStatusChip('Low Stock', Icons.warning_amber_rounded),
+                          _buildStatusChip('Out of Stock', Icons.cancel_outlined),
+                          _buildStatusChip('Offers & BOGO', Icons.local_fire_department_rounded),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
+
+              // Total matching count banner
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Showing ${products.length} of ${rawProducts.length} items',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF64748B)),
+                    ),
+                    if (_stockFilter != 'All' || _selectedCategoryId != 'All' || _searchQuery.isNotEmpty)
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _stockFilter = 'All';
+                            _selectedCategoryId = 'All';
+                            _searchQuery = '';
+                          });
+                        },
+                        child: const Text(
+                          'Clear Filters',
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF059669)),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 6),
 
               // Product Inventory List
               Expanded(
@@ -138,14 +185,16 @@ class _InventoryScreenState extends State<InventoryScreen> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                rawProducts.isEmpty ? 'No Products in Inventory' : 'No Products Found ($_stockFilter)',
+                                rawProducts.isEmpty ? 'No Products in Inventory' : 'No Products Match Selected Filters',
                                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF0F172A)),
                               ),
                               const SizedBox(height: 6),
-                              const Text(
-                                'Tap the + button above to list new store items for your customers.',
+                              Text(
+                                rawProducts.isEmpty
+                                    ? 'Tap the + button above to list new store items.'
+                                    : 'Try selecting another category or stock status filter.',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                                style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                               ),
                             ],
                           ),
@@ -167,6 +216,52 @@ class _InventoryScreenState extends State<InventoryScreen> {
       ),
     );
   }
+
+  Widget _buildCategoryChip(String id, String label, IconData? icon) {
+    final isSelected = _selectedCategoryId == id;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: ChoiceChip(
+        avatar: icon != null ? Icon(icon, size: 14, color: isSelected ? Colors.white : const Color(0xFF046A38)) : null,
+        label: Text(label),
+        selected: isSelected,
+        onSelected: (selected) {
+          if (selected) setState(() => _selectedCategoryId = id);
+        },
+        selectedColor: const Color(0xFF0B3C26),
+        backgroundColor: const Color(0xFFF1F5F9),
+        labelStyle: TextStyle(
+          color: isSelected ? Colors.white : const Color(0xFF334155),
+          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+          fontSize: 11.5,
+        ),
+        side: BorderSide(color: isSelected ? const Color(0xFF0B3C26) : const Color(0xFFCBD5E1)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      ),
+    );
+  }
+
+  Widget _buildStatusChip(String title, IconData icon) {
+    final isSelected = _stockFilter == title;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: FilterChip(
+        avatar: Icon(icon, size: 14, color: isSelected ? Colors.white : const Color(0xFF059669)),
+        label: Text(title),
+        selected: isSelected,
+        onSelected: (_) => setState(() => _stockFilter = title),
+        selectedColor: const Color(0xFF059669),
+        backgroundColor: Colors.white,
+        labelStyle: TextStyle(
+          color: isSelected ? Colors.white : const Color(0xFF475569),
+          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+          fontSize: 11.5,
+        ),
+        side: BorderSide(color: isSelected ? const Color(0xFF059669) : const Color(0xFFE2E8F0)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      ),
+    );
+  }
 }
 
 class _InventoryCard extends StatelessWidget {
@@ -180,7 +275,7 @@ class _InventoryCard extends StatelessWidget {
 
     Color statusColor = const Color(0xFF059669);
     Color statusBg = const Color(0xFF10B981).withValues(alpha: 0.12);
-    String statusText = 'Stock: ${product.stockQuantity}';
+    String statusText = 'Stock: ${product.stockQuantity.toInt()}';
 
     if (isOut) {
       statusColor = const Color(0xFFEF4444);
@@ -189,7 +284,7 @@ class _InventoryCard extends StatelessWidget {
     } else if (isLow) {
       statusColor = const Color(0xFFD97706);
       statusBg = const Color(0xFFF59E0B).withValues(alpha: 0.12);
-      statusText = 'Low Stock (${product.stockQuantity})';
+      statusText = 'Low Stock (${product.stockQuantity.toInt()})';
     }
 
     return Container(
@@ -219,7 +314,9 @@ class _InventoryCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text('₹${product.price.toStringAsFixed(0)} / ${product.unit}', style: const TextStyle(color: Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 6),
-                Row(
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -232,7 +329,18 @@ class _InventoryCard extends StatelessWidget {
                         style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.w900),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    if (product.hasSpecialOffer)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(colors: [Color(0xFFEA580C), Color(0xFFF97316)]),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          product.offerLabel ?? 'OFFER',
+                          style: const TextStyle(color: Colors.white, fontSize: 9.5, fontWeight: FontWeight.w900),
+                        ),
+                      ),
                     // Quick Stock Add +10 Button
                     InkWell(
                       onTap: () {
