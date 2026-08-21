@@ -939,12 +939,16 @@ class _FlashSaleSectionState extends State<_FlashSaleSection> {
           return const SizedBox.shrink();
         }
 
-        // Update target end time if changed
-        if (_targetEndTime == null || _targetEndTime != sale.endTime) {
-          _targetEndTime = sale.endTime.isAfter(DateTime.now())
-              ? sale.endTime
-              : DateTime.now().add(const Duration(hours: 3, minutes: 45));
-          _remaining = _targetEndTime!.difference(DateTime.now());
+        // Update target end time
+        if (_targetEndTime != sale.endTime) {
+          _targetEndTime = sale.endTime;
+          final diff = sale.endTime.difference(DateTime.now());
+          _remaining = diff.isNegative ? Duration.zero : diff;
+        }
+
+        // Hide completely if timer has reached zero or expired
+        if (_remaining.inSeconds <= 0 || sale.endTime.isBefore(DateTime.now())) {
+          return const SizedBox.shrink();
         }
 
         final hours = _twoDigits(_remaining.inHours);
