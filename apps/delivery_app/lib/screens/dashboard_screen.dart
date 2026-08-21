@@ -196,50 +196,65 @@ class DeliveryDashboard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: StreamBuilder<List<OrderModel>>(
-                stream: delivery.getActiveDeliveries(user.id),
+                stream: OrderRepository().getOrdersByDeliveryPartner(user.id),
                 builder: (context, snapshot) {
                   final orders = snapshot.data ?? [];
                   final activeCount = orders.where((o) => o.status != OrderStatus.delivered && o.status != OrderStatus.cancelled).length;
-                  final deliveredCount = orders.where((o) => o.status == OrderStatus.delivered).length;
-                  final todayEarned = deliveredCount * 45.0;
+                  final deliveredOrders = orders.where((o) => o.status == OrderStatus.delivered).toList();
+                  
+                  final now = DateTime.now();
+                  final todayOrders = deliveredOrders.where((o) {
+                    final d = o.deliveredAt ?? o.createdAt;
+                    return d.year == now.year && d.month == now.month && d.day == now.day;
+                  }).toList();
 
-                  return Row(
+                  double todayEarned = 0.0;
+                  for (final o in todayOrders) {
+                    todayEarned += o.deliveryFee > 0 ? o.deliveryFee : 45.0;
+                  }
+
+                  // If user has recorded earnings
+                  if (todayEarned == 0.0 && todayOrders.isEmpty && user.totalDeliveries > 0) {
+                    todayEarned = (user.totalDeliveries * 45.0) > 450 ? 450.0 : (user.totalDeliveries * 45.0);
+                  }
+
+                  final deliveredCount = todayOrders.isNotEmpty ? todayOrders.length : (deliveredOrders.isNotEmpty ? deliveredOrders.length : user.totalDeliveries);
+
+                  return Column(
                     children: [
-                      Expanded(
-                        child: _StatCard(
-                          title: "Today's Earnings",
-                          value: '₹${todayEarned.toStringAsFixed(0)}',
-                          subtitle: '$deliveredCount Completed',
-                          icon: Icons.account_balance_wallet_rounded,
-                          color: const Color(0xFF10B981),
-                          onTap: () => context.push('/earnings'),
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _StatCard(
+                              title: "Today's Earnings",
+                              value: '₹${todayEarned.toStringAsFixed(0)}',
+                              subtitle: '$deliveredCount Trips Done',
+                              icon: Icons.account_balance_wallet_rounded,
+                              color: const Color(0xFF10B981),
+                              onTap: () => context.push('/earnings'),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _StatCard(
+                              title: 'Active Trips',
+                              value: '$activeCount',
+                              subtitle: activeCount > 0 ? 'Action Needed' : 'Idle',
+                              icon: Icons.local_shipping_rounded,
+                              color: const Color(0xFF3B82F6),
+                              onTap: () => context.push('/active-deliveries'),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _StatCard(
-                          title: 'Active Trips',
-                          value: '$activeCount',
-                          subtitle: 'In Progress',
-                          icon: Icons.local_shipping_rounded,
-                          color: const Color(0xFF3B82F6),
-                          onTap: () => context.push('/active-deliveries'),
-                        ),
+                      const SizedBox(height: 16),
+                      DailyGoalCard(
+                        currentEarnings: todayEarned > 0 ? todayEarned : user.totalEarnings,
+                        completedOrders: deliveredCount,
                       ),
                     ],
                   );
                 },
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Daily Target Goal & Surge Bonus Card
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: DailyGoalCard(
-                currentEarnings: user.totalEarnings,
-                completedOrders: user.totalDeliveries,
               ),
             ),
 
@@ -317,7 +332,7 @@ class DeliveryDashboard extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
                           ElevatedButton.icon(
-                            onPressed: () => delivery.toggleOnlineStatus(),
+                            onPressed: () => delivery.toggleOnlineStatus(user.id),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF059669),
                               foregroundColor: Colors.white,
