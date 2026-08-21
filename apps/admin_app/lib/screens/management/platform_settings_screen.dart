@@ -4,7 +4,6 @@ import 'package:core/core.dart';
 import 'package:ui_kit/ui_kit.dart';
 import 'package:models/models.dart';
 import 'package:repository/repository.dart';
-// import '../../widgets/admin_drawer.dart';
 
 class PlatformSettingsScreen extends StatefulWidget {
   const PlatformSettingsScreen({super.key});
@@ -28,6 +27,9 @@ class _PlatformSettingsScreenState extends State<PlatformSettingsScreen> {
   late TextEditingController _appNameCtrl;
   late TextEditingController _supportEmailCtrl;
   late TextEditingController _supportPhoneCtrl;
+  late TextEditingController _vendorHelplineCtrl;
+  late TextEditingController _whatsappSupportCtrl;
+  late TextEditingController _vendorEmailCtrl;
   late TextEditingController _minOrderCtrl;
   late TextEditingController _appVersionCtrl;
   late TextEditingController _termsCtrl;
@@ -44,6 +46,9 @@ class _PlatformSettingsScreenState extends State<PlatformSettingsScreen> {
     _appNameCtrl = TextEditingController();
     _supportEmailCtrl = TextEditingController();
     _supportPhoneCtrl = TextEditingController();
+    _vendorHelplineCtrl = TextEditingController();
+    _whatsappSupportCtrl = TextEditingController();
+    _vendorEmailCtrl = TextEditingController();
     _minOrderCtrl = TextEditingController();
     _appVersionCtrl = TextEditingController();
     _termsCtrl = TextEditingController();
@@ -60,6 +65,9 @@ class _PlatformSettingsScreenState extends State<PlatformSettingsScreen> {
     _appNameCtrl.dispose();
     _supportEmailCtrl.dispose();
     _supportPhoneCtrl.dispose();
+    _vendorHelplineCtrl.dispose();
+    _whatsappSupportCtrl.dispose();
+    _vendorEmailCtrl.dispose();
     _minOrderCtrl.dispose();
     _appVersionCtrl.dispose();
     _termsCtrl.dispose();
@@ -77,6 +85,9 @@ class _PlatformSettingsScreenState extends State<PlatformSettingsScreen> {
     _appNameCtrl.text = settings.appName;
     _supportEmailCtrl.text = settings.supportEmail;
     _supportPhoneCtrl.text = settings.supportPhone;
+    _vendorHelplineCtrl.text = settings.vendorHelplinePhone;
+    _whatsappSupportCtrl.text = settings.whatsappSupportPhone;
+    _vendorEmailCtrl.text = settings.vendorSupportEmail;
     _minOrderCtrl.text = settings.minOrderValue.toStringAsFixed(0);
     _appVersionCtrl.text = settings.appVersion;
     _termsCtrl.text = settings.termsOfService;
@@ -108,49 +119,49 @@ class _PlatformSettingsScreenState extends State<PlatformSettingsScreen> {
             icon: Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
+                color: Colors.white.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.menu_rounded, size: 20, color: Colors.white),
+              child: const Icon(Icons.menu_rounded, color: Colors.white, size: 20),
             ),
             onPressed: () => Scaffold.of(ctx).openDrawer(),
           ),
         ),
       ),
       body: StreamBuilder<StoreSettingsModel>(
-        stream: _settingsRepo.getGlobalSettings(),
+        stream: _settingsRepo.streamSettings('global'),
         builder: (context, snap) {
-          if (snap.connectionState == ConnectionState.waiting && !_isInitialized) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+          if (snap.connectionState == ConnectionState.waiting && !snap.hasData) {
+            return const Center(child: CircularProgressIndicator());
           }
 
           final settings = snap.data ?? const StoreSettingsModel(id: 'global');
           _populateFields(settings);
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // General Settings
-                _sectionHeader('General Platform Details', Icons.store_rounded),
+                // General Platform Settings
+                _sectionHeader('General Platform Details', Icons.tune_rounded),
                 const SizedBox(height: 12),
                 _card(
                   child: Column(
                     children: [
                       TextField(
                         controller: _appNameCtrl,
-                        decoration: _inputDeco('Platform Name', Icons.apps_rounded),
+                        decoration: _inputDeco('Application Name', Icons.apps_rounded),
                       ),
                       const SizedBox(height: 12),
                       TextField(
                         controller: _supportEmailCtrl,
-                        decoration: _inputDeco('Support Email Address', Icons.email_outlined),
+                        decoration: _inputDeco('Customer Support Email', Icons.email_outlined),
                       ),
                       const SizedBox(height: 12),
                       TextField(
                         controller: _supportPhoneCtrl,
-                        decoration: _inputDeco('Support Helpline Phone', Icons.phone_outlined),
+                        decoration: _inputDeco('Customer Support Phone', Icons.phone_outlined),
                       ),
                       const SizedBox(height: 12),
                       TextField(
@@ -162,6 +173,31 @@ class _PlatformSettingsScreenState extends State<PlatformSettingsScreen> {
                       TextField(
                         controller: _appVersionCtrl,
                         decoration: _inputDeco('App Release Version', Icons.verified_outlined),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Vendor Partner Helpline & Support Contacts
+                _sectionHeader('Vendor & Partner Helpline Contacts', Icons.support_agent_rounded),
+                const SizedBox(height: 12),
+                _card(
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: _vendorHelplineCtrl,
+                        decoration: _inputDeco('Vendor Toll-Free / Phone Helpline', Icons.phone_in_talk_rounded),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _whatsappSupportCtrl,
+                        decoration: _inputDeco('WhatsApp Dispatch Desk Number (with country code)', Icons.chat_rounded),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _vendorEmailCtrl,
+                        decoration: _inputDeco('Partner Relations Support Email', Icons.mark_email_read_outlined),
                       ),
                     ],
                   ),
@@ -218,16 +254,16 @@ class _PlatformSettingsScreenState extends State<PlatformSettingsScreen> {
                       SwitchListTile(
                         value: _isOnlinePaymentEnabled,
                         onChanged: (val) => setState(() => _isOnlinePaymentEnabled = val),
-                        title: const Text('Online Payment (UPI / Cards)', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFF0F172A))),
-                        subtitle: const Text('Accept UPI, Debit/Credit cards & Netbanking', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                        title: const Text('Online UPI / QR Payment', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFF0F172A))),
+                        subtitle: const Text('Accept UPI, Google Pay, PhonePe, Paytm', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
                         activeThumbColor: const Color(0xFF6366F1),
                       ),
                       const Divider(height: 1),
                       SwitchListTile(
                         value: _isWalletEnabled,
                         onChanged: (val) => setState(() => _isWalletEnabled = val),
-                        title: const Text('In-App Wallet', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFF0F172A))),
-                        subtitle: const Text('Allow payment using wallet balance', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                        title: const Text('GroceryGo Wallet', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFF0F172A))),
+                        subtitle: const Text('Allow wallet balance top-up & payments', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
                         activeThumbColor: const Color(0xFF6366F1),
                       ),
                     ],
@@ -235,86 +271,91 @@ class _PlatformSettingsScreenState extends State<PlatformSettingsScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Admin Bank & UPI Accounts
-                _sectionHeader('Admin Official Payment & UPI Account', Icons.account_balance_rounded),
+                // Official Admin Bank & UPI Details
+                _sectionHeader('Official Admin Bank & UPI Details', Icons.account_balance_rounded),
                 const SizedBox(height: 12),
                 _card(
                   child: Column(
                     children: [
                       TextField(
                         controller: _adminUpiCtrl,
-                        decoration: _inputDeco('Admin Official UPI ID (VPA)', Icons.qr_code_2_rounded),
+                        decoration: _inputDeco('Admin Official UPI VPA', Icons.qr_code_rounded),
                       ),
                       const SizedBox(height: 12),
                       TextField(
                         controller: _adminPayeeCtrl,
-                        decoration: _inputDeco('Payee / Account Name', Icons.person_outline_rounded),
+                        decoration: _inputDeco('Payee Merchant Name', Icons.badge_outlined),
                       ),
                       const SizedBox(height: 12),
                       TextField(
                         controller: _adminBankCtrl,
-                        decoration: _inputDeco('Bank Name', Icons.account_balance_outlined),
+                        decoration: _inputDeco('Admin Bank Name', Icons.account_balance_outlined),
                       ),
                       const SizedBox(height: 12),
                       TextField(
                         controller: _adminAccountCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: _inputDeco('Account Number', Icons.numbers_rounded),
+                        decoration: _inputDeco('Admin Bank Account Number', Icons.numbers_rounded),
                       ),
                       const SizedBox(height: 12),
                       TextField(
                         controller: _adminIfscCtrl,
-                        decoration: _inputDeco('IFSC Code', Icons.code_rounded),
+                        decoration: _inputDeco('Bank IFSC Code', Icons.password_rounded),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 24),
 
-                // System Control
-                _sectionHeader('System Control', Icons.build_rounded),
+                // System Security & Compliance Controls
+                _sectionHeader('System Security & Operations', Icons.security_rounded),
                 const SizedBox(height: 12),
                 _card(
                   child: Column(
                     children: [
                       SwitchListTile(
-                        value: _isMaintenanceMode,
-                        onChanged: (val) => setState(() => _isMaintenanceMode = val),
-                        title: const Text('Maintenance Mode', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFF0F172A))),
-                        subtitle: const Text('Temporarily block user orders for system updates', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
-                        activeThumbColor: const Color(0xFFEF4444),
+                        value: _requireDriverDocVerification,
+                        onChanged: (val) => setState(() => _requireDriverDocVerification = val),
+                        title: const Text('Mandatory Driver Verification', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFF0F172A))),
+                        subtitle: const Text('Require Driving License & RC approval before driver dispatch', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                        activeThumbColor: const Color(0xFF10B981),
                       ),
                       const Divider(height: 1),
                       SwitchListTile(
-                        value: _requireDriverDocVerification,
-                        onChanged: (val) => setState(() => _requireDriverDocVerification = val),
-                        title: const Text('Require Driver Document Verification', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFF0F172A))),
-                        subtitle: const Text('Require drivers to have approved DL & RC before going online', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
-                        activeThumbColor: const Color(0xFF6366F1),
+                        value: _isMaintenanceMode,
+                        onChanged: (val) => setState(() => _isMaintenanceMode = val),
+                        title: const Text('System Maintenance Mode', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFFEF4444))),
+                        subtitle: const Text('Temporarily pause customer orders for emergency maintenance', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                        activeThumbColor: const Color(0xFFEF4444),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 32),
 
-                // Save button
+                // Save Changes CTA
                 SizedBox(
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton(
                     onPressed: _isSaving ? null : () => _saveSettings(settings),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0F172A),
+                      backgroundColor: const Color(0xFF6366F1),
                       foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                     child: _isSaving
-                        ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                        : const Text('Save All Platform Settings', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.save_rounded, size: 20),
+                              SizedBox(width: 8),
+                              Text('Save Platform Settings', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
+                            ],
+                          ),
                   ),
                 ),
-                const SizedBox(height: 40),
               ],
             ),
           );
@@ -330,6 +371,9 @@ class _PlatformSettingsScreenState extends State<PlatformSettingsScreen> {
       appName: _appNameCtrl.text.trim(),
       supportEmail: _supportEmailCtrl.text.trim(),
       supportPhone: _supportPhoneCtrl.text.trim(),
+      vendorHelplinePhone: _vendorHelplineCtrl.text.trim(),
+      whatsappSupportPhone: _whatsappSupportCtrl.text.trim(),
+      vendorSupportEmail: _vendorEmailCtrl.text.trim(),
       minOrderValue: double.tryParse(_minOrderCtrl.text.trim()) ?? current.minOrderValue,
       appVersion: _appVersionCtrl.text.trim(),
       termsOfService: _termsCtrl.text.trim(),
@@ -372,12 +416,12 @@ class _PlatformSettingsScreenState extends State<PlatformSettingsScreen> {
     }
   }
 
-  Widget _sectionHeader(String text, IconData icon) {
+  Widget _sectionHeader(String title, IconData icon) {
     return Row(
       children: [
         Icon(icon, size: 18, color: const Color(0xFF6366F1)),
         const SizedBox(width: 8),
-        Text(text, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Color(0xFF0F172A))),
+        Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: Color(0xFF0F172A))),
       ],
     );
   }
@@ -387,10 +431,10 @@ class _PlatformSettingsScreenState extends State<PlatformSettingsScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 2)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 6, offset: const Offset(0, 2)),
         ],
       ),
       child: child,
@@ -400,9 +444,12 @@ class _PlatformSettingsScreenState extends State<PlatformSettingsScreen> {
   InputDecoration _inputDeco(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon, size: 18),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFCBD5E1))),
+      labelStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+      prefixIcon: Icon(icon, size: 20, color: const Color(0xFF6366F1)),
+      filled: true,
+      fillColor: const Color(0xFFF8FAFC),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     );

@@ -37,6 +37,9 @@ class StoreSettingsModel {
   final String appName;
   final String supportEmail;
   final String supportPhone;
+  final String vendorHelplinePhone;
+  final String whatsappSupportPhone;
+  final String vendorSupportEmail;
   final double minOrderValue;
   final String appVersion;
   final String termsOfService;
@@ -67,6 +70,9 @@ class StoreSettingsModel {
     this.appName = 'GroceryGo',
     this.supportEmail = 'support@grocerygo.com',
     this.supportPhone = '1800-476-2379',
+    this.vendorHelplinePhone = '1800-889-988',
+    this.whatsappSupportPhone = '+919876543210',
+    this.vendorSupportEmail = 'partners@grocerygo.com',
     this.minOrderValue = 100.0,
     this.appVersion = '1.0.0 (Build #42)',
     this.termsOfService = _defaultTerms,
@@ -97,6 +103,9 @@ class StoreSettingsModel {
       appName: data['appName'] as String? ?? 'GroceryGo',
       supportEmail: data['supportEmail'] as String? ?? 'support@grocerygo.com',
       supportPhone: data['supportPhone'] as String? ?? '1800-476-2379',
+      vendorHelplinePhone: data['vendorHelplinePhone'] as String? ?? '1800-889-988',
+      whatsappSupportPhone: data['whatsappSupportPhone'] as String? ?? '+919876543210',
+      vendorSupportEmail: data['vendorSupportEmail'] as String? ?? 'partners@grocerygo.com',
       minOrderValue: (data['minOrderValue'] as num?)?.toDouble() ?? 100.0,
       appVersion: data['appVersion'] as String? ?? '1.0.0 (Build #42)',
       termsOfService: data['termsOfService'] as String? ?? _defaultTerms,
@@ -124,6 +133,9 @@ class StoreSettingsModel {
         'appName': appName,
         'supportEmail': supportEmail,
         'supportPhone': supportPhone,
+        'vendorHelplinePhone': vendorHelplinePhone,
+        'whatsappSupportPhone': whatsappSupportPhone,
+        'vendorSupportEmail': vendorSupportEmail,
         'minOrderValue': minOrderValue,
         'appVersion': appVersion,
         'termsOfService': termsOfService,
@@ -151,6 +163,9 @@ class StoreSettingsModel {
     String? appName,
     String? supportEmail,
     String? supportPhone,
+    String? vendorHelplinePhone,
+    String? whatsappSupportPhone,
+    String? vendorSupportEmail,
     double? minOrderValue,
     String? appVersion,
     String? termsOfService,
@@ -177,6 +192,9 @@ class StoreSettingsModel {
       appName: appName ?? this.appName,
       supportEmail: supportEmail ?? this.supportEmail,
       supportPhone: supportPhone ?? this.supportPhone,
+      vendorHelplinePhone: vendorHelplinePhone ?? this.vendorHelplinePhone,
+      whatsappSupportPhone: whatsappSupportPhone ?? this.whatsappSupportPhone,
+      vendorSupportEmail: vendorSupportEmail ?? this.vendorSupportEmail,
       minOrderValue: minOrderValue ?? this.minOrderValue,
       appVersion: appVersion ?? this.appVersion,
       termsOfService: termsOfService ?? this.termsOfService,

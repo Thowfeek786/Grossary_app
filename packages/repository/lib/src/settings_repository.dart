@@ -22,6 +22,12 @@ class SettingsRepository {
     });
   }
 
+  // Generic stream settings by ID
+  Stream<StoreSettingsModel> streamSettings(String id) {
+    if (id == 'global') return getGlobalSettings();
+    return getDealerSettings(id);
+  }
+
   // Update store settings (Admin or Dealer)
   Future<bool> updateSettings(StoreSettingsModel settings) async {
     try {
