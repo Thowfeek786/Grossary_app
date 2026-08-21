@@ -84,7 +84,7 @@ exports.api = onRequest(
         const orderData = orderDoc.data();
         const driversSnap = await db
           .collection("users")
-          .where("role", "==", "delivery_partner")
+          .where("role", "in", ["deliveryPartner", "delivery_partner"])
           .where("isActive", "==", true)
           .get();
 
@@ -312,7 +312,7 @@ exports.autoDispatchOrder = onDocumentWritten(
 
     const driversSnap = await db
       .collection("users")
-      .where("role", "==", "delivery_partner")
+      .where("role", "in", ["deliveryPartner", "delivery_partner"])
       .where("isActive", "==", true)
       .get();
 

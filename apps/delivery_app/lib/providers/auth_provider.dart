@@ -44,6 +44,9 @@ class DeliveryAuthProvider extends ChangeNotifier {
             _user = profile;
             _status = AuthStatus.authenticated;
             DeliveryOrderAlertService().startListening(profile.id);
+            NotificationService.saveFcmToken(profile.id);
+            NotificationService.subscribeToTopic('delivery_partners');
+            NotificationService.subscribeToTopic('delivery_notifications');
           } else if (profile != null) {
             _status = AuthStatus.unauthenticated;
             _error = 'Unauthorized. This app is for delivery partners only.';

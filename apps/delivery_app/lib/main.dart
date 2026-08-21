@@ -11,9 +11,21 @@ import 'router/app_router.dart';
 /// Must be top-level — runs in a separate isolate for background/terminated FCM messages.
 @pragma('vm:entry-point')
 Future<void> _backgroundMessageHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-  // Background message received — Android OS will display it automatically
-  // if the FCM payload contains a 'notification' key.
+  try {
+    await Firebase.initializeApp();
+    debugPrint("🛵 [DeliveryApp] Background message received: ${message.messageId}");
+    final notification = message.notification;
+    final title = notification?.title ?? message.data['title'] ?? '🛵 NEW DELIVERY ALERT!';
+    final body = notification?.body ?? message.data['body'] ?? 'A new grocery order is packed and ready for pickup!';
+    
+    await NotificationService.showLocalNotification(
+      title: title,
+      body: body,
+      payload: '/home',
+    );
+  } catch (e) {
+    debugPrint("⚠️ Background message handling error: $e");
+  }
 }
 
 // Delivery App Main Entry
