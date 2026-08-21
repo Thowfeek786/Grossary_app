@@ -10,6 +10,7 @@ class OrderRepository {
     // 0. Idempotency Protection against duplicate checkouts
     if (order.idempotencyKey != null && order.idempotencyKey!.trim().isNotEmpty) {
       final existing = await _col
+          .where('userId', isEqualTo: order.userId)
           .where('idempotencyKey', isEqualTo: order.idempotencyKey!.trim())
           .limit(1)
           .get();

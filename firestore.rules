@@ -115,21 +115,9 @@ service cloud.firestore {
 
     // Orders Collection & Order Messages Subcollection
     match /orders/{orderId} {
-      allow read: if isSignedIn() && (
-        resource.data.userId == request.auth.uid ||
-        resource.data.dealerId == request.auth.uid ||
-        resource.data.deliveryPartnerId == request.auth.uid ||
-        isDeliveryPartner() ||
-        isAdmin()
-      );
+      allow read: if isSignedIn();
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && (
-        resource.data.userId == request.auth.uid ||
-        resource.data.dealerId == request.auth.uid ||
-        resource.data.deliveryPartnerId == request.auth.uid ||
-        isDeliveryPartner() ||
-        isAdmin()
-      );
+      allow update: if isSignedIn();
       allow delete: if isAdmin();
 
       match /messages/{msgId} {
