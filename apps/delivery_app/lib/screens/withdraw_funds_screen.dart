@@ -27,10 +27,18 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<DeliveryAuthProvider>();
     final user = auth.user;
-    final balance = user?.totalEarnings ?? 0.0;
+    if (user == null) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFF8FAFC),
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFF059669)),
+        ),
+      );
+    }
+    final balance = user.totalEarnings;
 
-    final hasBank = user?.bankName != null && user?.accountNumber != null && user!.accountNumber!.isNotEmpty;
-    final hasUpi = user?.upiId != null && user!.upiId!.isNotEmpty;
+    final hasBank = user.bankName != null && user.accountNumber != null && user.accountNumber!.isNotEmpty;
+    final hasUpi = user.upiId != null && user.upiId!.isNotEmpty;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -184,11 +192,9 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
             const SizedBox(height: 36),
 
             // Live Payout Requests History List
-            if (user != null) ...[
-              const Text('Recent Payout Requests', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A))),
-              const SizedBox(height: 12),
-              _buildRequestsList(user.id),
-            ],
+            const Text('Recent Payout Requests', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A))),
+            const SizedBox(height: 12),
+            _buildRequestsList(user.id),
           ],
         ),
       ),
