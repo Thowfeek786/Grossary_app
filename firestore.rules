@@ -132,6 +132,11 @@ service cloud.firestore {
       allow read, write: if isSignedIn();
     }
 
+    // Support Tickets Collection
+    match /support_tickets/{ticketId} {
+      allow read, write: if isSignedIn();
+    }
+
     // Payments Collection
     match /payments/{paymentId} {
       allow read, write: if isSignedIn();

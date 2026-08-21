@@ -163,7 +163,7 @@ class ProfileScreen extends StatelessWidget {
                     icon: Icons.support_agent_rounded,
                     title: 'Vendor Partner Helpline',
                     subtitle: '24/7 store dispatch and support desk',
-                    onTap: () {},
+                    onTap: () => context.push('/help-support'),
                   ),
 
                   const SizedBox(height: 24),
