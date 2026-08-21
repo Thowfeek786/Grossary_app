@@ -1,10 +1,10 @@
 # melos_managed_dependency_overrides: core,models,repository,ui_kit
 dependency_overrides:
   core:
-    path: ..\\..\\packages\\core
+    path: ../../packages/core
   models:
-    path: ..\\..\\packages\\models
+    path: ../../packages/models
   repository:
-    path: ..\\..\\packages\\repository
+    path: ../../packages/repository
   ui_kit:
-    path: ..\\..\\packages\\ui_kit
+    path: ../../packages/ui_kit

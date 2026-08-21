@@ -10,4 +10,5 @@ tools/serviceAccountKey.json
 .pub/
 build/
 .kotlin/
+.firebase/
 *.DS_Store

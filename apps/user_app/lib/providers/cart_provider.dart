@@ -6,6 +6,8 @@ class CartProvider extends ChangeNotifier {
   CouponModel? _appliedCoupon;
 
   double _baseDeliveryFee = 40.0;
+  double _quickDeliveryFee = 40.0;
+  double _scheduledDeliveryFee = 0.0;
   double _freeDeliveryThreshold = 500.0;
   bool _isFreeDeliveryEnabled = true;
 
@@ -17,6 +19,8 @@ class CartProvider extends ChangeNotifier {
   double get subtotal => _items.fold(0, (sum, i) => sum + i.totalPrice);
 
   double get baseDeliveryFee => _baseDeliveryFee;
+  double get quickDeliveryFee => _quickDeliveryFee;
+  double get scheduledDeliveryFee => _scheduledDeliveryFee;
   double get freeDeliveryThreshold => _freeDeliveryThreshold;
   bool get isFreeDeliveryEnabled => _isFreeDeliveryEnabled;
 
@@ -26,11 +30,27 @@ class CartProvider extends ChangeNotifier {
     return _baseDeliveryFee;
   }
 
+  double getDeliveryFeeForSlot(String slotKey) {
+    if (subtotal == 0) return 0.0;
+    if (_isFreeDeliveryEnabled && subtotal >= _freeDeliveryThreshold) return 0.0;
+    if (slotKey == 'asap') {
+      return _quickDeliveryFee;
+    }
+    return _scheduledDeliveryFee;
+  }
+
+  double getTotalForSlot(String slotKey) {
+    final fee = getDeliveryFeeForSlot(slotKey);
+    return (subtotal + fee - discountAmount).clamp(0.0, double.infinity);
+  }
+
   double get discountAmount => _appliedCoupon?.calculateDiscount(subtotal) ?? 0.0;
   double get total => (subtotal + deliveryFee - discountAmount).clamp(0.0, double.infinity);
 
   void updateDeliverySettings(StoreSettingsModel settings) {
     _baseDeliveryFee = settings.baseDeliveryFee;
+    _quickDeliveryFee = settings.quickDeliveryFee;
+    _scheduledDeliveryFee = settings.scheduledDeliveryFee;
     _freeDeliveryThreshold = settings.freeDeliveryThreshold;
     _isFreeDeliveryEnabled = settings.isFreeDeliveryEnabled;
     notifyListeners();
@@ -94,6 +114,17 @@ class CartProvider extends ChangeNotifier {
       _items[idx] = _items[idx].copyWith(quantity: _items[idx].quantity - 1);
     } else {
       _items.removeAt(idx);
+    }
+    notifyListeners();
+  }
+
+  void updateQuantity(String productId, int quantity) {
+    final idx = _items.indexWhere((i) => i.productId == productId);
+    if (idx < 0) return;
+    if (quantity <= 0) {
+      _items.removeAt(idx);
+    } else {
+      _items[idx] = _items[idx].copyWith(quantity: quantity);
     }
     notifyListeners();
   }

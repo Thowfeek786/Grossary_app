@@ -37,6 +37,7 @@ class OrderModel {
   final String? notes;
   final String? deliveryOtp;
   final String? digitalSignatureUrl;
+  final String? idempotencyKey;
   final DateTime createdAt;
   final DateTime? updatedAt;
   final DateTime? deliveredAt;
@@ -66,6 +67,7 @@ class OrderModel {
     this.notes,
     this.deliveryOtp,
     this.digitalSignatureUrl,
+    this.idempotencyKey,
     required this.createdAt,
     this.updatedAt,
     this.deliveredAt,
@@ -107,6 +109,7 @@ class OrderModel {
       notes: data['notes'],
       deliveryOtp: data['deliveryOtp'],
       digitalSignatureUrl: data['digitalSignatureUrl'],
+      idempotencyKey: data['idempotencyKey'],
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
       deliveredAt: (data['deliveredAt'] as Timestamp?)?.toDate(),
@@ -137,6 +140,7 @@ class OrderModel {
     'notes': notes,
     'deliveryOtp': deliveryOtp,
     'digitalSignatureUrl': digitalSignatureUrl,
+    'idempotencyKey': idempotencyKey,
     'createdAt': Timestamp.fromDate(createdAt),
     'updatedAt': FieldValue.serverTimestamp(),
     'deliveredAt': deliveredAt != null ? Timestamp.fromDate(deliveredAt!) : null,
@@ -150,6 +154,7 @@ class OrderModel {
     bool? isPaid,
     String? cancellationReason,
     DateTime? deliveredAt,
+    String? idempotencyKey,
   }) {
     return OrderModel(
       id: id,
@@ -174,6 +179,9 @@ class OrderModel {
       dealerName: dealerName,
       cancellationReason: cancellationReason ?? this.cancellationReason,
       notes: notes,
+      deliveryOtp: deliveryOtp,
+      digitalSignatureUrl: digitalSignatureUrl,
+      idempotencyKey: idempotencyKey ?? this.idempotencyKey,
       createdAt: createdAt,
       updatedAt: DateTime.now(),
       deliveredAt: deliveredAt ?? this.deliveredAt,

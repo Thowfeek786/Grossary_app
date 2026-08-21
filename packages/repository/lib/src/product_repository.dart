@@ -38,13 +38,27 @@ class ProductRepository {
   }
 
   Future<List<ProductModel>> searchProducts(String query) async {
-    final snap = await _col
-        .where('isActive', isEqualTo: true)
-        .orderBy('name')
-        .startAt([query])
-        .endAt(['$query\uf8ff'])
-        .get();
-    return snap.docs.map(ProductModel.fromFirestore).toList();
+    final cleanQuery = query.trim().toLowerCase();
+    if (cleanQuery.isEmpty) return [];
+
+    final snap = await _col.where('isActive', isEqualTo: true).get();
+    final allProducts = snap.docs.map(ProductModel.fromFirestore).toList();
+
+    final tokens = cleanQuery.split(RegExp(r'\s+')).where((t) => t.isNotEmpty).toList();
+    if (tokens.isEmpty) return [];
+
+    return allProducts.where((p) {
+      final name = p.name.toLowerCase();
+      final category = p.categoryName.toLowerCase();
+      final description = p.description.toLowerCase();
+      final brand = (p.brand ?? '').toLowerCase();
+
+      return tokens.every((token) =>
+          name.contains(token) ||
+          category.contains(token) ||
+          description.contains(token) ||
+          brand.contains(token));
+    }).toList();
   }
 
   Future<String> addProduct(ProductModel product) async {

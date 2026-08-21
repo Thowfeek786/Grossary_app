@@ -16,7 +16,10 @@ service cloud.firestore {
     }
 
     function hasRole(role) {
-      return isSignedIn() && getUserData().role == role;
+      return isSignedIn() && (
+        request.auth.token.role == role || 
+        getUserData().role == role
+      );
     }
 
     function isAdmin() {
@@ -55,12 +58,36 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Settings Collection (Global platform & Dealer dark stores)
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin() || isDealer();
+    }
+
+    // Coupons Collection
+    match /coupons/{couponId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Wallets & History Collection
+    match /wallets/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) || isAdmin();
+
+      match /history/{txnId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isOwner(userId) || isAdmin();
+      }
+    }
+
     // Orders Collection
     match /orders/{orderId} {
       allow read: if isSignedIn() && (
         resource.data.userId == request.auth.uid ||
         resource.data.dealerId == request.auth.uid ||
         resource.data.deliveryPartnerId == request.auth.uid ||
+        isDeliveryPartner() ||
         isAdmin()
       );
       allow create: if isSignedIn();
@@ -72,6 +99,12 @@ service cloud.firestore {
         isAdmin()
       );
       allow delete: if isAdmin();
+    }
+
+    // Driver Live Telemetry Locations
+    match /delivery_locations/{partnerId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(partnerId) || isDeliveryPartner() || isAdmin();
     }
 
     // Notifications Collection
@@ -88,6 +121,11 @@ service cloud.firestore {
     // Refunds Collection
     match /refunds/{refundId} {
       allow read, write: if isAdmin();
+    }
+
+    // FCM Queue (Cloud functions processor)
+    match /fcm_send_queue/{docId} {
+      allow read, write: if isSignedIn();
     }
   }
 }

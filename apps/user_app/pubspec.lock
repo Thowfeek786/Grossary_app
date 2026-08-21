@@ -446,7 +446,7 @@ packages:
     source: hosted
     version: "2.4.8"
   flutter_plugin_android_lifecycle:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flutter_plugin_android_lifecycle
       sha256: "38d1c268de9097ff59cf0e844ac38759fc78f76836d37edad06fa21e182055a0"

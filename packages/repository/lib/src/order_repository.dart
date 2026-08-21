@@ -7,11 +7,22 @@ class OrderRepository {
   CollectionReference get _col => _db.collection('orders');
 
   Future<String> placeOrder(OrderModel order) async {
+    // 0. Idempotency Protection against duplicate checkouts
+    if (order.idempotencyKey != null && order.idempotencyKey!.trim().isNotEmpty) {
+      final existing = await _col
+          .where('idempotencyKey', isEqualTo: order.idempotencyKey!.trim())
+          .limit(1)
+          .get();
+      if (existing.docs.isNotEmpty) {
+        return existing.docs.first.id;
+      }
+    }
+
     final orderRef = _col.doc();
     final String generatedOtp = (1000 + (DateTime.now().millisecondsSinceEpoch % 9000)).toString();
 
     await _db.runTransaction((transaction) async {
-      // 1. Check & Decrement Stock
+      // 1. Check & Decrement Stock atomically
       for (final item in order.items) {
         final productRef = _db.collection('products').doc(item.productId);
         final productDoc = await transaction.get(productRef);
@@ -19,7 +30,7 @@ class OrderRepository {
         if (productDoc.exists) {
           final currentStock = (productDoc.data()?['stockQuantity'] as num?)?.toDouble() ?? 0.0;
           if (currentStock < item.quantity) {
-            throw Exception('Insufficient stock for ${item.productName}');
+            throw Exception('Insufficient stock for ${item.productName}. Please adjust quantity.');
           }
           transaction.update(productRef, {
             'stockQuantity': currentStock - item.quantity,

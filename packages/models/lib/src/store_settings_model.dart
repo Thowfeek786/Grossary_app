@@ -28,6 +28,8 @@ Location permissions are required to identify nearby dark stores and calculate a
 class StoreSettingsModel {
   final String id; // 'global' for Admin or dealerId for Dealer
   final double baseDeliveryFee;
+  final double quickDeliveryFee;
+  final double scheduledDeliveryFee;
   final double freeDeliveryThreshold;
   final bool isFreeDeliveryEnabled;
 
@@ -58,6 +60,8 @@ class StoreSettingsModel {
   const StoreSettingsModel({
     required this.id,
     this.baseDeliveryFee = 40.0,
+    this.quickDeliveryFee = 40.0,
+    this.scheduledDeliveryFee = 0.0,
     this.freeDeliveryThreshold = 500.0,
     this.isFreeDeliveryEnabled = true,
     this.appName = 'GroceryGo',
@@ -82,9 +86,12 @@ class StoreSettingsModel {
 
   factory StoreSettingsModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
+    final baseFee = (data['baseDeliveryFee'] as num?)?.toDouble() ?? 40.0;
     return StoreSettingsModel(
       id: doc.id,
-      baseDeliveryFee: (data['baseDeliveryFee'] as num?)?.toDouble() ?? 40.0,
+      baseDeliveryFee: baseFee,
+      quickDeliveryFee: (data['quickDeliveryFee'] as num?)?.toDouble() ?? baseFee,
+      scheduledDeliveryFee: (data['scheduledDeliveryFee'] as num?)?.toDouble() ?? 0.0,
       freeDeliveryThreshold: (data['freeDeliveryThreshold'] as num?)?.toDouble() ?? 500.0,
       isFreeDeliveryEnabled: data['isFreeDeliveryEnabled'] ?? true,
       appName: data['appName'] as String? ?? 'GroceryGo',
@@ -110,6 +117,8 @@ class StoreSettingsModel {
 
   Map<String, dynamic> toFirestore() => {
         'baseDeliveryFee': baseDeliveryFee,
+        'quickDeliveryFee': quickDeliveryFee,
+        'scheduledDeliveryFee': scheduledDeliveryFee,
         'freeDeliveryThreshold': freeDeliveryThreshold,
         'isFreeDeliveryEnabled': isFreeDeliveryEnabled,
         'appName': appName,
@@ -135,6 +144,8 @@ class StoreSettingsModel {
   StoreSettingsModel copyWith({
     String? id,
     double? baseDeliveryFee,
+    double? quickDeliveryFee,
+    double? scheduledDeliveryFee,
     double? freeDeliveryThreshold,
     bool? isFreeDeliveryEnabled,
     String? appName,
@@ -159,6 +170,8 @@ class StoreSettingsModel {
     return StoreSettingsModel(
       id: id ?? this.id,
       baseDeliveryFee: baseDeliveryFee ?? this.baseDeliveryFee,
+      quickDeliveryFee: quickDeliveryFee ?? this.quickDeliveryFee,
+      scheduledDeliveryFee: scheduledDeliveryFee ?? this.scheduledDeliveryFee,
       freeDeliveryThreshold: freeDeliveryThreshold ?? this.freeDeliveryThreshold,
       isFreeDeliveryEnabled: isFreeDeliveryEnabled ?? this.isFreeDeliveryEnabled,
       appName: appName ?? this.appName,

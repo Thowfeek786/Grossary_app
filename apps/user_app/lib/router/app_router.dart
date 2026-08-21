@@ -77,6 +77,10 @@ class AppRouter {
               builder: (_, _) => const CategoriesScreen(),
             ),
             GoRoute(
+              path: '/cart',
+              builder: (_, _) => const CartScreen(),
+            ),
+            GoRoute(
               path: '/orders',
               builder: (_, _) => const OrdersScreen(),
             ),
@@ -116,7 +120,6 @@ class AppRouter {
             ),
           ],
         ),
-        GoRoute(path: '/cart', builder: (_, _) => const CartScreen()),
         GoRoute(path: '/checkout', builder: (_, _) => const CheckoutScreen()),
         GoRoute(
           path: '/order-success/:id',

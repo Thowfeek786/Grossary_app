@@ -22,6 +22,71 @@ class _CheckoutScreenState extends State<CheckoutScreen> with WidgetsBindingObse
   String _paymentMethod = 'Cash on Delivery';
   bool _useWalletBalance = false;
   bool _isAwaitingUpiConfirmation = false;
+  int _selectedDateIndex = 0;
+  String _selectedSlotKey = 'asap';
+
+  static const List<_DeliverySlotOption> _deliverySlots = [
+    _DeliverySlotOption(
+      key: 'asap',
+      title: 'Deliver ASAP',
+      timeRange: '20–30 minutes',
+      icon: Icons.bolt_rounded,
+      cutoffHour: 24,
+    ),
+    _DeliverySlotOption(
+      key: 'morning',
+      title: 'Morning',
+      timeRange: '8 AM – 10 AM',
+      icon: Icons.wb_sunny_outlined,
+      cutoffHour: 10,
+    ),
+    _DeliverySlotOption(
+      key: 'afternoon',
+      title: 'Afternoon',
+      timeRange: '12 PM – 2 PM',
+      icon: Icons.wb_sunny_rounded,
+      cutoffHour: 14,
+    ),
+    _DeliverySlotOption(
+      key: 'evening',
+      title: 'Evening',
+      timeRange: '5 PM – 7 PM',
+      icon: Icons.nights_stay_outlined,
+      cutoffHour: 19,
+    ),
+    _DeliverySlotOption(
+      key: 'night',
+      title: 'Night',
+      timeRange: '8 PM – 10 PM',
+      icon: Icons.nightlight_round,
+      cutoffHour: 22,
+    ),
+  ];
+
+  List<DateTime> get _availableDates {
+    final now = DateTime.now();
+    return List.generate(4, (i) => now.add(Duration(days: i)));
+  }
+
+  String _formatDateTitle(int index, DateTime date) {
+    if (index == 0) return 'Today';
+    if (index == 1) return 'Tomorrow';
+    const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return weekdays[date.weekday - 1];
+  }
+
+  String _formatDateSubtitle(DateTime date) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${date.day} ${months[date.month - 1]}';
+  }
+
+  String get _selectedSlotSummary {
+    final date = _availableDates[_selectedDateIndex];
+    final dateLabel = _selectedDateIndex == 0 ? 'Today' : (_selectedDateIndex == 1 ? 'Tomorrow' : _formatDateSubtitle(date));
+    final slot = _deliverySlots.firstWhere((s) => s.key == _selectedSlotKey, orElse: () => _deliverySlots.first);
+    return '$dateLabel (${slot.title} - ${slot.timeRange})';
+  }
+
   final List<String> _paymentMethods = [
     'Cash on Delivery',
     'GroceryGo Wallet',
@@ -219,7 +284,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> with WidgetsBindingObse
 
                     const SizedBox(height: 16),
 
-                    // 2. Order Items Summary Card
+                    // 2. Scheduled Delivery Card
+                    _buildScheduledDeliveryCard(context, cart),
+
+                    const SizedBox(height: 16),
+
+                    // 3. Order Items Summary Card
                     _buildCard(
                       title: 'Order Items (${cart.itemCount})',
                       icon: Icons.shopping_bag_rounded,
@@ -785,6 +855,216 @@ class _CheckoutScreenState extends State<CheckoutScreen> with WidgetsBindingObse
     );
   }
 
+  Widget _buildScheduledDeliveryCard(BuildContext context, CartProvider cart) {
+    final now = DateTime.now();
+    return _buildCard(
+      title: 'Scheduled Delivery',
+      icon: Icons.schedule_rounded,
+      iconColor: const Color(0xFF046A38),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Choose Date',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF374151),
+            ),
+          ),
+          const SizedBox(height: 10),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: List.generate(_availableDates.length, (index) {
+                final date = _availableDates[index];
+                final isSelected = _selectedDateIndex == index;
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedDateIndex = index;
+                      if (index == 0) {
+                        final currentSlot = _deliverySlots.firstWhere((s) => s.key == _selectedSlotKey, orElse: () => _deliverySlots.first);
+                        if (now.hour >= currentSlot.cutoffHour) {
+                          _selectedSlotKey = 'asap';
+                        }
+                      }
+                    });
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isSelected ? const Color(0xFF046A38) : Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: isSelected ? const Color(0xFF046A38) : Colors.grey.shade200,
+                        width: isSelected ? 1.5 : 1,
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _formatDateTitle(index, date),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: isSelected ? Colors.white : const Color(0xFF111827),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _formatDateSubtitle(date),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: isSelected ? Colors.white70 : const Color(0xFF6B7280),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+          const SizedBox(height: 18),
+          const Text(
+            'Choose Time Slot',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF374151),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Column(
+            children: _deliverySlots.map((slot) {
+              final isToday = _selectedDateIndex == 0;
+              final isPast = isToday && now.hour >= slot.cutoffHour;
+              final isSelected = _selectedSlotKey == slot.key;
+
+              return GestureDetector(
+                onTap: isPast
+                    ? null
+                    : () => setState(() => _selectedSlotKey = slot.key),
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isPast
+                        ? Colors.grey.shade100
+                        : (isSelected
+                            ? const Color(0xFFEDF7EE)
+                            : Colors.grey.shade50),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: isPast
+                          ? Colors.grey.shade200
+                          : (isSelected
+                              ? const Color(0xFF046A38)
+                              : Colors.grey.shade200),
+                      width: isSelected ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isPast
+                            ? Icons.block_rounded
+                            : (isSelected
+                                ? Icons.radio_button_checked_rounded
+                                : Icons.radio_button_off_rounded),
+                        color: isPast
+                            ? Colors.grey.shade400
+                            : (isSelected
+                                ? const Color(0xFF046A38)
+                                : const Color(0xFF9CA3AF)),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(slot.icon,
+                                    size: 15,
+                                    color: isPast
+                                        ? Colors.grey.shade400
+                                        : const Color(0xFF046A38)),
+                                const SizedBox(width: 6),
+                                Text(
+                                  slot.title,
+                                  style: TextStyle(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: isPast
+                                        ? Colors.grey.shade400
+                                        : const Color(0xFF111827),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              slot.timeRange,
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                color: isPast
+                                    ? Colors.grey.shade400
+                                    : const Color(0xFF6B7280),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (isPast)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            'Unavailable',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        )
+                      else
+                        Builder(
+                          builder: (context) {
+                            final slotFee = cart.getDeliveryFeeForSlot(slot.key);
+                            return Text(
+                              slotFee == 0 ? 'FREE' : '₹${slotFee.toStringAsFixed(0)}',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w900,
+                                color: slotFee == 0
+                                    ? const Color(0xFF046A38)
+                                    : const Color(0xFF4B5563),
+                              ),
+                            );
+                          },
+                        ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPlaceOrderBar(
       BuildContext context, CartProvider cart, UserModel user, AddressModel? effectiveAddress) {
     final orderProvider = context.watch<OrderProvider>();
@@ -793,10 +1073,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> with WidgetsBindingObse
       stream: WalletRepository().getWallet(user.id),
       builder: (context, walletSnap) {
         final walletBalance = walletSnap.data?.balance ?? 0.0;
+        final effectiveTotal = cart.getTotalForSlot(_selectedSlotKey);
         final appliedWallet = _useWalletBalance
-            ? (walletBalance > cart.total ? cart.total : walletBalance)
+            ? (walletBalance > effectiveTotal ? effectiveTotal : walletBalance)
             : 0.0;
-        final remainingPayable = cart.total - appliedWallet;
+        final remainingPayable = effectiveTotal - appliedWallet;
 
         return Container(
           padding: EdgeInsets.fromLTRB(
@@ -1009,6 +1290,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> with WidgetsBindingObse
     final isOrderPaid =
         _paymentMethod == 'GroceryGo Wallet' || _paymentMethod == 'UPI';
 
+    final selectedDeliveryFee = cart.getDeliveryFeeForSlot(_selectedSlotKey);
+    final selectedTotal = cart.getTotalForSlot(_selectedSlotKey);
+
     final order = OrderModel(
       id: '',
       userId: user.id,
@@ -1019,13 +1303,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> with WidgetsBindingObse
       deliveryAddress: selectedAddress,
       status: OrderStatus.pending,
       subtotal: cart.subtotal,
-      deliveryFee: cart.deliveryFee,
+      deliveryFee: selectedDeliveryFee,
       discount: cart.discountAmount + appliedWallet,
-      total: cart.total,
+      total: selectedTotal,
       paymentMethod: _paymentMethod,
       isPaid: isOrderPaid,
       dealerId: cart.items.isNotEmpty ? cart.items.first.dealerId : null,
       dealerName: cart.items.isNotEmpty ? cart.items.first.dealerName : null,
+      notes: 'Scheduled: $_selectedSlotSummary',
+      idempotencyKey: '${user.id}_${DateTime.now().millisecondsSinceEpoch}_${cart.items.length}',
       createdAt: DateTime.now(),
     );
 
@@ -1504,3 +1790,20 @@ class _AddAddressPrompt extends StatelessWidget {
     );
   }
 }
+
+class _DeliverySlotOption {
+  final String key;
+  final String title;
+  final String timeRange;
+  final IconData icon;
+  final int cutoffHour;
+
+  const _DeliverySlotOption({
+    required this.key,
+    required this.title,
+    required this.timeRange,
+    required this.icon,
+    required this.cutoffHour,
+  });
+}
+

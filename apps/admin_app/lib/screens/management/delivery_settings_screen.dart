@@ -13,7 +13,8 @@ class AdminDeliverySettingsScreen extends StatefulWidget {
 }
 
 class _AdminDeliverySettingsScreenState extends State<AdminDeliverySettingsScreen> {
-  final _feeCtrl = TextEditingController();
+  final _quickFeeCtrl = TextEditingController();
+  final _scheduledFeeCtrl = TextEditingController();
   final _thresholdCtrl = TextEditingController();
   final _etaCtrl = TextEditingController();
   bool _isFreeDeliveryEnabled = true;
@@ -21,15 +22,17 @@ class _AdminDeliverySettingsScreenState extends State<AdminDeliverySettingsScree
 
   @override
   void dispose() {
-    _feeCtrl.dispose();
+    _quickFeeCtrl.dispose();
+    _scheduledFeeCtrl.dispose();
     _thresholdCtrl.dispose();
     _etaCtrl.dispose();
     super.dispose();
   }
 
   void _initFields(StoreSettingsModel settings) {
-    if (_feeCtrl.text.isEmpty && _thresholdCtrl.text.isEmpty && _etaCtrl.text.isEmpty) {
-      _feeCtrl.text = settings.baseDeliveryFee.toStringAsFixed(0);
+    if (_quickFeeCtrl.text.isEmpty && _scheduledFeeCtrl.text.isEmpty && _thresholdCtrl.text.isEmpty && _etaCtrl.text.isEmpty) {
+      _quickFeeCtrl.text = settings.quickDeliveryFee.toStringAsFixed(0);
+      _scheduledFeeCtrl.text = settings.scheduledDeliveryFee.toStringAsFixed(0);
       _thresholdCtrl.text = settings.freeDeliveryThreshold.toStringAsFixed(0);
       _etaCtrl.text = settings.estimatedDeliveryTime;
       _isFreeDeliveryEnabled = settings.isFreeDeliveryEnabled;
@@ -37,13 +40,21 @@ class _AdminDeliverySettingsScreenState extends State<AdminDeliverySettingsScree
   }
 
   Future<void> _saveGlobalSettings() async {
-    final fee = double.tryParse(_feeCtrl.text.trim());
+    final quickFee = double.tryParse(_quickFeeCtrl.text.trim());
+    final scheduledFee = double.tryParse(_scheduledFeeCtrl.text.trim());
     final threshold = double.tryParse(_thresholdCtrl.text.trim());
     final eta = _etaCtrl.text.trim().isNotEmpty ? _etaCtrl.text.trim() : '20 to 30 minutes';
 
-    if (fee == null || fee < 0) {
+    if (quickFee == null || quickFee < 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid base delivery fee'), backgroundColor: AppColors.error),
+        const SnackBar(content: Text('Please enter a valid quick delivery fee'), backgroundColor: AppColors.error),
+      );
+      return;
+    }
+
+    if (scheduledFee == null || scheduledFee < 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid scheduled delivery fee (e.g. 0 for FREE)'), backgroundColor: AppColors.error),
       );
       return;
     }
@@ -53,7 +64,9 @@ class _AdminDeliverySettingsScreenState extends State<AdminDeliverySettingsScree
       final existing = await SettingsRepository().getGlobalSettings().first;
       final settings = existing.copyWith(
         id: 'global',
-        baseDeliveryFee: fee,
+        baseDeliveryFee: quickFee,
+        quickDeliveryFee: quickFee,
+        scheduledDeliveryFee: scheduledFee,
         freeDeliveryThreshold: threshold ?? 500.0,
         isFreeDeliveryEnabled: _isFreeDeliveryEnabled,
         estimatedDeliveryTime: eta,
@@ -62,7 +75,7 @@ class _AdminDeliverySettingsScreenState extends State<AdminDeliverySettingsScree
       final ok = await SettingsRepository().updateSettings(settings);
       if (ok && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('🎉 Global platform delivery settings updated successfully!'), backgroundColor: Color(0xFF0F172A)),
+          const SnackBar(content: Text('🎉 Delivery pricing & schedule rates updated successfully!'), backgroundColor: Color(0xFF0F172A)),
         );
       }
     } catch (e) {
@@ -85,7 +98,7 @@ class _AdminDeliverySettingsScreenState extends State<AdminDeliverySettingsScree
       backgroundColor: const Color(0xFFF8FAFC),
       drawer: const AdminDrawer(),
       appBar: CustomAppBar(
-        title: 'Global Delivery Fee Settings',
+        title: 'Delivery Fee & Schedule Pricing',
         backgroundColor: const Color(0xFF0F172A),
         foregroundColor: Colors.white,
         leading: Builder(
@@ -126,18 +139,18 @@ class _AdminDeliverySettingsScreenState extends State<AdminDeliverySettingsScree
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.admin_panel_settings_rounded, color: Color(0xFF6366F1), size: 32),
+                      const Icon(Icons.delivery_dining_rounded, color: Color(0xFF6366F1), size: 32),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Global Platform Delivery Rates & Timing',
+                              'Quick vs Scheduled Delivery Rates',
                               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                             ),
                             Text(
-                              'Set the default platform delivery fee, estimated timing label, and minimum order amount.',
+                              'Charge for express instant orders and discount or offer FREE delivery for planned scheduled slots.',
                               style: TextStyle(fontSize: 12, color: isDark ? Colors.grey[400] : AppColors.textSecondary),
                             ),
                           ],
@@ -149,19 +162,29 @@ class _AdminDeliverySettingsScreenState extends State<AdminDeliverySettingsScree
 
                 const SizedBox(height: 24),
 
-                // Base Fee Field
+                // Quick / Instant Delivery Fee
                 AppTextField(
-                  label: 'Default Base Delivery Fee (₹)',
-                  hint: 'e.g. 40',
-                  controller: _feeCtrl,
+                  label: 'Quick / Instant Delivery Fee (₹)',
+                  hint: 'e.g. 40 (standard instant fee)',
+                  controller: _quickFeeCtrl,
                   keyboardType: TextInputType.number,
                 ),
 
                 const SizedBox(height: 20),
 
-                // Estimated Delivery Time Field
+                // Scheduled Delivery Fee
                 AppTextField(
-                  label: 'Estimated Delivery Time (Customizable)',
+                  label: 'Scheduled Delivery Fee (₹) — (0 for FREE)',
+                  hint: '0 for FREE scheduled delivery or reduced fee (e.g. 10)',
+                  controller: _scheduledFeeCtrl,
+                  keyboardType: TextInputType.number,
+                ),
+
+                const SizedBox(height: 20),
+
+                // Estimated Quick Delivery Time Field
+                AppTextField(
+                  label: 'Quick Delivery Time Label',
                   hint: 'e.g. 20 to 30 minutes',
                   controller: _etaCtrl,
                 ),
@@ -191,7 +214,7 @@ class _AdminDeliverySettingsScreenState extends State<AdminDeliverySettingsScree
                 const SizedBox(height: 36),
 
                 AppButton(
-                  label: 'Save Global Settings',
+                  label: 'Save Delivery Settings',
                   isLoading: _isSaving,
                   icon: Icons.save_rounded,
                   onTap: _saveGlobalSettings,

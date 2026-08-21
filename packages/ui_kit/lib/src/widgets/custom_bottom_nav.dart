@@ -16,8 +16,8 @@ class CustomBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).padding.bottom;
     return Container(
-      margin: EdgeInsets.fromLTRB(16, 0, 16, bottomInset > 0 ? bottomInset + 4 : 16),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      margin: EdgeInsets.fromLTRB(12, 0, 12, bottomInset > 0 ? bottomInset + 4 : 14),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(32),
@@ -25,9 +25,9 @@ class CustomBottomNav extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF0B3C26).withValues(alpha: 0.12),
-            blurRadius: 24,
+            blurRadius: 20,
             spreadRadius: 2,
-            offset: const Offset(0, 8),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -44,11 +44,11 @@ class CustomBottomNav extends StatelessWidget {
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeInOutCubic,
               padding: EdgeInsets.symmetric(
-                horizontal: isSelected ? 16 : 12,
-                vertical: 10,
+                horizontal: isSelected ? 12 : 8,
+                vertical: 8,
               ),
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF059669) : Colors.transparent,
+                color: isSelected ? const Color(0xFF046A38) : Colors.transparent,
                 borderRadius: BorderRadius.circular(24),
               ),
               child: Row(
@@ -60,7 +60,7 @@ class CustomBottomNav extends StatelessWidget {
                       Icon(
                         isSelected ? item.activeIcon : item.icon,
                         color: isSelected ? Colors.white : const Color(0xFF6B7280),
-                        size: 22,
+                        size: 21,
                       ),
                       if (item.badge != null && item.badge! > 0)
                         Positioned(
@@ -87,17 +87,13 @@ class CustomBottomNav extends StatelessWidget {
                     ],
                   ),
                   if (isSelected) ...[
-                    const SizedBox(width: 8),
-                    AnimatedOpacity(
-                      duration: const Duration(milliseconds: 200),
-                      opacity: isSelected ? 1.0 : 0.0,
-                      child: Text(
-                        item.label,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                        ),
+                    const SizedBox(width: 5),
+                    Text(
+                      item.label,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
                       ),
                     ),
                   ],
