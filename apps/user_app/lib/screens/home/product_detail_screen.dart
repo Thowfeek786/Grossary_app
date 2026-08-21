@@ -123,7 +123,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             backgroundColor: Colors.white.withValues(alpha: 0.9),
             child: IconButton(
               icon: const Icon(Icons.shopping_cart_outlined, size: 20, color: Color(0xFF111827)),
-              onPressed: () => context.push('/cart'),
+              onPressed: () => context.go('/cart'),
             ),
           ),
         ),
@@ -494,7 +494,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           for (int i = 0; i < _quantity; i++) {
                             context.read<CartProvider>().addItem(p);
                           }
-                          context.push('/cart');
+                          context.push('/checkout');
                         }
                       : null,
                   style: ElevatedButton.styleFrom(
