@@ -147,6 +147,30 @@ service cloud.firestore {
       allow read, write: if isSignedIn();
     }
 
+    // Payout Requests Collection (Delivery Partners & Dealers)
+    match /payout_requests/{payoutId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /dealer_payouts/{payoutId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // Flash Sales Collection
+    match /flash_sales/{saleId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // Chats & Messages Collection
+    match /chats/{chatId} {
+      allow read, write: if isSignedIn();
+
+      match /{subcollection}/{docId} {
+        allow read, write: if isSignedIn();
+      }
+    }
+
     // FCM Queue (Cloud functions processor)
     match /fcm_send_queue/{docId} {
       allow read, write: if isSignedIn();
