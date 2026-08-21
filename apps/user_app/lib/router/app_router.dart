@@ -32,14 +32,11 @@ import '../screens/splash/splash_screen.dart';
 import '../screens/profile/terms_conditions_screen.dart';
 import '../screens/profile/favorites_screen.dart';
 
-final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
-final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
-
 class AppRouter {
-  static GoRouter? _router;
+  static final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
-  static GoRouter router(AuthProvider auth) {
-    _router ??= GoRouter(
+  static GoRouter createRouter(AuthProvider auth) {
+    return GoRouter(
       navigatorKey: _rootNavigatorKey,
       refreshListenable: auth,
       initialLocation: '/splash',
@@ -49,9 +46,9 @@ class AppRouter {
         final isSplash = state.matchedLocation == '/splash';
         final isOnboarding = state.matchedLocation == '/onboarding';
         final isTerms = state.matchedLocation == '/terms';
-        final isAuthRoute = state.matchedLocation.startsWith('/login') ||
-            state.matchedLocation.startsWith('/register') ||
-            state.matchedLocation.startsWith('/forgot-password') ||
+        final isAuthRoute = state.matchedLocation == '/login' ||
+            state.matchedLocation == '/register' ||
+            state.matchedLocation == '/forgot-password' ||
             isTerms;
 
         if (isSplash || isOnboarding || isUnknown || isTerms) return null;
@@ -61,72 +58,156 @@ class AppRouter {
       },
       routes: [
         GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
           path: '/splash',
+          parentNavigatorKey: _rootNavigatorKey,
           builder: (_, _) => const SplashScreen(),
         ),
         GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
           path: '/onboarding',
+          parentNavigatorKey: _rootNavigatorKey,
           builder: (_, _) => const UserOnboardingScreen(),
         ),
         GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
           path: '/terms',
+          parentNavigatorKey: _rootNavigatorKey,
           builder: (_, _) => const TermsConditionsScreen(),
         ),
         // Auth routes
         GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
           path: '/login',
+          parentNavigatorKey: _rootNavigatorKey,
           builder: (_, _) => const LoginScreen(),
         ),
         GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
           path: '/register',
+          parentNavigatorKey: _rootNavigatorKey,
           builder: (_, _) => const RegisterScreen(),
         ),
         GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
           path: '/forgot-password',
+          parentNavigatorKey: _rootNavigatorKey,
           builder: (_, _) => const ForgotPasswordScreen(),
         ),
 
-        // Main shell with bottom nav (Top-Level Tabs only)
+        // Full-screen standalone routes
+        GoRoute(
+          path: '/home/category/:id',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, state) => CategoryProductsScreen(
+            categoryId: state.pathParameters['id']!,
+            categoryName: state.uri.queryParameters['name'] ?? '',
+          ),
+        ),
+        GoRoute(
+          path: '/home/search',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, _) => const SearchScreen(),
+        ),
+        GoRoute(
+          path: '/home/product/:id',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, state) => ProductDetailScreen(productId: state.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: '/product-reviews',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, state) => ProductReviewsScreen(product: state.extra as ProductModel),
+        ),
+        GoRoute(
+          path: '/checkout',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, _) => const CheckoutScreen(),
+        ),
+        GoRoute(
+          path: '/order-success/:id',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, state) => OrderSuccessScreen(orderId: state.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: '/orders/review',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, state) => ReviewScreen(item: state.extra as CartItemModel),
+        ),
+        GoRoute(
+          path: '/orders/:id',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, state) => OrderDetailScreen(orderId: state.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: '/profile/wallet',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, _) => const WalletScreen(),
+        ),
+        GoRoute(
+          path: '/profile/favorites',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, _) => const FavoritesScreen(),
+        ),
+        GoRoute(
+          path: '/profile/edit',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, _) => const EditProfileScreen(),
+        ),
+        GoRoute(
+          path: '/profile/addresses',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, _) => const AddressListScreen(),
+        ),
+        GoRoute(
+          path: '/profile/add-address',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, _) => const AddAddressScreen(),
+        ),
+        GoRoute(
+          path: '/profile/notifications',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, _) => const NotificationsScreen(),
+        ),
+        GoRoute(
+          path: '/profile/help',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, _) => const HelpSupportScreen(),
+        ),
+        GoRoute(
+          path: '/profile/support-chat',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, _) => const SupportChatScreen(),
+        ),
+        GoRoute(
+          path: '/profile/about',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, _) => const AboutUsScreen(),
+        ),
+
+        // Shell route for persistent bottom nav tabs
         ShellRoute(
-          navigatorKey: _shellNavigatorKey,
           builder: (context, state, child) => MainShell(child: child),
           routes: [
             GoRoute(
-              parentNavigatorKey: _shellNavigatorKey,
               path: '/home',
               pageBuilder: (context, state) => const NoTransitionPage(
                 child: HomeScreen(),
               ),
             ),
             GoRoute(
-              parentNavigatorKey: _shellNavigatorKey,
               path: '/categories',
               pageBuilder: (context, state) => const NoTransitionPage(
                 child: CategoriesScreen(),
               ),
             ),
             GoRoute(
-              parentNavigatorKey: _shellNavigatorKey,
               path: '/cart',
               pageBuilder: (context, state) => const NoTransitionPage(
                 child: CartScreen(),
               ),
             ),
             GoRoute(
-              parentNavigatorKey: _shellNavigatorKey,
               path: '/orders',
               pageBuilder: (context, state) => const NoTransitionPage(
                 child: OrdersScreen(),
               ),
             ),
             GoRoute(
-              parentNavigatorKey: _shellNavigatorKey,
               path: '/profile',
               pageBuilder: (context, state) => const NoTransitionPage(
                 child: ProfileScreen(),
@@ -134,103 +215,7 @@ class AppRouter {
             ),
           ],
         ),
-
-        // Standalone Full-Screen Routes (No Shell / No Bottom Nav)
-        GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
-          path: '/home/category/:id',
-          builder: (_, state) => CategoryProductsScreen(
-            categoryId: state.pathParameters['id']!,
-            categoryName: state.uri.queryParameters['name'] ?? '',
-          ),
-        ),
-        GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
-          path: '/home/search',
-          builder: (_, _) => const SearchScreen(),
-        ),
-        GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
-          path: '/profile/wallet',
-          builder: (_, _) => const WalletScreen(),
-        ),
-        GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
-          path: '/profile/favorites',
-          builder: (_, _) => const FavoritesScreen(),
-        ),
-        GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
-          path: '/profile/edit',
-          builder: (_, _) => const EditProfileScreen(),
-        ),
-        GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
-          path: '/profile/addresses',
-          builder: (_, _) => const AddressListScreen(),
-        ),
-        GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
-          path: '/profile/add-address',
-          builder: (_, _) => const AddAddressScreen(),
-        ),
-        GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
-          path: '/profile/notifications',
-          builder: (_, _) => const NotificationsScreen(),
-        ),
-        GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
-          path: '/profile/help',
-          builder: (_, _) => const HelpSupportScreen(),
-        ),
-        GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
-          path: '/profile/support-chat',
-          builder: (_, _) => const SupportChatScreen(),
-        ),
-        GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
-          path: '/profile/about',
-          builder: (_, _) => const AboutUsScreen(),
-        ),
-
-        GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
-          path: '/home/product/:id',
-          builder: (_, state) => ProductDetailScreen(productId: state.pathParameters['id']!),
-          routes: [
-            GoRoute(
-              parentNavigatorKey: _rootNavigatorKey,
-              path: 'reviews',
-              builder: (_, state) => ProductReviewsScreen(product: state.extra as ProductModel),
-            ),
-          ],
-        ),
-        GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
-          path: '/checkout',
-          builder: (_, _) => const CheckoutScreen(),
-        ),
-        GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
-          path: '/order-success/:id',
-          builder: (_, state) =>
-              OrderSuccessScreen(orderId: state.pathParameters['id']!),
-        ),
-        GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
-          path: '/orders/review',
-          builder: (_, state) => ReviewScreen(item: state.extra as CartItemModel),
-        ),
-        GoRoute(
-          parentNavigatorKey: _rootNavigatorKey,
-          path: '/orders/:id',
-          builder: (_, state) =>
-              OrderDetailScreen(orderId: state.pathParameters['id']!),
-        ),
       ],
     );
-    return _router!;
   }
 }

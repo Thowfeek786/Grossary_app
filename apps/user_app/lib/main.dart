@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:provider/provider.dart';
 import 'package:core/core.dart';
 import 'package:ui_kit/ui_kit.dart';
+import 'package:go_router/go_router.dart';
 import 'providers/auth_provider.dart';
 import 'providers/cart_provider.dart';
 import 'providers/product_provider.dart';
@@ -40,28 +41,63 @@ void main() async {
   runApp(const UserApp());
 }
 
-class UserApp extends StatelessWidget {
+class UserApp extends StatefulWidget {
   const UserApp({super.key});
+
+  @override
+  State<UserApp> createState() => _UserAppState();
+}
+
+class _UserAppState extends State<UserApp> {
+  late final AuthProvider _authProvider;
+  late final CartProvider _cartProvider;
+  late final ProductProvider _productProvider;
+  late final OrderProvider _orderProvider;
+  late final ThemeProvider _themeProvider;
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    _authProvider = AuthProvider();
+    _cartProvider = CartProvider();
+    _productProvider = ProductProvider();
+    _orderProvider = OrderProvider();
+    _themeProvider = ThemeProvider();
+    _router = AppRouter.createRouter(_authProvider);
+  }
+
+  @override
+  void dispose() {
+    _authProvider.dispose();
+    _cartProvider.dispose();
+    _productProvider.dispose();
+    _orderProvider.dispose();
+    _themeProvider.dispose();
+    _router.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => CartProvider()),
-        ChangeNotifierProvider(create: (_) => ProductProvider()),
-        ChangeNotifierProvider(create: (_) => OrderProvider()),
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider.value(value: _authProvider),
+        ChangeNotifierProvider.value(value: _cartProvider),
+        ChangeNotifierProvider.value(value: _productProvider),
+        ChangeNotifierProvider.value(value: _orderProvider),
+        ChangeNotifierProvider.value(value: _themeProvider),
       ],
-      child: Consumer2<AuthProvider, ThemeProvider>(
-        builder: (context, auth, theme, _) {
+      child: ListenableBuilder(
+        listenable: _themeProvider,
+        builder: (context, _) {
           return MaterialApp.router(
             title: AppStrings.appName,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
-            themeMode: theme.themeMode,
+            themeMode: _themeProvider.themeMode,
             debugShowCheckedModeBanner: false,
-            routerConfig: AppRouter.router(auth),
+            routerConfig: _router,
             builder: (context, child) => NetworkWrapper(child: child),
           );
         },
