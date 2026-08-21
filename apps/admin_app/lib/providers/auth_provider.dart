@@ -58,8 +58,38 @@ class AdminAuthProvider extends ChangeNotifier {
       _status = AuthStatus.authenticated;
       NotificationService.saveFcmToken(user.id);
       return true;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        _error = 'No administrator account found with this email.';
+      } else if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+        _error = 'Incorrect password. Please check your password or tap "Forgot Password?" to reset.';
+      } else if (e.code == 'invalid-email') {
+        _error = 'Please enter a valid email address.';
+      } else {
+        _error = e.message ?? 'Authentication failed.';
+      }
+      return false;
     } catch (e) {
-      _error = 'Invalid admin credentials.';
+      _error = 'Login failed: $e';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> sendPasswordReset(String email) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      await _authRepo.sendPasswordResetEmail(email);
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _error = e.message ?? 'Failed to send reset link.';
+      return false;
+    } catch (e) {
+      _error = 'Error: $e';
       return false;
     } finally {
       _isLoading = false;
