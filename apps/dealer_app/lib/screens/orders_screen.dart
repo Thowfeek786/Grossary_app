@@ -22,7 +22,14 @@ class _DealerOrdersScreenState extends State<DealerOrdersScreen> {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<DealerAuthProvider>().user;
-    if (user == null) return const SizedBox.shrink();
+    if (user == null) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFF8FAFC),
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFF10B981)),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),

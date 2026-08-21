@@ -30,42 +30,42 @@ class _DeliverySplashScreenState extends State<DeliverySplashScreen>
   void initState() {
     super.initState();
 
-    // Logo entrance animation
+    // Fast, crisp Logo entrance animation
     _logoController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 500),
     );
 
     _logoScale = CurvedAnimation(
       parent: _logoController,
-      curve: Curves.elasticOut,
+      curve: Curves.easeOutBack,
     );
 
     _logoOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _logoController,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
+        curve: const Interval(0.0, 0.7, curve: Curves.easeIn),
       ),
     );
 
     // Infinite logo pulsing background glow
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1600),
+      duration: const Duration(milliseconds: 1400),
     )..repeat(reverse: true);
 
-    _pulseScale = Tween<double>(begin: 1.0, end: 1.18).animate(
+    _pulseScale = Tween<double>(begin: 1.0, end: 1.15).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
     // Text slide & fade animation
     _textController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 400),
     );
 
     _textSlide = Tween<Offset>(
-      begin: const Offset(0, 0.5),
+      begin: const Offset(0, 0.3),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(parent: _textController, curve: Curves.easeOutCubic),
@@ -74,35 +74,37 @@ class _DeliverySplashScreenState extends State<DeliverySplashScreen>
     _textOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _textController,
-        curve: const Interval(0.0, 0.7, curve: Curves.easeIn),
+        curve: Curves.easeIn,
       ),
     );
 
     _taglineOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _textController,
-        curve: const Interval(0.4, 1.0, curve: Curves.easeIn),
+        curve: const Interval(0.2, 1.0, curve: Curves.easeIn),
       ),
     );
 
-    // Start sequence
+    // Start sequence concurrently
     _startAnimationSequence();
   }
 
   Future<void> _startAnimationSequence() async {
-    await _logoController.forward();
-    await _textController.forward();
+    _logoController.forward();
+    await Future.delayed(const Duration(milliseconds: 150));
+    if (mounted) _textController.forward();
 
     if (!mounted) return;
     final auth = context.read<DeliveryAuthProvider>();
 
-    // Wait until Firebase Auth resolves status from unknown
-    while (auth.status == AuthStatus.unknown) {
-      await Future.delayed(const Duration(milliseconds: 100));
+    // Fast-track navigation as soon as auth status resolves
+    int retries = 0;
+    while (auth.status == AuthStatus.unknown && retries < 25) {
+      await Future.delayed(const Duration(milliseconds: 50));
+      retries++;
       if (!mounted) return;
     }
 
-    await Future.delayed(const Duration(milliseconds: 500));
     if (!mounted) return;
 
     if (auth.status == AuthStatus.authenticated) {

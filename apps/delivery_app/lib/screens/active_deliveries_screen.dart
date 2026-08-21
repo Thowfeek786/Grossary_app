@@ -32,7 +32,14 @@ class _ActiveDeliveriesScreenState extends State<ActiveDeliveriesScreen> {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<DeliveryAuthProvider>().user;
-    if (user == null) return const SizedBox.shrink();
+    if (user == null) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFF8FAFC),
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFF059669)),
+        ),
+      );
+    }
 
     final delivery = context.watch<DeliveryProvider>();
 

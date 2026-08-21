@@ -23,7 +23,14 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<DeliveryAuthProvider>();
     final user = auth.user;
-    if (user == null) return const SizedBox.shrink();
+    if (user == null) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFF8FAFC),
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFF059669)),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
