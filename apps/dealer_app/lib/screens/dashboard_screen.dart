@@ -190,6 +190,7 @@ class _DealerDashboardState extends State<DealerDashboard> {
                                   value: '₹${(totalSales / 1000).toStringAsFixed(1)}K',
                                   icon: Icons.insights_rounded,
                                   color: const Color(0xFF10B981),
+                                  onTap: () => context.push('/total-sales'),
                                 ),
                                 _StatCard(
                                   title: 'Products Listed',

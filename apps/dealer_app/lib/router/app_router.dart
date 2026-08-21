@@ -13,6 +13,7 @@ import '../screens/profile_screen.dart';
 import '../screens/delivery_settings_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/dealer_payout_screen.dart';
+import '../screens/total_sales_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/main_shell.dart';
 
@@ -56,6 +57,11 @@ class AppRouter {
           path: '/dealer-payouts',
           parentNavigatorKey: _rootNavigatorKey,
           builder: (_, _) => const DealerPayoutScreen(),
+        ),
+        GoRoute(
+          path: '/total-sales',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, _) => const TotalSalesScreen(),
         ),
         GoRoute(
           path: '/login',
