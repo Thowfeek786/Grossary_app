@@ -15,6 +15,7 @@ class DeliveryOrderAlertService with ChangeNotifier {
   StreamSubscription<List<OrderModel>>? _availableOrdersSub;
   final Set<String> _knownOrderIds = {};
   bool _isInitialized = false;
+  String? _currentPartnerId;
 
   OrderModel? _currentAlertOrder;
   OrderModel? get currentAlertOrder => _currentAlertOrder;
@@ -24,6 +25,9 @@ class DeliveryOrderAlertService with ChangeNotifier {
 
   void startListening(String partnerId) {
     if (partnerId.isEmpty) return;
+    if (_currentPartnerId == partnerId && _availableOrdersSub != null) return;
+    _currentPartnerId = partnerId;
+
     _availableOrdersSub?.cancel();
     _knownOrderIds.clear();
     _isInitialized = false;
@@ -89,6 +93,7 @@ class DeliveryOrderAlertService with ChangeNotifier {
   }
 
   void stopListening() {
+    _currentPartnerId = null;
     _availableOrdersSub?.cancel();
     _availableOrdersSub = null;
     dismissAlert();
