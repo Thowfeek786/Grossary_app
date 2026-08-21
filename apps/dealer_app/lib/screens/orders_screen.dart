@@ -426,6 +426,7 @@ class _DealerOrderCard extends StatelessWidget {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF059669),
                             foregroundColor: Colors.white,
+                            minimumSize: const Size(0, 42),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             padding: const EdgeInsets.symmetric(vertical: 10),
                           ),
@@ -437,6 +438,7 @@ class _DealerOrderCard extends StatelessWidget {
                       OutlinedButton(
                         onPressed: isUpdating ? null : onReject,
                         style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(0, 42),
                           foregroundColor: const Color(0xFFEF4444),
                           side: const BorderSide(color: Color(0xFFFCA5A5)),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
