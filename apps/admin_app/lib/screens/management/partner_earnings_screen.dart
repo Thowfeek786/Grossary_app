@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:models/models.dart';
 import 'package:repository/repository.dart';
 import 'package:ui_kit/ui_kit.dart';
 import '../../widgets/admin_drawer.dart';
+import 'partner_details_screen.dart';
 
 class PartnerEarningsScreen extends StatefulWidget {
   const PartnerEarningsScreen({super.key});
@@ -427,134 +429,183 @@ class _PartnerEarningsScreenState extends State<PartnerEarningsScreen> with Sing
         final sales = (salesMap[dealer.id] ?? 0.0) > 0 ? salesMap[dealer.id]! : dealer.totalEarnings;
         final ordersCount = (ordersMap[dealer.id] ?? 0) > 0 ? ordersMap[dealer.id]! : dealer.totalDeliveries;
         final isOpen = dealer.isOnline;
+        final hasImage = dealer.photoUrl != null && dealer.photoUrl!.isNotEmpty;
 
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
+        return Material(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          elevation: 0,
+          child: InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => PartnerDetailsScreen(user: dealer)),
+              );
+            },
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 6, offset: const Offset(0, 2)),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.storefront_rounded, color: Color(0xFF059669), size: 24),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Dealer Profile Image or Avatar
+                      Stack(
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3), width: 1.5),
+                            ),
+                            child: ClipOval(
+                              child: hasImage
+                                  ? CachedNetworkImage(
+                                      imageUrl: dealer.photoUrl!,
+                                      fit: BoxFit.cover,
+                                      errorWidget: (_, _, _) => _buildDealerFallbackAvatar(dealer),
+                                    )
+                                  : _buildDealerFallbackAvatar(dealer),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              width: 13,
+                              height: 13,
+                              decoration: BoxDecoration(
+                                color: isOpen ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: Text(
-                                dealer.shopName ?? dealer.name,
-                                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF0F172A)),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    dealer.shopName ?? dealer.name,
+                                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF0F172A)),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                // Live Status Pill
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: isOpen ? const Color(0xFF10B981).withValues(alpha: 0.12) : const Color(0xFFEF4444).withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: isOpen ? const Color(0xFF34D399) : const Color(0xFFFCA5A5)),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.circle, color: isOpen ? const Color(0xFF10B981) : const Color(0xFFEF4444), size: 8),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        isOpen ? 'STORE OPEN' : 'STORE CLOSED',
+                                        style: TextStyle(
+                                          color: isOpen ? const Color(0xFF065F46) : const Color(0xFF991B1B),
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 9.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Owner: ${dealer.name} • ${dealer.phone}',
+                              style: const TextStyle(color: Color(0xFF64748B), fontSize: 11.5, fontWeight: FontWeight.w500),
+                            ),
+                            if (dealer.shopAddress != null && dealer.shopAddress!.isNotEmpty)
+                              Text(
+                                dealer.shopAddress!,
+                                style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10.5),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                            // Live Status Pill
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: isOpen ? const Color(0xFF10B981).withValues(alpha: 0.12) : const Color(0xFFEF4444).withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: isOpen ? const Color(0xFF34D399) : const Color(0xFFFCA5A5)),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.circle, color: isOpen ? const Color(0xFF10B981) : const Color(0xFFEF4444), size: 8),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    isOpen ? 'STORE OPEN' : 'STORE CLOSED',
-                                    style: TextStyle(
-                                      color: isOpen ? const Color(0xFF065F46) : const Color(0xFF991B1B),
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 9.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
                           ],
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Owner: ${dealer.name} • ${dealer.phone}',
-                          style: const TextStyle(color: Color(0xFF64748B), fontSize: 11.5, fontWeight: FontWeight.w500),
-                        ),
-                        if (dealer.shopAddress != null && dealer.shopAddress!.isNotEmpty)
-                          Text(
-                            dealer.shopAddress!,
-                            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10.5),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              const Divider(height: 1, color: Color(0xFFF1F5F9)),
-              const SizedBox(height: 12),
+                  const SizedBox(height: 14),
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  const SizedBox(height: 12),
 
-              // Stats Row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Gross Revenue', style: TextStyle(fontSize: 10.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
-                      Text('₹${sales.toStringAsFixed(0)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF059669))),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Text('Delivered Orders', style: TextStyle(fontSize: 10.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
-                      Text('$ordersCount orders', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF0F172A))),
-                    ],
-                  ),
+                  // Stats Row
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      if (dealer.phone.isNotEmpty) ...[
-                        IconButton(
-                          onPressed: () => _makeCall(dealer.phone),
-                          icon: const Icon(Icons.phone_rounded, color: Color(0xFF059669), size: 20),
-                          tooltip: 'Call Dealer',
-                        ),
-                        IconButton(
-                          onPressed: () => _openWhatsApp(dealer.phone, dealer.name),
-                          icon: const Icon(Icons.chat_rounded, color: Color(0xFF10B981), size: 20),
-                          tooltip: 'WhatsApp Dealer',
-                        ),
-                      ],
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Gross Revenue', style: TextStyle(fontSize: 10.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+                          Text('₹${sales.toStringAsFixed(0)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF059669))),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Text('Delivered Orders', style: TextStyle(fontSize: 10.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+                          Text('$ordersCount orders', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF0F172A))),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          if (dealer.phone.isNotEmpty) ...[
+                            IconButton(
+                              onPressed: () => _makeCall(dealer.phone),
+                              icon: const Icon(Icons.phone_rounded, color: Color(0xFF059669), size: 20),
+                              tooltip: 'Call Dealer',
+                            ),
+                            IconButton(
+                              onPressed: () => _openWhatsApp(dealer.phone, dealer.name),
+                              icon: const Icon(Icons.chat_rounded, color: Color(0xFF10B981), size: 20),
+                              tooltip: 'WhatsApp Dealer',
+                            ),
+                          ],
+                          const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8)),
+                        ],
+                      ),
                     ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildDealerFallbackAvatar(UserModel dealer) {
+    final initial = dealer.name.isNotEmpty ? dealer.name[0].toUpperCase() : 'D';
+    return Center(
+      child: Text(
+        initial,
+        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Color(0xFF059669)),
+      ),
     );
   }
 
@@ -576,135 +627,184 @@ class _PartnerEarningsScreenState extends State<PartnerEarningsScreen> with Sing
         final earnings = (earningsMap[partner.id] ?? 0.0) > 0 ? earningsMap[partner.id]! : partner.totalEarnings;
         final deliveriesCount = (ordersMap[partner.id] ?? 0) > 0 ? ordersMap[partner.id]! : partner.totalDeliveries;
         final isOnDuty = partner.isOnline;
+        final hasImage = partner.photoUrl != null && partner.photoUrl!.isNotEmpty;
 
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
+        return Material(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          elevation: 0,
+          child: InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => PartnerDetailsScreen(user: partner)),
+              );
+            },
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 6, offset: const Offset(0, 2)),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.two_wheeler_rounded, color: Color(0xFF2563EB), size: 24),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                partner.name,
-                                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF0F172A)),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            // Live Status Pill
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: isOnDuty ? const Color(0xFF10B981).withValues(alpha: 0.12) : const Color(0xFF94A3B8).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: isOnDuty ? const Color(0xFF34D399) : const Color(0xFFCBD5E1)),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.circle, color: isOnDuty ? const Color(0xFF10B981) : const Color(0xFF64748B), size: 8),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    isOnDuty ? 'ON DUTY' : 'OFF DUTY',
-                                    style: TextStyle(
-                                      color: isOnDuty ? const Color(0xFF065F46) : const Color(0xFF475569),
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 9.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Phone: ${partner.phone} • Vehicle: ${partner.vehicleType ?? 'Bike'}',
-                          style: const TextStyle(color: Color(0xFF64748B), fontSize: 11.5, fontWeight: FontWeight.w500),
-                        ),
-                        if (partner.rating != null && partner.rating! > 0)
-                          Row(
-                            children: [
-                              const Icon(Icons.star_rounded, color: Color(0xFFF59E0B), size: 14),
-                              const SizedBox(width: 4),
-                              Text('${partner.rating!.toStringAsFixed(1)} Rating', style: const TextStyle(color: Color(0xFFF59E0B), fontSize: 10.5, fontWeight: FontWeight.w800)),
-                            ],
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              const Divider(height: 1, color: Color(0xFFF1F5F9)),
-              const SizedBox(height: 12),
-
-              // Stats Row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
+                  Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Delivery Earnings', style: TextStyle(fontSize: 10.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
-                      Text('₹${earnings.toStringAsFixed(0)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF2563EB))),
+                      // Partner Profile Image or Avatar
+                      Stack(
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: const Color(0xFF3B82F6).withValues(alpha: 0.12),
+                              border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.3), width: 1.5),
+                            ),
+                            child: ClipOval(
+                              child: hasImage
+                                  ? CachedNetworkImage(
+                                      imageUrl: partner.photoUrl!,
+                                      fit: BoxFit.cover,
+                                      errorWidget: (_, _, _) => _buildPartnerFallbackAvatar(partner),
+                                    )
+                                  : _buildPartnerFallbackAvatar(partner),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              width: 13,
+                              height: 13,
+                              decoration: BoxDecoration(
+                                color: isOnDuty ? const Color(0xFF10B981) : const Color(0xFF94A3B8),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    partner.name,
+                                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF0F172A)),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                // Live Status Pill
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: isOnDuty ? const Color(0xFF10B981).withValues(alpha: 0.12) : const Color(0xFF94A3B8).withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: isOnDuty ? const Color(0xFF34D399) : const Color(0xFFCBD5E1)),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.circle, color: isOnDuty ? const Color(0xFF10B981) : const Color(0xFF64748B), size: 8),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        isOnDuty ? 'ON DUTY' : 'OFF DUTY',
+                                        style: TextStyle(
+                                          color: isOnDuty ? const Color(0xFF065F46) : const Color(0xFF475569),
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 9.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Phone: ${partner.phone} • Vehicle: ${partner.vehicleType ?? 'Bike'}',
+                              style: const TextStyle(color: Color(0xFF64748B), fontSize: 11.5, fontWeight: FontWeight.w500),
+                            ),
+                            if (partner.rating != null && partner.rating! > 0)
+                              Row(
+                                children: [
+                                  const Icon(Icons.star_rounded, color: Color(0xFFF59E0B), size: 14),
+                                  const SizedBox(width: 4),
+                                  Text('${partner.rating!.toStringAsFixed(1)} Rating', style: const TextStyle(color: Color(0xFFF59E0B), fontSize: 10.5, fontWeight: FontWeight.w800)),
+                                ],
+                              ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Text('Total Deliveries', style: TextStyle(fontSize: 10.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
-                      Text('$deliveriesCount trips', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF0F172A))),
-                    ],
-                  ),
+                  const SizedBox(height: 14),
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  const SizedBox(height: 12),
+
+                  // Stats Row
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      if (partner.phone.isNotEmpty) ...[
-                        IconButton(
-                          onPressed: () => _makeCall(partner.phone),
-                          icon: const Icon(Icons.phone_rounded, color: Color(0xFF2563EB), size: 20),
-                          tooltip: 'Call Driver',
-                        ),
-                        IconButton(
-                          onPressed: () => _openWhatsApp(partner.phone, partner.name),
-                          icon: const Icon(Icons.chat_rounded, color: Color(0xFF10B981), size: 20),
-                          tooltip: 'WhatsApp Driver',
-                        ),
-                      ],
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Delivery Earnings', style: TextStyle(fontSize: 10.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+                          Text('₹${earnings.toStringAsFixed(0)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF2563EB))),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Text('Total Deliveries', style: TextStyle(fontSize: 10.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+                          Text('$deliveriesCount trips', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF0F172A))),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          if (partner.phone.isNotEmpty) ...[
+                            IconButton(
+                              onPressed: () => _makeCall(partner.phone),
+                              icon: const Icon(Icons.phone_rounded, color: Color(0xFF2563EB), size: 20),
+                              tooltip: 'Call Driver',
+                            ),
+                            IconButton(
+                              onPressed: () => _openWhatsApp(partner.phone, partner.name),
+                              icon: const Icon(Icons.chat_rounded, color: Color(0xFF10B981), size: 20),
+                              tooltip: 'WhatsApp Driver',
+                            ),
+                          ],
+                          const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8)),
+                        ],
+                      ),
                     ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildPartnerFallbackAvatar(UserModel partner) {
+    final initial = partner.name.isNotEmpty ? partner.name[0].toUpperCase() : 'P';
+    return Center(
+      child: Text(
+        initial,
+        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Color(0xFF2563EB)),
+      ),
     );
   }
 
