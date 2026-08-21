@@ -18,6 +18,9 @@ class ProductModel {
   final double rating;
   final int reviewCount;
   final List<String> tags;
+  final String? offerType; // 'none', 'bogo', 'buy2get1', 'percent', 'flat'
+  final String? offerLabel; // e.g. 'BUY 1 GET 1 FREE', 'BUY 2 GET 1', '20% OFF'
+  final double? offerValue; // discount value (e.g. 20 for 20% or 30 for ₹30 flat)
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -39,6 +42,9 @@ class ProductModel {
     this.rating = 0.0,
     this.reviewCount = 0,
     this.tags = const [],
+    this.offerType,
+    this.offerLabel,
+    this.offerValue,
     required this.createdAt,
     this.updatedAt,
   });
@@ -49,6 +55,7 @@ class ProductModel {
       ? ((price - discountPrice!) / price * 100)
       : 0;
   bool get inStock => stockQuantity > 0;
+  bool get hasSpecialOffer => offerType != null && offerType != 'none' && (offerLabel?.isNotEmpty ?? false);
 
   factory ProductModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -70,6 +77,9 @@ class ProductModel {
       rating: (data['rating'] as num?)?.toDouble() ?? 0.0,
       reviewCount: data['reviewCount'] ?? 0,
       tags: List<String>.from(data['tags'] ?? []),
+      offerType: data['offerType'] as String?,
+      offerLabel: data['offerLabel'] as String?,
+      offerValue: (data['offerValue'] as num?)?.toDouble(),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
     );
@@ -92,6 +102,9 @@ class ProductModel {
     'rating': rating,
     'reviewCount': reviewCount,
     'tags': tags,
+    'offerType': offerType,
+    'offerLabel': offerLabel,
+    'offerValue': offerValue,
     'createdAt': Timestamp.fromDate(createdAt),
     'updatedAt': FieldValue.serverTimestamp(),
   };
@@ -110,6 +123,9 @@ class ProductModel {
     String? dealerName,
     bool? isActive,
     bool? isFeatured,
+    String? offerType,
+    String? offerLabel,
+    double? offerValue,
   }) {
     return ProductModel(
       id: id,
@@ -129,6 +145,9 @@ class ProductModel {
       rating: rating,
       reviewCount: reviewCount,
       tags: tags,
+      offerType: offerType ?? this.offerType,
+      offerLabel: offerLabel ?? this.offerLabel,
+      offerValue: offerValue ?? this.offerValue,
       createdAt: createdAt,
       updatedAt: DateTime.now(),
     );

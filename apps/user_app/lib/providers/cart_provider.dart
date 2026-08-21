@@ -94,6 +94,8 @@ class CartProvider extends ChangeNotifier {
         quantity: 1,
         dealerId: product.dealerId ?? '',
         dealerName: product.dealerName,
+        offerType: product.offerType,
+        offerLabel: product.offerLabel,
       ));
     }
     notifyListeners();
@@ -103,6 +105,8 @@ class CartProvider extends ChangeNotifier {
     final idx = _items.indexWhere((i) => i.productId == item.productId);
     if (idx >= 0) {
       _items[idx] = _items[idx].copyWith(quantity: _items[idx].quantity + 1);
+    } else {
+      _items.add(item.copyWith(quantity: 1));
     }
     notifyListeners();
   }

@@ -24,7 +24,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
   late TextEditingController _discountCtrl;
   late TextEditingController _unitCtrl;
   late TextEditingController _stockCtrl;
+  late TextEditingController _offerValueCtrl;
   String? _selectedCategory;
+  String _selectedOfferType = 'none';
   XFile? _image;
   bool _isLoading = false;
 
@@ -37,6 +39,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
     _discountCtrl = TextEditingController(text: widget.product?.discountPrice?.toString());
     _unitCtrl = TextEditingController(text: widget.product?.unit ?? '1 kg');
     _stockCtrl = TextEditingController(text: widget.product?.stockQuantity.toString() ?? '50');
+    _selectedOfferType = widget.product?.offerType ?? 'none';
+    _offerValueCtrl = TextEditingController(text: widget.product?.offerValue?.toString() ?? '');
     _selectedCategory = widget.product?.categoryId;
   }
 
@@ -48,6 +52,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     _discountCtrl.dispose();
     _unitCtrl.dispose();
     _stockCtrl.dispose();
+    _offerValueCtrl.dispose();
     super.dispose();
   }
 
@@ -55,6 +60,23 @@ class _AddProductScreenState extends State<AddProductScreen> {
     final picker = ImagePicker();
     final img = await picker.pickImage(source: ImageSource.gallery);
     if (img != null) setState(() => _image = img);
+  }
+
+  String? _getComputedOfferLabel() {
+    switch (_selectedOfferType) {
+      case 'bogo':
+        return 'BUY 1 GET 1 FREE';
+      case 'buy2get1':
+        return 'BUY 2 GET 1 FREE';
+      case 'percent':
+        final val = _offerValueCtrl.text.trim();
+        return val.isNotEmpty ? '$val% OFF' : 'SPECIAL % OFF';
+      case 'flat':
+        final val = _offerValueCtrl.text.trim();
+        return val.isNotEmpty ? 'FLAT ₹$val OFF' : 'FLAT OFF';
+      default:
+        return null;
+    }
   }
 
   Future<void> _submit() async {
@@ -100,6 +122,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
         unit: _unitCtrl.text.trim(),
         stockQuantity: double.parse(_stockCtrl.text),
         isActive: widget.product?.isActive ?? true,
+        offerType: _selectedOfferType,
+        offerLabel: _getComputedOfferLabel(),
+        offerValue: _offerValueCtrl.text.isNotEmpty ? double.tryParse(_offerValueCtrl.text) : null,
         createdAt: widget.product?.createdAt ?? DateTime.now(),
       );
 
@@ -310,6 +335,92 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 ),
               ),
 
+              const SizedBox(height: 16),
+
+              // Product Offers & Promotional Deals Card
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFFED7AA)),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFFFBEB), Colors.white],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.local_fire_department_rounded, color: Color(0xFFEA580C), size: 22),
+                        SizedBox(width: 8),
+                        Text('Customer Offers & Deals', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF9A3412))),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    const Text('Attach high-converting promotional banners to boost customer orders', style: TextStyle(fontSize: 12, color: Color(0xFF78350F))),
+                    const SizedBox(height: 14),
+
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _buildOfferChip('none', 'No Offer', Icons.block_outlined),
+                        _buildOfferChip('bogo', 'Buy 1 Get 1 (BOGO)', Icons.card_giftcard_rounded),
+                        _buildOfferChip('buy2get1', 'Buy 2 Get 1 Free', Icons.auto_awesome_rounded),
+                        _buildOfferChip('percent', '% Discount', Icons.percent_rounded),
+                        _buildOfferChip('flat', 'Flat ₹ Cash Off', Icons.currency_rupee_rounded),
+                      ],
+                    ),
+
+                    if (_selectedOfferType == 'percent' || _selectedOfferType == 'flat') ...[
+                      const SizedBox(height: 14),
+                      AppTextField(
+                        label: _selectedOfferType == 'percent' ? 'Discount Percentage (%)' : 'Flat Cash Discount (₹)',
+                        controller: _offerValueCtrl,
+                        hint: _selectedOfferType == 'percent' ? 'e.g. 20 for 20% OFF' : 'e.g. 50 for ₹50 OFF',
+                        prefixIcon: _selectedOfferType == 'percent' ? Icons.percent_rounded : Icons.currency_rupee_rounded,
+                        keyboardType: TextInputType.number,
+                        onChanged: (_) => setState(() {}),
+                      ),
+                    ],
+
+                    if (_selectedOfferType != 'none') ...[
+                      const SizedBox(height: 14),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEA580C).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFEA580C).withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.preview_rounded, size: 18, color: Color(0xFFEA580C)),
+                            const SizedBox(width: 8),
+                            const Text('Customer Badge Preview: ', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF9A3412))),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(colors: [Color(0xFFEA580C), Color(0xFFF97316)]),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                _getComputedOfferLabel() ?? 'OFFER',
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 10),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+
               const SizedBox(height: 28),
 
               SizedBox(
@@ -343,6 +454,41 @@ class _AddProductScreenState extends State<AddProductScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildOfferChip(String type, String title, IconData icon) {
+    final isSelected = _selectedOfferType == type;
+    return ChoiceChip(
+      label: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: isSelected ? Colors.white : const Color(0xFF9A3412)),
+          const SizedBox(width: 6),
+          Text(
+            title,
+            style: TextStyle(
+              fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+              fontSize: 12,
+              color: isSelected ? Colors.white : const Color(0xFF78350F),
+            ),
+          ),
+        ],
+      ),
+      selected: isSelected,
+      selectedColor: const Color(0xFFEA580C),
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: BorderSide(
+          color: isSelected ? const Color(0xFFEA580C) : const Color(0xFFFED7AA),
+        ),
+      ),
+      onSelected: (val) {
+        if (val) {
+          setState(() => _selectedOfferType = type);
+        }
+      },
     );
   }
 }

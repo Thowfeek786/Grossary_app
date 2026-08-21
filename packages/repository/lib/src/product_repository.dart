@@ -51,13 +51,13 @@ class ProductRepository {
       final name = p.name.toLowerCase();
       final category = p.categoryName.toLowerCase();
       final description = p.description.toLowerCase();
-      final brand = (p.brand ?? '').toLowerCase();
+      final tags = p.tags.map((t) => t.toLowerCase()).join(' ');
 
       return tokens.every((token) =>
           name.contains(token) ||
           category.contains(token) ||
           description.contains(token) ||
-          brand.contains(token));
+          tags.contains(token));
     }).toList();
   }
 

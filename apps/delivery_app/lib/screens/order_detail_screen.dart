@@ -310,6 +310,51 @@ class OrderDetailScreen extends StatelessWidget {
             order.deliveryAddress.fullAddress,
             style: const TextStyle(color: Color(0xFF475569), fontSize: 13, height: 1.4),
           ),
+          if (order.deliveryInstructions.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEDE9FE),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFC4B5FD)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.speaker_notes_outlined, size: 16, color: Color(0xFF6D28D9)),
+                      SizedBox(width: 6),
+                      Text(
+                        'Doorstep Delivery Instructions:',
+                        style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: Color(0xFF5B21B6)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: order.deliveryInstructions.map((inst) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.3)),
+                        ),
+                        child: Text(
+                          inst,
+                          style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: Color(0xFF5B21B6)),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           Row(
             children: [

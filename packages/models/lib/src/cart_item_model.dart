@@ -8,6 +8,8 @@ class CartItemModel {
   final int quantity;
   final String dealerId;
   final String? dealerName;
+  final String? offerType;
+  final String? offerLabel;
 
   const CartItemModel({
     required this.productId,
@@ -19,10 +21,24 @@ class CartItemModel {
     required this.quantity,
     required this.dealerId,
     this.dealerName,
+    this.offerType,
+    this.offerLabel,
   });
 
   double get effectivePrice => discountPrice ?? price;
-  double get totalPrice => effectivePrice * quantity;
+  double get totalPrice {
+    // If BOGO is active: every 2nd unit is free
+    if (offerType == 'bogo' && quantity >= 2) {
+      final payableCount = (quantity / 2).ceil();
+      return effectivePrice * payableCount;
+    }
+    // If Buy 2 Get 1 is active: every 3rd unit is free
+    if (offerType == 'buy2get1' && quantity >= 3) {
+      final freeUnits = quantity ~/ 3;
+      return effectivePrice * (quantity - freeUnits);
+    }
+    return effectivePrice * quantity;
+  }
 
   Map<String, dynamic> toMap() => {
     'productId': productId,
@@ -34,6 +50,8 @@ class CartItemModel {
     'quantity': quantity,
     'dealerId': dealerId,
     'dealerName': dealerName,
+    'offerType': offerType,
+    'offerLabel': offerLabel,
   };
 
   factory CartItemModel.fromMap(Map<String, dynamic> map) => CartItemModel(
@@ -46,6 +64,8 @@ class CartItemModel {
     quantity: map['quantity'] ?? 1,
     dealerId: map['dealerId'] ?? '',
     dealerName: map['dealerName'],
+    offerType: map['offerType'],
+    offerLabel: map['offerLabel'],
   );
 
   CartItemModel copyWith({int? quantity}) {
@@ -59,6 +79,8 @@ class CartItemModel {
       quantity: quantity ?? this.quantity,
       dealerId: dealerId,
       dealerName: dealerName,
+      offerType: offerType,
+      offerLabel: offerLabel,
     );
   }
 }
