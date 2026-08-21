@@ -16,9 +16,22 @@ class DeliveryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleOnlineStatus() {
+  Future<void> toggleOnlineStatus([String? partnerId]) async {
     _isOnline = !_isOnline;
     notifyListeners();
+    if (partnerId != null && partnerId.isNotEmpty) {
+      try {
+        await UserRepository().updateUser(UserModel(
+          id: partnerId,
+          name: '',
+          email: '',
+          phone: '',
+          role: UserRole.deliveryPartner,
+          createdAt: DateTime.now(),
+          isOnline: _isOnline,
+        ));
+      } catch (_) {}
+    }
   }
 
   Stream<List<OrderModel>> getNewRequests() {

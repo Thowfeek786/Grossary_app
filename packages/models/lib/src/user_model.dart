@@ -11,6 +11,7 @@ class UserModel {
   final UserRole role;
   final bool isActive;
   final bool isApproved;
+  final bool isOnline;
   final String? fcmToken;
   final DateTime createdAt;
   final DateTime? updatedAt;
@@ -41,6 +42,7 @@ class UserModel {
     required this.role,
     this.isActive = true,
     this.isApproved = false,
+    this.isOnline = true,
     this.fcmToken,
     required this.createdAt,
     this.updatedAt,
@@ -70,7 +72,7 @@ class UserModel {
   bool get isCustomer => role == UserRole.customer;
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>? ?? {};
     return UserModel(
       id: doc.id,
       name: data['name'] ?? '',
@@ -83,6 +85,7 @@ class UserModel {
       ),
       isActive: data['isActive'] ?? true,
       isApproved: data['isApproved'] ?? false,
+      isOnline: data['isOnline'] ?? data['isStoreOpen'] ?? true,
       fcmToken: data['fcmToken'],
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
@@ -114,6 +117,8 @@ class UserModel {
       'role': role.name,
       'isActive': isActive,
       'isApproved': isApproved,
+      'isOnline': isOnline,
+      'isStoreOpen': isOnline,
       'fcmToken': fcmToken,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : FieldValue.serverTimestamp(),
@@ -144,6 +149,7 @@ class UserModel {
     UserRole? role,
     bool? isActive,
     bool? isApproved,
+    bool? isOnline,
     String? fcmToken,
     String? shopName,
     String? shopAddress,
@@ -171,6 +177,7 @@ class UserModel {
       role: role ?? this.role,
       isActive: isActive ?? this.isActive,
       isApproved: isApproved ?? this.isApproved,
+      isOnline: isOnline ?? this.isOnline,
       fcmToken: fcmToken ?? this.fcmToken,
       createdAt: createdAt,
       updatedAt: DateTime.now(),

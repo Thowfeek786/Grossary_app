@@ -129,9 +129,12 @@ class _DealerDashboardState extends State<DealerDashboard> {
                                 height: 20,
                                 width: 32,
                                 child: Switch(
-                                  value: _isStoreOpen,
+                                  value: user.isOnline,
                                   activeThumbColor: const Color(0xFF34D399),
-                                  onChanged: (val) => setState(() => _isStoreOpen = val),
+                                  onChanged: (val) {
+                                    setState(() => _isStoreOpen = val);
+                                    UserRepository().updateUser(user.copyWith(isOnline: val));
+                                  },
                                 ),
                               ),
                             ],

@@ -23,6 +23,7 @@ import '../screens/management/flash_sale_management_screen.dart';
 import '../screens/management/payout_requests_screen.dart';
 import '../screens/management/settings_hub_screen.dart';
 import '../screens/management/chat_management_screen.dart';
+import '../screens/management/partner_earnings_screen.dart';
 import '../screens/profile_screen.dart';
 
 class AppRouter {
@@ -142,6 +143,10 @@ class AppRouter {
         GoRoute(
           path: '/management/chats',
           builder: (_, _) => const ChatManagementScreen(),
+        ),
+        GoRoute(
+          path: '/management/partner-earnings',
+          builder: (_, _) => const PartnerEarningsScreen(),
         ),
         GoRoute(
           path: '/profile',

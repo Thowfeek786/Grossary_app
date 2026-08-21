@@ -97,6 +97,7 @@ class AdminDrawer extends StatelessWidget {
                 _DI(Icons.payments_rounded, 'Payout Requests', '/management/payout-requests', currentRoute, () { Navigator.pop(context); context.push('/management/payout-requests'); }),
 
                 _sectionHeader('FINANCE & LOGISTICS'),
+                _DI(Icons.monetization_on_rounded, 'Partner & Dealer Earnings', '/management/partner-earnings', currentRoute, () { Navigator.pop(context); context.push('/management/partner-earnings'); }),
                 _DI(Icons.money_off_rounded, 'Refunds', '/management/refunds', currentRoute, () { Navigator.pop(context); context.push('/management/refunds'); }),
                 _DI(Icons.account_balance_wallet_rounded, 'Wallets', '/management/wallets', currentRoute, () { Navigator.pop(context); context.push('/management/wallets'); }),
                 _DI(Icons.account_balance_rounded, 'Payments', '/management/payments', currentRoute, () { Navigator.pop(context); context.push('/management/payments'); }),

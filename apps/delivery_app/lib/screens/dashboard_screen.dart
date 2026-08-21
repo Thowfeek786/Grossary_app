@@ -167,7 +167,7 @@ class DeliveryDashboard extends StatelessWidget {
                             const SizedBox(width: 4),
                             Switch(
                               value: isOnline,
-                              onChanged: (_) => delivery.toggleOnlineStatus(),
+                              onChanged: (_) => delivery.toggleOnlineStatus(user.id),
                               activeThumbColor: const Color(0xFF059669),
                               activeTrackColor: const Color(0xFFA7F3D0),
                               inactiveThumbColor: Colors.grey.shade400,
