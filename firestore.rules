@@ -34,16 +34,38 @@ service cloud.firestore {
       return hasRole('delivery_partner');
     }
 
-    // Users Collection
+    // Users Collection & User Subcollections (addresses, favorites, cart, etc.)
     match /users/{userId} {
       allow read: if isSignedIn();
       allow write: if isOwner(userId) || isAdmin();
+
+      match /addresses/{addressId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      match /favorites/{favId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      match /{subcollection}/{docId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
     }
 
-    // Products Collection
+    // Products Collection & Product Subcollections (reviews)
     match /products/{productId} {
       allow read: if true;
       allow create, update, delete: if isAdmin() || isDealer();
+
+      match /reviews/{reviewId} {
+        allow read: if true;
+        allow write: if isSignedIn();
+      }
+
+      match /{subcollection}/{docId} {
+        allow read: if true;
+        allow write: if isSignedIn();
+      }
     }
 
     // Categories Collection
@@ -58,8 +80,13 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Settings Collection (Global platform & Dealer dark stores)
+    // Store Settings & Platform Settings Collection
     match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin() || isDealer();
+    }
+
+    match /store_settings/{settingId} {
       allow read: if true;
       allow write: if isAdmin() || isDealer();
     }
@@ -79,9 +106,14 @@ service cloud.firestore {
         allow read: if isOwner(userId) || isAdmin();
         allow write: if isOwner(userId) || isAdmin();
       }
+
+      match /{subcollection}/{docId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isOwner(userId) || isAdmin();
+      }
     }
 
-    // Orders Collection
+    // Orders Collection & Order Messages Subcollection
     match /orders/{orderId} {
       allow read: if isSignedIn() && (
         resource.data.userId == request.auth.uid ||
@@ -99,6 +131,10 @@ service cloud.firestore {
         isAdmin()
       );
       allow delete: if isAdmin();
+
+      match /messages/{msgId} {
+        allow read, write: if isSignedIn();
+      }
     }
 
     // Driver Live Telemetry Locations
