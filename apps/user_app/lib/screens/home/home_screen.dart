@@ -870,7 +870,7 @@ class _CategoryChip extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────
-// Flash Sale Section with Live Timer Ticker
+// Flash Sale Section with Live Firestore Sync & Ticker
 // ─────────────────────────────────────────────
 class _FlashSaleSection extends StatefulWidget {
   @override
@@ -878,135 +878,194 @@ class _FlashSaleSection extends StatefulWidget {
 }
 
 class _FlashSaleSectionState extends State<_FlashSaleSection> {
-  late Timer _timer;
-  int _secondsLeft = 7420; // 02h 03m 40s
+  Timer? _timer;
+  DateTime? _targetEndTime;
+  Duration _remaining = Duration.zero;
 
   @override
   void initState() {
     super.initState();
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      if (_secondsLeft > 0) {
-        setState(() => _secondsLeft--);
-      } else {
-        _timer.cancel();
-        setState(() {});
+      if (_targetEndTime != null) {
+        final now = DateTime.now();
+        final diff = _targetEndTime!.difference(now);
+        setState(() {
+          _remaining = diff.isNegative ? Duration.zero : diff;
+        });
       }
     });
   }
 
   @override
   void dispose() {
-    _timer.cancel();
+    _timer?.cancel();
     super.dispose();
   }
 
-  String _formatTime() {
-    final h = (_secondsLeft ~/ 3600).toString().padLeft(2, '0');
-    final m = ((_secondsLeft % 3600) ~/ 60).toString().padLeft(2, '0');
-    final s = (_secondsLeft % 60).toString().padLeft(2, '0');
-    return '$h:$m:$s';
+  String _twoDigits(int n) => n.toString().padLeft(2, '0');
+
+  Widget _buildTimeBadge(String value, String unit) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: const Color(0xFF9A3412),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        value,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontSize: 12,
+          fontFamily: 'monospace',
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_secondsLeft <= 0) {
-      return const SizedBox.shrink();
-    }
-
-    return StreamBuilder<List<ProductModel>>(
-      stream: ProductRepository().getProducts(featuredOnly: true),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+    return StreamBuilder<FlashSaleModel?>(
+      stream: FlashSaleRepository().getFlashSale(),
+      builder: (context, flashSnapshot) {
+        final sale = flashSnapshot.data;
+        if (sale == null || !sale.isActive) {
           return const SizedBox.shrink();
         }
-        final products = snapshot.data!;
 
-        return AnimatedSize(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFFFF7ED), Color(0xFFFFEDD5)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+        // Update target end time if changed
+        if (_targetEndTime == null || _targetEndTime != sale.endTime) {
+          _targetEndTime = sale.endTime.isAfter(DateTime.now())
+              ? sale.endTime
+              : DateTime.now().add(const Duration(hours: 3, minutes: 45));
+          _remaining = _targetEndTime!.difference(DateTime.now());
+        }
+
+        final hours = _twoDigits(_remaining.inHours);
+        final minutes = _twoDigits(_remaining.inMinutes.remainder(60));
+        final seconds = _twoDigits(_remaining.inSeconds.remainder(60));
+
+        return StreamBuilder<List<ProductModel>>(
+          stream: ProductRepository().getProducts(featuredOnly: sale.productIds.isEmpty),
+          builder: (context, prodSnapshot) {
+            if (!prodSnapshot.hasData || prodSnapshot.data!.isEmpty) {
+              return const SizedBox.shrink();
+            }
+
+            final allProducts = prodSnapshot.data!;
+            final products = sale.productIds.isNotEmpty
+                ? allProducts.where((p) => sale.productIds.contains(p.id)).toList()
+                : allProducts;
+
+            final displayProducts = products.isNotEmpty ? products : allProducts;
+
+            return Container(
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFFF7ED), Color(0xFFFFEDD5)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(
+                  color: const Color(0xFFF97316).withValues(alpha: 0.35),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFEA580C).withValues(alpha: 0.06),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(
-                color: const Color(0xFFF97316).withValues(alpha: 0.3),
-              ),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEA580C),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.local_fire_department_rounded,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    const Text(
-                      'FLASH SALE',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 16,
-                        color: Color(0xFF9A3412),
-                      ),
-                    ),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF9A3412),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        'Ends in ${_formatTime()}',
-                        style: const TextStyle(
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEA580C),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.local_fire_department_rounded,
                           color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 11,
-                          fontFamily: 'monospace',
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              sale.title.isNotEmpty ? sale.title : 'FLASH SALE ⚡',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 15,
+                                color: Color(0xFF9A3412),
+                              ),
+                            ),
+                            if (sale.discountPercentage > 0)
+                              Text(
+                                'Up to ${sale.discountPercentage.toStringAsFixed(0)}% OFF on items',
+                                style: const TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFFC2410C),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      // Styled Digits Countdown Ticker
+                      Row(
+                        children: [
+                          _buildTimeBadge(hours, 'h'),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 2),
+                            child: Text(':', style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF9A3412))),
+                          ),
+                          _buildTimeBadge(minutes, 'm'),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 2),
+                            child: Text(':', style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF9A3412))),
+                          ),
+                          _buildTimeBadge(seconds, 's'),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    height: 205,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: displayProducts.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: 12),
+                      itemBuilder: (ctx, i) => SizedBox(
+                        width: 150,
+                        child: ProductCard(
+                          product: displayProducts[i],
+                          onTap: () => context.push('/home/product/${displayProducts[i].id}'),
+                          onAddToCart: () => context.read<CartProvider>().addItem(displayProducts[i]),
                         ),
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                SizedBox(
-                  height: 195,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: products.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 12),
-                    itemBuilder: (ctx, i) => SizedBox(
-                      width: 150,
-                      child: ProductCard(
-                        product: products[i],
-                        onTap: () =>
-                            context.push('/home/product/${products[i].id}'),
-                        onAddToCart: () =>
-                            context.read<CartProvider>().addItem(products[i]),
-                      ),
-                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
+                ],
+              ),
+            );
+          },
         );
       },
     );
