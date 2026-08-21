@@ -315,6 +315,19 @@ class _PayoutAdminCard extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () async {
                     await PayoutRepository().updatePayoutStatus(requestId: request.id, status: 'approved');
+                    
+                    // Send instant notification to Partner
+                    await NotificationRepository().sendNotification(
+                      NotificationModel(
+                        id: '',
+                        userId: request.partnerId,
+                        title: '🎉 Payout Approved: ₹${request.amount.toStringAsFixed(0)}',
+                        body: 'Your withdrawal request of ₹${request.amount.toStringAsFixed(0)} has been approved and processed to your ${request.payoutMethod.toUpperCase()} account.',
+                        type: 'payout',
+                        createdAt: DateTime.now(),
+                      ),
+                    );
+
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('🎉 Payout request approved & marked paid!'), backgroundColor: Color(0xFF059669)),
@@ -335,6 +348,19 @@ class _PayoutAdminCard extends StatelessWidget {
                 OutlinedButton(
                   onPressed: () async {
                     await PayoutRepository().updatePayoutStatus(requestId: request.id, status: 'rejected');
+
+                    // Send notification to Partner
+                    await NotificationRepository().sendNotification(
+                      NotificationModel(
+                        id: '',
+                        userId: request.partnerId,
+                        title: '❌ Payout Request Rejected: ₹${request.amount.toStringAsFixed(0)}',
+                        body: 'Your payout request of ₹${request.amount.toStringAsFixed(0)} could not be processed. Please verify your banking details.',
+                        type: 'payout',
+                        createdAt: DateTime.now(),
+                      ),
+                    );
+
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Payout request rejected.'), backgroundColor: Color(0xFFEF4444)),

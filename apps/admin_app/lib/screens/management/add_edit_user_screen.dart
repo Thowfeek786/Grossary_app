@@ -69,13 +69,19 @@ class _AddEditUserScreenState extends State<AddEditUserScreen> {
               child: Text('Assign Role', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
             ),
             const SizedBox(height: 12),
-            ...UserRole.values.map((role) => RadioListTile<UserRole>(
-              title: Text(role.name.toUpperCase()),
-              value: role,
+            RadioGroup<UserRole>(
               groupValue: _selectedRole,
-              onChanged: (v) => setState(() => _selectedRole = v!),
-              activeColor: const Color(0xFF6366F1),
-            )),
+              onChanged: (v) {
+                if (v != null) setState(() => _selectedRole = v);
+              },
+              child: Column(
+                children: UserRole.values.map((role) => RadioListTile<UserRole>(
+                  title: Text(role.name.toUpperCase()),
+                  value: role,
+                  activeColor: const Color(0xFF6366F1),
+                )).toList(),
+              ),
+            ),
             const SizedBox(height: 40),
             AppButton(
               label: 'Save Changes',

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:core/src/constants/app_colors.dart';
+import 'package:core/core.dart';
 
 class FilterTag extends StatelessWidget {
   final String label;

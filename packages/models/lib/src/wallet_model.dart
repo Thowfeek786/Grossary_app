@@ -60,7 +60,7 @@ class WalletModel {
 
   double get totalCashback => transactions
       .where((t) => t.type == TransactionType.cashback)
-      .fold(0.0, (sum, t) => sum + t.amount);
+      .fold(0.0, (prevSum, t) => prevSum + t.amount);
 
   factory WalletModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -56,7 +57,7 @@ class AuthRepository {
       await _db.collection('users').doc(newUser.id).set(newUser.toFirestore());
       return newUser;
     } catch (e) {
-      print('Google Sign In Error: $e');
+      debugPrint('Google Sign In Error: $e');
       rethrow;
     }
   }

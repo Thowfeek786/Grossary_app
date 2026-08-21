@@ -117,26 +117,30 @@ class _AddUserScreenState extends State<AddUserScreen> {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppColors.grey200),
                 ),
-                child: Column(
-                  children: UserRole.values.map((role) {
-                    final isLast = role == UserRole.values.last;
-                    return Column(
-                      children: [
-                        RadioListTile<UserRole>(
-                          title: Text(
-                            role.name.toUpperCase(),
-                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                child: RadioGroup<UserRole>(
+                  groupValue: _selectedRole,
+                  onChanged: (v) {
+                    if (v != null) setState(() => _selectedRole = v);
+                  },
+                  child: Column(
+                    children: UserRole.values.map((role) {
+                      final isLast = role == UserRole.values.last;
+                      return Column(
+                        children: [
+                          RadioListTile<UserRole>(
+                            title: Text(
+                              role.name.toUpperCase(),
+                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                            ),
+                            subtitle: Text(_roleDesc(role), style: const TextStyle(fontSize: 11)),
+                            value: role,
+                            activeColor: const Color(0xFF6366F1),
                           ),
-                          subtitle: Text(_roleDesc(role), style: const TextStyle(fontSize: 11)),
-                          value: role,
-                          groupValue: _selectedRole,
-                          onChanged: (v) => setState(() => _selectedRole = v!),
-                          activeColor: const Color(0xFF6366F1),
-                        ),
-                        if (!isLast) const Divider(height: 1, indent: 16, endIndent: 16),
-                      ],
-                    );
-                  }).toList(),
+                          if (!isLast) const Divider(height: 1, indent: 16, endIndent: 16),
+                        ],
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
               const SizedBox(height: 40),
