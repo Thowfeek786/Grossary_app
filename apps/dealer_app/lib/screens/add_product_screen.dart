@@ -401,7 +401,14 @@ class _AddProductScreenState extends State<AddProductScreen> {
                           children: [
                             const Icon(Icons.preview_rounded, size: 18, color: Color(0xFFEA580C)),
                             const SizedBox(width: 8),
-                            const Text('Customer Badge Preview: ', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF9A3412))),
+                            const Expanded(
+                              child: Text(
+                                'Customer Badge Preview:',
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF9A3412)),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
@@ -441,9 +448,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
                           children: [
                             const Icon(Icons.check_circle_rounded, size: 18),
                             const SizedBox(width: 8),
-                            Text(
-                              widget.product == null ? 'Publish Product to Store' : 'Save Product Changes',
-                              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+                            Flexible(
+                              child: Text(
+                                widget.product == null ? 'Publish Product to Store' : 'Save Product Changes',
+                                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ],
                         ),
@@ -460,20 +470,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
   Widget _buildOfferChip(String type, String title, IconData icon) {
     final isSelected = _selectedOfferType == type;
     return ChoiceChip(
-      label: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: isSelected ? Colors.white : const Color(0xFF9A3412)),
-          const SizedBox(width: 6),
-          Text(
-            title,
-            style: TextStyle(
-              fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-              fontSize: 12,
-              color: isSelected ? Colors.white : const Color(0xFF78350F),
-            ),
-          ),
-        ],
+      avatar: Icon(icon, size: 14, color: isSelected ? Colors.white : const Color(0xFF9A3412)),
+      label: Text(title),
+      labelStyle: TextStyle(
+        fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+        fontSize: 11.5,
+        color: isSelected ? Colors.white : const Color(0xFF78350F),
       ),
       selected: isSelected,
       selectedColor: const Color(0xFFEA580C),
