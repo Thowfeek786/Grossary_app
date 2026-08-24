@@ -1,6 +1,8 @@
-# melos_managed_dependency_overrides: core,models
+# melos_managed_dependency_overrides: core,models,ui_kit
 dependency_overrides:
   core:
-    path: ..\\core
+    path: ../core
   models:
-    path: ..\\models
+    path: ../models
+  ui_kit:
+    path: ../ui_kit
