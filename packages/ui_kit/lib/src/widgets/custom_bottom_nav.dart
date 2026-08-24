@@ -41,15 +41,24 @@ class CustomBottomNav extends StatelessWidget {
             onTap: () => onTap(index),
             behavior: HitTestBehavior.opaque,
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
+              duration: const Duration(milliseconds: 280),
               curve: Curves.easeInOutCubic,
               padding: EdgeInsets.symmetric(
-                horizontal: isSelected ? 12 : 8,
+                horizontal: isSelected ? 14 : 10,
                 vertical: 8,
               ),
               decoration: BoxDecoration(
                 color: isSelected ? const Color(0xFF046A38) : Colors.transparent,
                 borderRadius: BorderRadius.circular(24),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: const Color(0xFF046A38).withValues(alpha: 0.3),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ]
+                    : null,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -57,46 +66,70 @@ class CustomBottomNav extends StatelessWidget {
                   Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      Icon(
-                        isSelected ? item.activeIcon : item.icon,
-                        color: isSelected ? Colors.white : const Color(0xFF6B7280),
-                        size: 21,
+                      AnimatedScale(
+                        scale: isSelected ? 1.12 : 1.0,
+                        duration: const Duration(milliseconds: 280),
+                        curve: Curves.easeOutBack,
+                        child: Icon(
+                          isSelected ? item.activeIcon : item.icon,
+                          color: isSelected ? Colors.white : const Color(0xFF6B7280),
+                          size: 21,
+                        ),
                       ),
                       if (item.badge != null && item.badge! > 0)
                         Positioned(
-                          top: -3,
-                          right: -5,
-                          child: Container(
-                            padding: const EdgeInsets.all(3),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFEF4444),
-                              shape: BoxShape.circle,
-                            ),
-                            constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
-                            child: Text(
-                              item.badge! > 9 ? '9+' : '${item.badge}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 8,
-                                fontWeight: FontWeight.w800,
+                          top: -4,
+                          right: -6,
+                          child: AnimatedScale(
+                            scale: 1.0,
+                            duration: const Duration(milliseconds: 200),
+                            child: Container(
+                              padding: const EdgeInsets.all(3.5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEF4444),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 1.5),
                               ),
-                              textAlign: TextAlign.center,
+                              constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                              child: Text(
+                                item.badge! > 9 ? '9+' : '${item.badge}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ),
                         ),
                     ],
                   ),
-                  if (isSelected) ...[
-                    const SizedBox(width: 5),
-                    Text(
-                      item.label,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeInOutCubic,
+                    child: isSelected
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(width: 6),
+                              AnimatedOpacity(
+                                opacity: isSelected ? 1.0 : 0.0,
+                                duration: const Duration(milliseconds: 200),
+                                child: Text(
+                                  item.label,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                    letterSpacing: 0.1,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : const SizedBox.shrink(),
+                  ),
                 ],
               ),
             ),

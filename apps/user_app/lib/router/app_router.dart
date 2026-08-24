@@ -190,31 +190,63 @@ class AppRouter {
           routes: [
             GoRoute(
               path: '/home',
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: HomeScreen(),
+              pageBuilder: (context, state) => _buildTabTransitionPage(
+                const HomeScreen(),
+                state,
               ),
             ),
             GoRoute(
               path: '/categories',
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: CategoriesScreen(),
+              pageBuilder: (context, state) => _buildTabTransitionPage(
+                const CategoriesScreen(),
+                state,
               ),
             ),
             GoRoute(
               path: '/cart',
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: CartScreen(),
+              pageBuilder: (context, state) => _buildTabTransitionPage(
+                const CartScreen(),
+                state,
               ),
             ),
             GoRoute(
               path: '/orders',
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: OrdersScreen(),
+              pageBuilder: (context, state) => _buildTabTransitionPage(
+                const OrdersScreen(),
+                state,
               ),
             ),
           ],
         ),
       ],
+    );
+  }
+
+  static Page<dynamic> _buildTabTransitionPage(
+    Widget child,
+    GoRouterState state,
+  ) {
+    return CustomTransitionPage<void>(
+      key: state.pageKey,
+      child: child,
+      transitionDuration: const Duration(milliseconds: 240),
+      reverseTransitionDuration: const Duration(milliseconds: 200),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+        );
+        return FadeTransition(
+          opacity: curved,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.0, 0.025),
+              end: Offset.zero,
+            ).animate(curved),
+            child: child,
+          ),
+        );
+      },
     );
   }
 }
