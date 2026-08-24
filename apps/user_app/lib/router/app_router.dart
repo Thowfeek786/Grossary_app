@@ -178,6 +178,11 @@ class AppRouter {
           parentNavigatorKey: _rootNavigatorKey,
           builder: (_, __) => const AboutUsScreen(),
         ),
+        GoRoute(
+          path: '/profile',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, __) => const ProfileScreen(),
+        ),
 
         // Shell route for persistent bottom nav tabs
         ShellRoute(
@@ -205,12 +210,6 @@ class AppRouter {
               path: '/orders',
               pageBuilder: (context, state) => const NoTransitionPage(
                 child: OrdersScreen(),
-              ),
-            ),
-            GoRoute(
-              path: '/profile',
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: ProfileScreen(),
               ),
             ),
           ],

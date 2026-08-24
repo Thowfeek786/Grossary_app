@@ -23,7 +23,6 @@ class _MainShellState extends State<MainShell> {
     if (loc.startsWith('/categories')) return 1;
     if (loc.startsWith('/cart')) return 2;
     if (loc.startsWith('/orders')) return 3;
-    if (loc.startsWith('/profile')) return 4;
     return 0;
   }
 
@@ -86,8 +85,7 @@ class _MainShellState extends State<MainShell> {
     final bool isMainTab = currentLocation == '/home' ||
                            currentLocation == '/categories' ||
                            currentLocation == '/cart' ||
-                           currentLocation == '/orders' ||
-                           currentLocation == '/profile';
+                           currentLocation == '/orders';
 
     if (_lastLocation != currentLocation) {
       _lastLocation = currentLocation;
@@ -140,7 +138,6 @@ class _MainShellState extends State<MainShell> {
                         case 1: context.go('/categories'); break;
                         case 2: context.go('/cart'); break;
                         case 3: context.go('/orders'); break;
-                        case 4: context.go('/profile'); break;
                       }
                     },
                     items: [
@@ -164,11 +161,6 @@ class _MainShellState extends State<MainShell> {
                         icon: Icons.receipt_long_outlined,
                         activeIcon: Icons.receipt_long_rounded,
                         label: 'Orders',
-                      ),
-                      const BottomNavItem(
-                        icon: Icons.person_outline_rounded,
-                        activeIcon: Icons.person_rounded,
-                        label: 'Account',
                       ),
                     ],
                   ),

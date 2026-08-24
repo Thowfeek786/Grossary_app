@@ -30,6 +30,27 @@ class ProfileScreen extends StatelessWidget {
     if (user == null || auth.status == AuthStatus.unauthenticated) {
       return Scaffold(
         backgroundColor: const Color(0xFFF9FAFB),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE5E7EB),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: Color(0xFF111827)),
+            ),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/home');
+              }
+            },
+          ),
+        ),
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -108,9 +129,32 @@ class ProfileScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'My Account',
-                        style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              if (context.canPop()) {
+                                context.pop();
+                              } else {
+                                context.go('/home');
+                              }
+                            },
+                            icon: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.16),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Text(
+                            'My Account',
+                            style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900),
+                          ),
+                        ],
                       ),
                       IconButton(
                         onPressed: () => context.push('/profile/edit'),

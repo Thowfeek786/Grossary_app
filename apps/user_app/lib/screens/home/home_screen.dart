@@ -197,7 +197,7 @@ class HomeScreen extends StatelessWidget {
                       const SizedBox(width: 10),
                       // User Avatar Profile Button
                       GestureDetector(
-                        onTap: () => context.go('/profile'),
+                        onTap: () => context.push('/profile'),
                         child: Container(
                           width: 40,
                           height: 40,
