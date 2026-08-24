@@ -17,6 +17,7 @@ import '../screens/total_sales_screen.dart';
 import '../screens/help_support_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/main_shell.dart';
+import '../screens/can_return_summary_screen.dart';
 
 class AppRouter {
   static final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -83,6 +84,11 @@ class AppRouter {
           path: '/add-product',
           parentNavigatorKey: _rootNavigatorKey,
           builder: (context, state) => AddProductScreen(product: state.extra as ProductModel?),
+        ),
+        GoRoute(
+          path: '/can-returns',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, __) => const CanReturnSummaryScreen(),
         ),
         GoRoute(
           path: '/order/:orderId',

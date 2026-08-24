@@ -228,6 +228,20 @@ class OrderDetailScreen extends StatelessWidget {
                                           style: const TextStyle(color: Color(0xFF059669), fontSize: 11, fontWeight: FontWeight.w800),
                                         ),
                                       ),
+                                      if (item.canExchange || item.isWaterCan) ...[
+                                        const SizedBox(height: 4),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF2563EB).withValues(alpha: 0.1),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            item.canExchange ? '🔄 Empty Can Exchange' : '➕ New Can with Deposit',
+                                            style: const TextStyle(color: Color(0xFF2563EB), fontSize: 10, fontWeight: FontWeight.w800),
+                                          ),
+                                        ),
+                                      ],
                                     ],
                                   ),
                                 ),
@@ -238,6 +252,35 @@ class OrderDetailScreen extends StatelessWidget {
                               ],
                             ),
                           )),
+
+                      if (order.hasCanExchange) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFFBEB),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFFDE68A)),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.info_outline_rounded, color: Color(0xFFD97706), size: 18),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Note: Customer has empty can for exchange',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF92400E),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
 
                       const Divider(color: Color(0xFFF1F5F9)),
                       const SizedBox(height: 8),

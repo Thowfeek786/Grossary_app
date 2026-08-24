@@ -550,6 +550,20 @@ class OrderDetailScreen extends StatelessWidget {
                           Text(item.productName, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: Color(0xFF0F172A))),
                           const SizedBox(height: 2),
                           Text('${item.quantity} × ${item.unit}', style: const TextStyle(color: Color(0xFF64748B), fontSize: 12, fontWeight: FontWeight.w500)),
+                          if (item.canExchange) ...[
+                            const SizedBox(height: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF2563EB).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                'Exchange: Collect empty can',
+                                style: TextStyle(color: Color(0xFF2563EB), fontSize: 10.5, fontWeight: FontWeight.w800),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -557,6 +571,33 @@ class OrderDetailScreen extends StatelessWidget {
                   ],
                 ),
               )),
+          if (order.hasCanExchange) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFBEB),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFFDE68A)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.sync_alt_rounded, color: Color(0xFFD97706), size: 18),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Note: Collect 1 empty can from customer',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF92400E),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const Divider(height: 24, color: Color(0xFFE2E8F0)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

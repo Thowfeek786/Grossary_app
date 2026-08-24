@@ -39,6 +39,8 @@ class OrderModel {
   final String? digitalSignatureUrl;
   final String? idempotencyKey;
   final List<String> deliveryInstructions;
+  final int? emptyCansCollected;
+  final String? canCollectionStatus;
   final DateTime createdAt;
   final DateTime? updatedAt;
   final DateTime? deliveredAt;
@@ -70,6 +72,8 @@ class OrderModel {
     this.digitalSignatureUrl,
     this.idempotencyKey,
     this.deliveryInstructions = const [],
+    this.emptyCansCollected,
+    this.canCollectionStatus,
     required this.createdAt,
     this.updatedAt,
     this.deliveredAt,
@@ -77,6 +81,9 @@ class OrderModel {
 
   String get statusString => status.name;
   int get itemCount => items.fold(0, (acc, item) => acc + item.quantity);
+  bool get hasWaterCan => items.any((i) => i.isWaterCan);
+  bool get hasCanExchange => items.any((i) => i.isWaterCan && i.canExchange);
+  int get waterCanQuantity => items.where((i) => i.isWaterCan).fold(0, (acc, i) => acc + i.quantity);
 
   factory OrderModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -100,7 +107,7 @@ class OrderModel {
       discount: (data['discount'] as num?)?.toDouble() ?? 0.0,
       total: (data['total'] as num?)?.toDouble() ?? 0.0,
       couponCode: data['couponCode'],
-      paymentMethod: data['paymentMethod'] ?? 'Cash on Delivery',
+      paymentMethod: data['paymentMethod'] ?? 'cod',
       isPaid: data['isPaid'] ?? false,
       deliveryPartnerId: data['deliveryPartnerId'],
       deliveryPartnerName: data['deliveryPartnerName'],
@@ -112,9 +119,9 @@ class OrderModel {
       deliveryOtp: data['deliveryOtp'],
       digitalSignatureUrl: data['digitalSignatureUrl'],
       idempotencyKey: data['idempotencyKey'],
-      deliveryInstructions: (data['deliveryInstructions'] as List<dynamic>? ?? [])
-          .map((e) => e.toString())
-          .toList(),
+      deliveryInstructions: List<String>.from(data['deliveryInstructions'] ?? []),
+      emptyCansCollected: (data['emptyCansCollected'] as num?)?.toInt(),
+      canCollectionStatus: data['canCollectionStatus'],
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
       deliveredAt: (data['deliveredAt'] as Timestamp?)?.toDate(),
@@ -147,6 +154,8 @@ class OrderModel {
     'digitalSignatureUrl': digitalSignatureUrl,
     'idempotencyKey': idempotencyKey,
     'deliveryInstructions': deliveryInstructions,
+    'emptyCansCollected': emptyCansCollected,
+    'canCollectionStatus': canCollectionStatus,
     'createdAt': Timestamp.fromDate(createdAt),
     'updatedAt': FieldValue.serverTimestamp(),
     'deliveredAt': deliveredAt != null ? Timestamp.fromDate(deliveredAt!) : null,
@@ -162,6 +171,8 @@ class OrderModel {
     DateTime? deliveredAt,
     String? idempotencyKey,
     List<String>? deliveryInstructions,
+    int? emptyCansCollected,
+    String? canCollectionStatus,
   }) {
     return OrderModel(
       id: id,
@@ -190,6 +201,8 @@ class OrderModel {
       digitalSignatureUrl: digitalSignatureUrl,
       idempotencyKey: idempotencyKey ?? this.idempotencyKey,
       deliveryInstructions: deliveryInstructions ?? this.deliveryInstructions,
+      emptyCansCollected: emptyCansCollected ?? this.emptyCansCollected,
+      canCollectionStatus: canCollectionStatus ?? this.canCollectionStatus,
       createdAt: createdAt,
       updatedAt: DateTime.now(),
       deliveredAt: deliveredAt ?? this.deliveredAt,

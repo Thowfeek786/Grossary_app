@@ -17,5 +17,6 @@ export 'src/flash_sale_repository.dart';
 export 'src/payout_repository.dart';
 export 'src/chat_repository.dart';
 export 'src/favorite_repository.dart';
+export 'src/water_can_repository.dart';
 
 

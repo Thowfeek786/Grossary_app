@@ -15,4 +15,5 @@ export 'src/store_settings_model.dart';
 export 'src/flash_sale_model.dart';
 export 'src/payout_request_model.dart';
 export 'src/chat_model.dart';
+export 'src/water_can_model.dart';
 

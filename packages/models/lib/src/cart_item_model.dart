@@ -10,6 +10,9 @@ class CartItemModel {
   final String? dealerName;
   final String? offerType;
   final String? offerLabel;
+  final bool isWaterCan;
+  final bool canExchange;
+  final double depositAmount;
 
   const CartItemModel({
     required this.productId,
@@ -23,6 +26,9 @@ class CartItemModel {
     this.dealerName,
     this.offerType,
     this.offerLabel,
+    this.isWaterCan = false,
+    this.canExchange = false,
+    this.depositAmount = 0.0,
   });
 
   double get effectivePrice => discountPrice ?? price;
@@ -30,14 +36,14 @@ class CartItemModel {
     // If BOGO is active: every 2nd unit is free
     if (offerType == 'bogo' && quantity >= 2) {
       final payableCount = (quantity / 2).ceil();
-      return effectivePrice * payableCount;
+      return (effectivePrice * payableCount) + (depositAmount * quantity);
     }
     // If Buy 2 Get 1 is active: every 3rd unit is free
     if (offerType == 'buy2get1' && quantity >= 3) {
       final freeUnits = quantity ~/ 3;
-      return effectivePrice * (quantity - freeUnits);
+      return (effectivePrice * (quantity - freeUnits)) + (depositAmount * quantity);
     }
-    return effectivePrice * quantity;
+    return (effectivePrice * quantity) + (depositAmount * quantity);
   }
 
   Map<String, dynamic> toMap() => {
@@ -52,6 +58,9 @@ class CartItemModel {
     'dealerName': dealerName,
     'offerType': offerType,
     'offerLabel': offerLabel,
+    'isWaterCan': isWaterCan,
+    'canExchange': canExchange,
+    'depositAmount': depositAmount,
   };
 
   factory CartItemModel.fromMap(Map<String, dynamic> map) => CartItemModel(
@@ -66,9 +75,17 @@ class CartItemModel {
     dealerName: map['dealerName'],
     offerType: map['offerType'],
     offerLabel: map['offerLabel'],
+    isWaterCan: map['isWaterCan'] ?? false,
+    canExchange: map['canExchange'] ?? false,
+    depositAmount: (map['depositAmount'] as num?)?.toDouble() ?? 0.0,
   );
 
-  CartItemModel copyWith({int? quantity}) {
+  CartItemModel copyWith({
+    int? quantity,
+    bool? isWaterCan,
+    bool? canExchange,
+    double? depositAmount,
+  }) {
     return CartItemModel(
       productId: productId,
       productName: productName,
@@ -81,6 +98,10 @@ class CartItemModel {
       dealerName: dealerName,
       offerType: offerType,
       offerLabel: offerLabel,
+      isWaterCan: isWaterCan ?? this.isWaterCan,
+      canExchange: canExchange ?? this.canExchange,
+      depositAmount: depositAmount ?? this.depositAmount,
     );
   }
 }
+

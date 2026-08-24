@@ -31,6 +31,8 @@ import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/profile/terms_conditions_screen.dart';
 import '../screens/profile/favorites_screen.dart';
+import '../screens/water/water_can_screen.dart';
+import '../screens/profile/my_cans_screen.dart';
 
 class AppRouter {
   static final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -252,6 +254,22 @@ class AppRouter {
           parentNavigatorKey: _rootNavigatorKey,
           pageBuilder: (_, state) => _buildSlideTransitionPage(
             const ProfileScreen(),
+            state,
+          ),
+        ),
+        GoRoute(
+          path: '/water-cans',
+          parentNavigatorKey: _rootNavigatorKey,
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            const WaterCanScreen(),
+            state,
+          ),
+        ),
+        GoRoute(
+          path: '/profile/my-cans',
+          parentNavigatorKey: _rootNavigatorKey,
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            const MyCansScreen(),
             state,
           ),
         ),

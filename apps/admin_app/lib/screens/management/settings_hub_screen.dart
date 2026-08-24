@@ -183,6 +183,13 @@ class SettingsHubScreen extends StatelessWidget {
                   onTap: () => context.push('/management/platform-settings'),
                 ),
                 _SettingsTile(
+                  icon: Icons.water_drop_rounded,
+                  title: 'Water Can & Deposit Management',
+                  subtitle: 'Configure can deposits, exchange rates & audit ledger',
+                  color: const Color(0xFF059669),
+                  onTap: () => context.push('/management/water-cans'),
+                ),
+                _SettingsTile(
                   icon: Icons.bar_chart_rounded,
                   title: 'Analytics & Insights',
                   subtitle: 'Revenue charts, trends & top products',
