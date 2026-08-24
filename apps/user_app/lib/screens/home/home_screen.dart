@@ -221,15 +221,29 @@ class HomeScreen extends StatelessWidget {
                             ],
                           ),
                           child: ClipOval(
-                            child: user?.photoUrl != null
-                                ? Image.network(
-                                    user!.photoUrl!,
+                            child: (user?.photoUrl != null && user!.photoUrl!.isNotEmpty)
+                                ? CachedNetworkImage(
+                                    imageUrl: user.photoUrl!,
+                                    width: 40,
+                                    height: 40,
                                     fit: BoxFit.cover,
+                                    errorWidget: (_, __, ___) => Center(
+                                      child: Text(
+                                        user.name.isNotEmpty
+                                            ? user.name[0].toUpperCase()
+                                            : 'G',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
                                   )
                                 : Center(
                                     child: Text(
-                                      user?.name.isNotEmpty == true
-                                          ? user!.name[0].toUpperCase()
+                                      (user != null && user.name.isNotEmpty)
+                                          ? user.name[0].toUpperCase()
                                           : 'G',
                                       style: const TextStyle(
                                         color: Colors.white,
