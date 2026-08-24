@@ -210,7 +210,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     : ListView.separated(
                         padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
                         itemCount: products.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 12),
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
                         itemBuilder: (ctx, i) {
                           final p = products[i];
                           return _InventoryCard(product: p);

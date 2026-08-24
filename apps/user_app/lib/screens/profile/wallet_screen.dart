@@ -323,7 +323,7 @@ class _WalletScreenState extends State<WalletScreen> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: transactions.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 10),
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
                       itemBuilder: (ctx, i) {
                         final tx = transactions[i];
                         final isCredit = tx.type == TransactionType.credit;

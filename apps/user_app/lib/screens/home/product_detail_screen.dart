@@ -144,7 +144,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         child: CachedNetworkImage(
                           imageUrl: p.imageUrls[i],
                           fit: BoxFit.contain,
-                          errorWidget: (_, _, _) => const Center(
+                          errorWidget: (_, __, ___) => const Center(
                             child: Icon(Icons.local_grocery_store_rounded, size: 80, color: Color(0xFF10B981)),
                           ),
                         ),

@@ -598,7 +598,7 @@ class OrderDetailScreen extends StatelessWidget {
                                   width: 48,
                                   height: 48,
                                   fit: BoxFit.cover,
-                                  errorWidget: (_, _, _) => Container(
+                                  errorWidget: (_, __, ___) => Container(
                                     width: 48,
                                     height: 48,
                                     color: const Color(0xFFF3F4F6),

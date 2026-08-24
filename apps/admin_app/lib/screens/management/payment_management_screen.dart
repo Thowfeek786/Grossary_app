@@ -674,7 +674,7 @@ class _PaymentManagementScreenState extends State<PaymentManagementScreen>
                   : ListView.separated(
                       padding: const EdgeInsets.all(16),
                       itemCount: filteredTxs.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 10),
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
                       itemBuilder: (ctx, i) {
                         final tx = filteredTxs[i];
                         final statusColor = _getStatusColor(tx.status);
@@ -818,8 +818,8 @@ class _PaymentManagementScreenState extends State<PaymentManagementScreen>
                     child: CachedNetworkImage(
                       imageUrl: qrApiUrl,
                       fit: BoxFit.cover,
-                      placeholder: (_, _) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                      errorWidget: (_, _, _) => const Icon(Icons.qr_code_2_rounded, size: 60, color: Color(0xFF0F172A)),
+                      placeholder: (_, __) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                      errorWidget: (_, __, ___) => const Icon(Icons.qr_code_2_rounded, size: 60, color: Color(0xFF0F172A)),
                     ),
                   ),
                 ),

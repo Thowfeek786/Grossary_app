@@ -500,7 +500,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         const SizedBox(width: 8),
         Text(text, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Color(0xFF0F172A))),
         const Spacer(),
-        ?trailing,
+        if (trailing != null) trailing,
       ],
     );
   }

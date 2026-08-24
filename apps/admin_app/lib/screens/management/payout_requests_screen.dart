@@ -132,7 +132,7 @@ class _PayoutRequestsScreenState extends State<PayoutRequestsScreen> {
                     : ListView.separated(
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                         itemCount: requests.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 14),
+                        separatorBuilder: (_, __) => const SizedBox(height: 14),
                         itemBuilder: (context, index) {
                           final req = requests[index];
                           return _PayoutAdminCard(request: req);

@@ -238,7 +238,7 @@ class _DealerSplashScreenState extends State<DealerSplashScreen>
                               child: Image.asset(
                                 'assets/logos/logo.png',
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, _, _) => const Icon(
+                                errorBuilder: (_, __, ___) => const Icon(
                                   Icons.storefront_rounded,
                                   size: 70,
                                   color: AppColors.primary,

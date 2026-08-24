@@ -103,7 +103,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                         width: 110,
                         height: 110,
                         fit: BoxFit.cover,
-                        errorWidget: (_, _, _) => Container(
+                        errorWidget: (_, __, ___) => Container(
                           width: 110,
                           height: 110,
                           color: const Color(0xFFF3F4F6),

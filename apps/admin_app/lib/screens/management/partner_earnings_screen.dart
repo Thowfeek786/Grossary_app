@@ -429,7 +429,7 @@ class _PartnerEarningsScreenState extends State<PartnerEarningsScreen> with Sing
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
       itemCount: dealers.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (ctx, i) {
         final dealer = dealers[i];
         final sales = (salesMap[dealer.id] ?? 0.0) > 0 ? salesMap[dealer.id]! : dealer.totalEarnings;
@@ -477,7 +477,7 @@ class _PartnerEarningsScreenState extends State<PartnerEarningsScreen> with Sing
                                   ? CachedNetworkImage(
                                       imageUrl: dealer.photoUrl!,
                                       fit: BoxFit.cover,
-                                      errorWidget: (_, _, _) => _buildDealerFallbackAvatar(dealer),
+                                      errorWidget: (_, __, ___) => _buildDealerFallbackAvatar(dealer),
                                     )
                                   : _buildDealerFallbackAvatar(dealer),
                             ),
@@ -627,7 +627,7 @@ class _PartnerEarningsScreenState extends State<PartnerEarningsScreen> with Sing
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
       itemCount: partners.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (ctx, i) {
         final partner = partners[i];
         final earnings = (earningsMap[partner.id] ?? 0.0) > 0 ? earningsMap[partner.id]! : partner.totalEarnings;
@@ -675,7 +675,7 @@ class _PartnerEarningsScreenState extends State<PartnerEarningsScreen> with Sing
                                   ? CachedNetworkImage(
                                       imageUrl: partner.photoUrl!,
                                       fit: BoxFit.cover,
-                                      errorWidget: (_, _, _) => _buildPartnerFallbackAvatar(partner),
+                                      errorWidget: (_, __, ___) => _buildPartnerFallbackAvatar(partner),
                                     )
                                   : _buildPartnerFallbackAvatar(partner),
                             ),

@@ -44,19 +44,19 @@ class AppRouter {
       routes: [
         GoRoute(
           path: '/splash',
-          builder: (_, _) => const DeliverySplashScreen(),
+          builder: (_, __) => const DeliverySplashScreen(),
         ),
         GoRoute(
           path: '/onboarding',
-          builder: (_, _) => const DeliveryOnboardingScreen(),
+          builder: (_, __) => const DeliveryOnboardingScreen(),
         ),
         GoRoute(
           path: '/login',
-          builder: (_, _) => const LoginScreen(),
+          builder: (_, __) => const LoginScreen(),
         ),
         GoRoute(
           path: '/signup',
-          builder: (_, _) => const SignupScreen(),
+          builder: (_, __) => const SignupScreen(),
         ),
         
         // Full-screen routes (outside ShellRoute to hide bottom nav)
@@ -68,32 +68,32 @@ class AppRouter {
         GoRoute(
           path: '/bank-details',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const BankDetailsScreen(),
+          builder: (_, __) => const BankDetailsScreen(),
         ),
         GoRoute(
           path: '/earnings',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const EarningHistoryScreen(),
+          builder: (_, __) => const EarningHistoryScreen(),
         ),
         GoRoute(
           path: '/support',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const HelpSupportScreen(),
+          builder: (_, __) => const HelpSupportScreen(),
         ),
         GoRoute(
           path: '/withdraw',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const WithdrawFundsScreen(),
+          builder: (_, __) => const WithdrawFundsScreen(),
         ),
         GoRoute(
           path: '/vehicle-documents',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const VehicleDocumentsScreen(),
+          builder: (_, __) => const VehicleDocumentsScreen(),
         ),
         GoRoute(
           path: '/terms',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const TermsServiceScreen(),
+          builder: (_, __) => const TermsServiceScreen(),
         ),
 
         // Shell route for persistent bottom nav
@@ -103,19 +103,19 @@ class AppRouter {
           routes: [
             GoRoute(
               path: '/dashboard',
-              builder: (_, _) => const DeliveryDashboard(),
+              builder: (_, __) => const DeliveryDashboard(),
             ),
             GoRoute(
               path: '/active-deliveries',
-              builder: (_, _) => const ActiveDeliveriesScreen(),
+              builder: (_, __) => const ActiveDeliveriesScreen(),
             ),
             GoRoute(
               path: '/history',
-              builder: (_, _) => const HistoryScreen(),
+              builder: (_, __) => const HistoryScreen(),
             ),
             GoRoute(
               path: '/profile',
-              builder: (_, _) => const ProfileScreen(),
+              builder: (_, __) => const ProfileScreen(),
             ),
           ],
         ),

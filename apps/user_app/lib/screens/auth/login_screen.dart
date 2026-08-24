@@ -371,11 +371,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                         'assets/logos/google.png',
                                         width: 22,
                                         height: 22,
-                                        errorBuilder: (_, _, _) => Image.asset(
+                                        errorBuilder: (_, __, ___) => Image.asset(
                                           'assets/icons/google.png',
                                           width: 22,
                                           height: 22,
-                                          errorBuilder: (_, _, _) => const Text(
+                                          errorBuilder: (_, __, ___) => const Text(
                                             'G',
                                             style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF4285F4), fontSize: 16),
                                           ),

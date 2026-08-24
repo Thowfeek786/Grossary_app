@@ -395,7 +395,7 @@ class _FlashSaleManagementScreenState extends State<FlashSaleManagementScreen> {
                               ),
                               child: ListView.separated(
                                 itemCount: filtered.length,
-                                separatorBuilder: (_, _) => const Divider(height: 1),
+                                separatorBuilder: (_, __) => const Divider(height: 1),
                                 itemBuilder: (ctx, i) {
                                   final p = filtered[i];
                                   final isSelected = _selectedProductIds.contains(p.id);

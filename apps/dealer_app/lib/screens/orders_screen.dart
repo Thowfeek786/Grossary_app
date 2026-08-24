@@ -110,7 +110,7 @@ class _DealerOrdersScreenState extends State<DealerOrdersScreen> {
                 return ListView.separated(
                   padding: const EdgeInsets.all(16),
                   itemCount: orders.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 14),
+                  separatorBuilder: (_, __) => const SizedBox(height: 14),
                   itemBuilder: (ctx, i) {
                     final order = orders[i];
                     return _DealerOrderCard(

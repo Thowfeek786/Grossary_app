@@ -57,7 +57,7 @@ class _DealerOnboardingScreenState extends State<DealerOnboardingScreen> {
                   child: Image.asset(
                     'assets/images/onboarding_dealer.png',
                     fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => Container(
+                    errorBuilder: (_, __, ___) => Container(
                       color: Colors.white.withValues(alpha: 0.05),
                       child: const Icon(Icons.storefront_rounded, color: Colors.white54, size: 80),
                     ),

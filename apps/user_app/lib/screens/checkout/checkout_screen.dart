@@ -323,7 +323,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> with WidgetsBindingObse
                                               ? CachedNetworkImage(
                                                   imageUrl: item.imageUrl!,
                                                   fit: BoxFit.cover,
-                                                  errorWidget: (_, _, _) =>
+                                                  errorWidget: (_, __, ___) =>
                                                       const Icon(
                                                           Icons.image_outlined,
                                                           color: Colors.grey),
@@ -776,7 +776,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> with WidgetsBindingObse
                 width: 200,
                 height: 200,
                 fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => const Column(
+                errorBuilder: (_, __, ___) => const Column(
                   children: [
                     Icon(Icons.qr_code_2_rounded,
                         size: 100, color: Color(0xFF6366F1)),

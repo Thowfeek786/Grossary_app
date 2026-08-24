@@ -763,7 +763,7 @@ class _CategoriesSection extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 18),
                   itemCount: cats.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 14),
+                  separatorBuilder: (_, __) => const SizedBox(width: 14),
                   itemBuilder: (ctx, i) => _CategoryChip(
                     category: cats[i],
                     colorIndex: i,
@@ -842,7 +842,7 @@ class _CategoryChip extends StatelessWidget {
                     child: CachedNetworkImage(
                       imageUrl: category.imageUrl!,
                       fit: BoxFit.cover,
-                      errorWidget: (_, _, _) =>
+                      errorWidget: (_, __, ___) =>
                           Icon(Icons.category_rounded, color: accent, size: 28),
                     ),
                   )
@@ -1055,7 +1055,7 @@ class _FlashSaleSectionState extends State<_FlashSaleSection> {
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: displayProducts.length,
-                      separatorBuilder: (_, _) => const SizedBox(width: 12),
+                      separatorBuilder: (_, __) => const SizedBox(width: 12),
                       itemBuilder: (ctx, i) => SizedBox(
                         width: 150,
                         child: ProductCard(
@@ -1099,7 +1099,7 @@ class _OrderAgainSection extends StatelessWidget {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: products.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 12),
+                separatorBuilder: (_, __) => const SizedBox(width: 12),
                 itemBuilder: (ctx, i) {
                   final p = products[i];
                   return GestureDetector(
@@ -1131,7 +1131,7 @@ class _OrderAgainSection extends StatelessWidget {
                                     width: 54,
                                     height: 54,
                                     fit: BoxFit.cover,
-                                    errorWidget: (_, _, _) => Container(
+                                    errorWidget: (_, __, ___) => Container(
                                       width: 54,
                                       height: 54,
                                       color: Colors.grey.shade100,
@@ -1248,7 +1248,7 @@ class _FeaturedProductsSection extends StatelessWidget {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: products.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 14),
+                separatorBuilder: (_, __) => const SizedBox(width: 14),
                 itemBuilder: (ctx, i) => SizedBox(
                   width: 155,
                   child: ProductCard(

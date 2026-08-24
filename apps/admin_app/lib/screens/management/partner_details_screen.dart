@@ -248,8 +248,8 @@ class _PartnerDetailsScreenState extends State<PartnerDetailsScreen> {
                           ? CachedNetworkImage(
                               imageUrl: user.photoUrl!,
                               fit: BoxFit.cover,
-                              placeholder: (_, _) => const Center(child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
-                              errorWidget: (_, _, _) => _buildInitialsAvatar(user),
+                              placeholder: (_, __) => const Center(child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
+                              errorWidget: (_, __, ___) => _buildInitialsAvatar(user),
                             )
                           : _buildInitialsAvatar(user),
                     ),
@@ -681,7 +681,7 @@ class _PartnerDetailsScreenState extends State<PartnerDetailsScreen> {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: orders.length > 8 ? 8 : orders.length,
-          separatorBuilder: (_, _) => const SizedBox(height: 8),
+          separatorBuilder: (_, __) => const SizedBox(height: 8),
           itemBuilder: (ctx, i) {
             final o = orders[i];
             final shortId = o.id.length >= 8 ? o.id.substring(0, 8).toUpperCase() : o.id.toUpperCase();

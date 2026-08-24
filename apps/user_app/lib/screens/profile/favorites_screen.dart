@@ -194,7 +194,7 @@ class _FavoriteProductCard extends StatelessWidget {
                           ? CachedNetworkImage(
                               imageUrl: product.imageUrls.first,
                               fit: BoxFit.cover,
-                              errorWidget: (_, _, _) => const Icon(
+                              errorWidget: (_, __, ___) => const Icon(
                                 Icons.image_outlined,
                                 color: Colors.grey,
                               ),

@@ -109,7 +109,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                             child: Image.asset(
                               data.imagePath,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => Container(
+                              errorBuilder: (_, __, ___) => Container(
                                 color: Colors.white.withValues(alpha: 0.1),
                                 child: const Icon(Icons.shopping_basket_rounded, color: Colors.white, size: 80),
                               ),

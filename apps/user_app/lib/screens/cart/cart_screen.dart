@@ -180,7 +180,7 @@ class _CartScreenState extends State<CartScreen> {
                     return ListView.separated(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                       itemCount: coupons.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 12),
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
                       itemBuilder: (ctx, i) {
                         final coupon = coupons[i];
                         final isEligible = cart.subtotal >= coupon.minSubtotal;
@@ -593,7 +593,7 @@ class _CartScreenState extends State<CartScreen> {
                   ? CachedNetworkImage(
                       imageUrl: item.imageUrl!,
                       fit: BoxFit.cover,
-                      errorWidget: (_, _, _) => const Icon(Icons.image_outlined, color: Colors.grey),
+                      errorWidget: (_, __, ___) => const Icon(Icons.image_outlined, color: Colors.grey),
                     )
                   : const Icon(Icons.image_outlined, color: Colors.grey),
             ),
@@ -725,7 +725,7 @@ class _CartScreenState extends State<CartScreen> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: products.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 10),
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
                 itemBuilder: (ctx, i) {
                   final product = products[i];
                   return Container(
@@ -755,7 +755,7 @@ class _CartScreenState extends State<CartScreen> {
                                   ? CachedNetworkImage(
                                       imageUrl: product.imageUrls.first,
                                       fit: BoxFit.cover,
-                                      errorWidget: (_, _, _) => const Icon(Icons.image_outlined, color: Colors.grey),
+                                      errorWidget: (_, __, ___) => const Icon(Icons.image_outlined, color: Colors.grey),
                                     )
                                   : const Icon(Icons.image_outlined, color: Colors.grey),
                             ),

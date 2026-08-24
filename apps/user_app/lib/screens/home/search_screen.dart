@@ -207,7 +207,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             ? CachedNetworkImage(
                                 imageUrl: cat.imageUrl!,
                                 fit: BoxFit.cover,
-                                errorWidget: (_, _, _) => const Icon(Icons.category_rounded, size: 20, color: Color(0xFF059669)),
+                                errorWidget: (_, __, ___) => const Icon(Icons.category_rounded, size: 20, color: Color(0xFF059669)),
                               )
                             : const Icon(Icons.category_rounded, size: 20, color: Color(0xFF059669)),
                       ),

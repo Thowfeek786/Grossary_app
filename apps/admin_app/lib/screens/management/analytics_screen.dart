@@ -518,7 +518,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                           isStrokeCapRound: true,
                           dotData: FlDotData(
                             show: true,
-                            getDotPainter: (spot, _, _, _) => FlDotCirclePainter(
+                            getDotPainter: (spot, _, __, ___) => FlDotCirclePainter(
                               radius: 4,
                               color: const Color(0xFF3B82F6),
                               strokeWidth: 2,

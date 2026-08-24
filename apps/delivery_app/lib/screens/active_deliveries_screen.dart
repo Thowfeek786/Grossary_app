@@ -143,7 +143,7 @@ class _ActiveDeliveriesScreenState extends State<ActiveDeliveriesScreen> {
                     : ListView.separated(
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                         itemCount: orders.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 16),
+                        separatorBuilder: (_, __) => const SizedBox(height: 16),
                         itemBuilder: (context, index) {
                           final o = orders[index];
                           return _ActiveDeliveryCard(

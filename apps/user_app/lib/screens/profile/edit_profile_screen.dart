@@ -75,7 +75,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           ? CachedNetworkImage(
                               imageUrl: photoUrl,
                               fit: BoxFit.cover,
-                              errorWidget: (_, _, _) => Container(
+                              errorWidget: (_, __, ___) => Container(
                                 color: const Color(0xFF10B981).withValues(alpha: 0.2),
                                 child: Center(
                                   child: Text(

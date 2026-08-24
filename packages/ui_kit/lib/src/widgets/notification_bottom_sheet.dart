@@ -91,7 +91,7 @@ class NotificationBottomSheet extends StatelessWidget {
                       controller: scrollCtrl,
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                       itemCount: notifications.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 10),
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
                       itemBuilder: (ctx, i) {
                         final item = notifications[i];
                         return _NotificationTile(item: item);

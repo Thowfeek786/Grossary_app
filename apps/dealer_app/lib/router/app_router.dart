@@ -42,42 +42,42 @@ class AppRouter {
         GoRoute(
           path: '/splash',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const DealerSplashScreen(),
+          builder: (_, __) => const DealerSplashScreen(),
         ),
         GoRoute(
           path: '/onboarding',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const DealerOnboardingScreen(),
+          builder: (_, __) => const DealerOnboardingScreen(),
         ),
         GoRoute(
           path: '/delivery-settings',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const DealerDeliverySettingsScreen(),
+          builder: (_, __) => const DealerDeliverySettingsScreen(),
         ),
         GoRoute(
           path: '/dealer-payouts',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const DealerPayoutScreen(),
+          builder: (_, __) => const DealerPayoutScreen(),
         ),
         GoRoute(
           path: '/total-sales',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const TotalSalesScreen(),
+          builder: (_, __) => const TotalSalesScreen(),
         ),
         GoRoute(
           path: '/help-support',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const DealerHelpSupportScreen(),
+          builder: (_, __) => const DealerHelpSupportScreen(),
         ),
         GoRoute(
           path: '/login',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const LoginScreen(),
+          builder: (_, __) => const LoginScreen(),
         ),
         GoRoute(
           path: '/signup',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const DealerSignupScreen(),
+          builder: (_, __) => const DealerSignupScreen(),
         ),
         GoRoute(
           path: '/add-product',
@@ -96,19 +96,19 @@ class AppRouter {
           routes: [
             GoRoute(
               path: '/dashboard',
-              builder: (_, _) => const DealerDashboard(),
+              builder: (_, __) => const DealerDashboard(),
             ),
             GoRoute(
               path: '/inventory',
-              builder: (_, _) => const InventoryScreen(),
+              builder: (_, __) => const InventoryScreen(),
             ),
             GoRoute(
               path: '/orders',
-              builder: (_, _) => const DealerOrdersScreen(),
+              builder: (_, __) => const DealerOrdersScreen(),
             ),
             GoRoute(
               path: '/profile',
-              builder: (_, _) => const ProfileScreen(),
+              builder: (_, __) => const ProfileScreen(),
             ),
           ],
         ),

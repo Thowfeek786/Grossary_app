@@ -140,7 +140,7 @@ class ProfileScreen extends StatelessWidget {
                               ? CachedNetworkImage(
                                   imageUrl: photoUrl,
                                   fit: BoxFit.cover,
-                                  errorWidget: (_, _, _) => Container(
+                                  errorWidget: (_, __, ___) => Container(
                                     color: const Color(0xFF34D399),
                                     child: Center(
                                       child: Text(

@@ -248,7 +248,7 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
                               child: Image.network(
                                 item.imageUrl!,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, _, _) => const Icon(Icons.fastfood_rounded, size: 20, color: Color(0xFF94A3B8)),
+                                errorBuilder: (_, __, ___) => const Icon(Icons.fastfood_rounded, size: 20, color: Color(0xFF94A3B8)),
                               ),
                             )
                           : const Icon(Icons.fastfood_rounded, size: 20, color: Color(0xFF94A3B8)),

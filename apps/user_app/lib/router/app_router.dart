@@ -60,33 +60,33 @@ class AppRouter {
         GoRoute(
           path: '/splash',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const SplashScreen(),
+          builder: (_, __) => const SplashScreen(),
         ),
         GoRoute(
           path: '/onboarding',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const UserOnboardingScreen(),
+          builder: (_, __) => const UserOnboardingScreen(),
         ),
         GoRoute(
           path: '/terms',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const TermsConditionsScreen(),
+          builder: (_, __) => const TermsConditionsScreen(),
         ),
         // Auth routes
         GoRoute(
           path: '/login',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const LoginScreen(),
+          builder: (_, __) => const LoginScreen(),
         ),
         GoRoute(
           path: '/register',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const RegisterScreen(),
+          builder: (_, __) => const RegisterScreen(),
         ),
         GoRoute(
           path: '/forgot-password',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const ForgotPasswordScreen(),
+          builder: (_, __) => const ForgotPasswordScreen(),
         ),
 
         // Full-screen standalone routes
@@ -101,7 +101,7 @@ class AppRouter {
         GoRoute(
           path: '/home/search',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const SearchScreen(),
+          builder: (_, __) => const SearchScreen(),
         ),
         GoRoute(
           path: '/home/product/:id',
@@ -116,7 +116,7 @@ class AppRouter {
         GoRoute(
           path: '/checkout',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const CheckoutScreen(),
+          builder: (_, __) => const CheckoutScreen(),
         ),
         GoRoute(
           path: '/order-success/:id',
@@ -136,47 +136,47 @@ class AppRouter {
         GoRoute(
           path: '/profile/wallet',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const WalletScreen(),
+          builder: (_, __) => const WalletScreen(),
         ),
         GoRoute(
           path: '/profile/favorites',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const FavoritesScreen(),
+          builder: (_, __) => const FavoritesScreen(),
         ),
         GoRoute(
           path: '/profile/edit',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const EditProfileScreen(),
+          builder: (_, __) => const EditProfileScreen(),
         ),
         GoRoute(
           path: '/profile/addresses',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const AddressListScreen(),
+          builder: (_, __) => const AddressListScreen(),
         ),
         GoRoute(
           path: '/profile/add-address',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const AddAddressScreen(),
+          builder: (_, __) => const AddAddressScreen(),
         ),
         GoRoute(
           path: '/profile/notifications',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const NotificationsScreen(),
+          builder: (_, __) => const NotificationsScreen(),
         ),
         GoRoute(
           path: '/profile/help',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const HelpSupportScreen(),
+          builder: (_, __) => const HelpSupportScreen(),
         ),
         GoRoute(
           path: '/profile/support-chat',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const SupportChatScreen(),
+          builder: (_, __) => const SupportChatScreen(),
         ),
         GoRoute(
           path: '/profile/about',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, _) => const AboutUsScreen(),
+          builder: (_, __) => const AboutUsScreen(),
         ),
 
         // Shell route for persistent bottom nav tabs

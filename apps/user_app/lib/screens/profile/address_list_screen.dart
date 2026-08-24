@@ -63,7 +63,7 @@ class AddressListScreen extends StatelessWidget {
           return ListView.separated(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
             itemCount: addresses.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 14),
+            separatorBuilder: (_, __) => const SizedBox(height: 14),
             itemBuilder: (ctx, i) {
               final addr = addresses[i];
               return Container(

@@ -150,7 +150,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                             children: [
                               AnimatedBuilder(
                                 animation: _pulseHalo,
-                                builder: (_, _) => Container(
+                                builder: (_, __) => Container(
                                   width: 140 * _pulseHalo.value,
                                   height: 140 * _pulseHalo.value,
                                   decoration: BoxDecoration(
@@ -163,7 +163,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                               ),
                               AnimatedBuilder(
                                 animation: _pulseHalo,
-                                builder: (_, _) => Container(
+                                builder: (_, __) => Container(
                                   width: 115 * _pulseHalo.value,
                                   height: 115 * _pulseHalo.value,
                                   decoration: BoxDecoration(
@@ -390,7 +390,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                                             child: ListView.separated(
                                               scrollDirection: Axis.horizontal,
                                               itemCount: order.items.length,
-                                              separatorBuilder: (_, _) => const SizedBox(width: 6),
+                                              separatorBuilder: (_, __) => const SizedBox(width: 6),
                                               itemBuilder: (ctx, idx) {
                                                 final item = order.items[idx];
                                                 return Container(
@@ -408,7 +408,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                                                         ? CachedNetworkImage(
                                                             imageUrl: item.imageUrl!,
                                                             fit: BoxFit.cover,
-                                                            errorWidget: (_, _, _) => const Icon(
+                                                            errorWidget: (_, __, ___) => const Icon(
                                                               Icons.shopping_bag_outlined,
                                                               color: Colors.grey,
                                                               size: 18,

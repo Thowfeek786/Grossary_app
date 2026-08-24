@@ -240,7 +240,7 @@ class _DeliverySplashScreenState extends State<DeliverySplashScreen>
                               child: Image.asset(
                                 'assets/logos/logo.png',
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, _, _) => const Icon(
+                                errorBuilder: (_, __, ___) => const Icon(
                                   Icons.two_wheeler_rounded,
                                   size: 70,
                                   color: Color(0xFF22C55E),

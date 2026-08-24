@@ -275,7 +275,7 @@ class _EarningHistoryScreenState extends State<EarningHistoryScreen> with Single
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
       itemCount: orders.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 10),
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (ctx, i) {
         final order = orders[i];
         final fee = order.deliveryFee > 0 ? order.deliveryFee : 45.0;
@@ -399,7 +399,7 @@ class _EarningHistoryScreenState extends State<EarningHistoryScreen> with Single
         return ListView.separated(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
           itemCount: payouts.length,
-          separatorBuilder: (_, _) => const SizedBox(height: 10),
+          separatorBuilder: (_, __) => const SizedBox(height: 10),
           itemBuilder: (ctx, i) {
             final p = payouts[i];
             final status = p.status.toLowerCase();

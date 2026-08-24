@@ -428,7 +428,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: requests.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 10),
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (ctx, i) {
         final req = requests[i];
         final status = req.status.toLowerCase();

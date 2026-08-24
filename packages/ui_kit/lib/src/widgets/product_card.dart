@@ -56,8 +56,8 @@ class ProductCard extends StatelessWidget {
                           ? CachedNetworkImage(
                               imageUrl: sanitizeUrl(product.imageUrls.first),
                               fit: BoxFit.cover,
-                              placeholder: (_, _) => _placeholder(),
-                              errorWidget: (_, _, _) => _placeholder(),
+                              placeholder: (_, __) => _placeholder(),
+                              errorWidget: (_, __, ___) => _placeholder(),
                             )
                           : _placeholder(),
                     ),
