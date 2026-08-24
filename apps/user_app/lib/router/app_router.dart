@@ -60,128 +60,200 @@ class AppRouter {
         GoRoute(
           path: '/splash',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, __) => const SplashScreen(),
+          pageBuilder: (_, state) => _buildFadeTransitionPage(
+            const SplashScreen(),
+            state,
+          ),
         ),
         GoRoute(
           path: '/onboarding',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, __) => const UserOnboardingScreen(),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            const UserOnboardingScreen(),
+            state,
+          ),
         ),
         GoRoute(
           path: '/terms',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, __) => const TermsConditionsScreen(),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            const TermsConditionsScreen(),
+            state,
+          ),
         ),
         // Auth routes
         GoRoute(
           path: '/login',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, __) => const LoginScreen(),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            const LoginScreen(),
+            state,
+          ),
         ),
         GoRoute(
           path: '/register',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, __) => const RegisterScreen(),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            const RegisterScreen(),
+            state,
+          ),
         ),
         GoRoute(
           path: '/forgot-password',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, __) => const ForgotPasswordScreen(),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            const ForgotPasswordScreen(),
+            state,
+          ),
         ),
 
         // Full-screen standalone routes
         GoRoute(
           path: '/home/category/:id',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, state) => CategoryProductsScreen(
-            categoryId: state.pathParameters['id']!,
-            categoryName: state.uri.queryParameters['name'] ?? '',
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            CategoryProductsScreen(
+              categoryId: state.pathParameters['id']!,
+              categoryName: state.uri.queryParameters['name'] ?? '',
+            ),
+            state,
           ),
         ),
         GoRoute(
           path: '/home/search',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, __) => const SearchScreen(),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            const SearchScreen(),
+            state,
+          ),
         ),
         GoRoute(
           path: '/home/product/:id',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, state) => ProductDetailScreen(productId: state.pathParameters['id']!),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            ProductDetailScreen(productId: state.pathParameters['id']!),
+            state,
+          ),
         ),
         GoRoute(
           path: '/product-reviews',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, state) => ProductReviewsScreen(product: state.extra as ProductModel),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            ProductReviewsScreen(product: state.extra as ProductModel),
+            state,
+          ),
         ),
         GoRoute(
           path: '/checkout',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, __) => const CheckoutScreen(),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            const CheckoutScreen(),
+            state,
+          ),
         ),
         GoRoute(
           path: '/order-success/:id',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, state) => OrderSuccessScreen(orderId: state.pathParameters['id']!),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            OrderSuccessScreen(orderId: state.pathParameters['id']!),
+            state,
+          ),
         ),
         GoRoute(
           path: '/orders/review',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, state) => ReviewScreen(item: state.extra as CartItemModel),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            ReviewScreen(item: state.extra as CartItemModel),
+            state,
+          ),
         ),
         GoRoute(
           path: '/orders/:id',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, state) => OrderDetailScreen(orderId: state.pathParameters['id']!),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            OrderDetailScreen(orderId: state.pathParameters['id']!),
+            state,
+          ),
         ),
         GoRoute(
           path: '/profile/wallet',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, __) => const WalletScreen(),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            const WalletScreen(),
+            state,
+          ),
         ),
         GoRoute(
           path: '/profile/favorites',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, __) => const FavoritesScreen(),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            const FavoritesScreen(),
+            state,
+          ),
         ),
         GoRoute(
           path: '/profile/edit',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, __) => const EditProfileScreen(),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            const EditProfileScreen(),
+            state,
+          ),
         ),
         GoRoute(
           path: '/profile/addresses',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, __) => const AddressListScreen(),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            const AddressListScreen(),
+            state,
+          ),
         ),
         GoRoute(
           path: '/profile/add-address',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, __) => const AddAddressScreen(),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            const AddAddressScreen(),
+            state,
+          ),
         ),
         GoRoute(
           path: '/profile/notifications',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, __) => const NotificationsScreen(),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            const NotificationsScreen(),
+            state,
+          ),
         ),
         GoRoute(
           path: '/profile/help',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, __) => const HelpSupportScreen(),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            const HelpSupportScreen(),
+            state,
+          ),
         ),
         GoRoute(
           path: '/profile/support-chat',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, __) => const SupportChatScreen(),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            const SupportChatScreen(),
+            state,
+          ),
         ),
         GoRoute(
           path: '/profile/about',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, __) => const AboutUsScreen(),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            const AboutUsScreen(),
+            state,
+          ),
         ),
         GoRoute(
           path: '/profile',
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, __) => const ProfileScreen(),
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            const ProfileScreen(),
+            state,
+          ),
         ),
 
         // Shell route for persistent bottom nav tabs
@@ -219,6 +291,56 @@ class AppRouter {
           ],
         ),
       ],
+    );
+  }
+
+  static Page<dynamic> _buildSlideTransitionPage(
+    Widget child,
+    GoRouterState state,
+  ) {
+    return CustomTransitionPage<void>(
+      key: state.pageKey,
+      child: child,
+      transitionDuration: const Duration(milliseconds: 280),
+      reverseTransitionDuration: const Duration(milliseconds: 240),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        );
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0.06, 0.0),
+            end: Offset.zero,
+          ).animate(curved),
+          child: FadeTransition(
+            opacity: Tween<double>(begin: 0.0, end: 1.0).animate(curved),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+
+  static Page<dynamic> _buildFadeTransitionPage(
+    Widget child,
+    GoRouterState state,
+  ) {
+    return CustomTransitionPage<void>(
+      key: state.pageKey,
+      child: child,
+      transitionDuration: const Duration(milliseconds: 300),
+      reverseTransitionDuration: const Duration(milliseconds: 250),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+          ),
+          child: child,
+        );
+      },
     );
   }
 
