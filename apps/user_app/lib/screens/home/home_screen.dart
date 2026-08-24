@@ -1077,149 +1077,199 @@ class _FlashSaleSectionState extends State<_FlashSaleSection> {
 }
 
 // ─────────────────────────────────────────────
-// Quick Order Again Section
+// Quick Order Again Section (Based on Current User's Past Orders)
 // ─────────────────────────────────────────────
 class _OrderAgainSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SectionHeader(title: 'Order Again'),
-        const SizedBox(height: 12),
-        StreamBuilder<List<ProductModel>>(
-          stream: ProductRepository().getProducts(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const SizedBox.shrink();
+    final user = context.watch<AuthProvider>().user;
+    if (user == null) {
+      return const SizedBox.shrink();
+    }
+
+    return StreamBuilder<List<OrderModel>>(
+      stream: OrderRepository().getOrdersByUser(user.id),
+      builder: (context, orderSnapshot) {
+        if (!orderSnapshot.hasData || orderSnapshot.data!.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final orders = orderSnapshot.data!;
+        // Extract ordered items ordered by recency, keeping unique productIds
+        final orderedItems = <String, CartItemModel>{};
+        for (final order in orders) {
+          for (final item in order.items) {
+            if (item.productId.isNotEmpty && !orderedItems.containsKey(item.productId)) {
+              orderedItems[item.productId] = item;
             }
-            final products = snapshot.data!.take(6).toList();
-            return SizedBox(
-              height: 110,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: products.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
-                itemBuilder: (ctx, i) {
-                  final p = products[i];
-                  return GestureDetector(
-                    onTap: () => context.push('/home/product/${p.id}'),
-                    child: Container(
-                      width: 210,
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: Colors.grey.shade200),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.03),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
+          }
+        }
+
+        if (orderedItems.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final itemsList = orderedItems.values.take(10).toList();
+
+        return StreamBuilder<List<ProductModel>>(
+          stream: ProductRepository().getProducts(),
+          builder: (context, productSnapshot) {
+            final allProducts = productSnapshot.data ?? [];
+            final productMap = {for (final p in allProducts) p.id: p};
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SectionHeader(
+                  title: 'Order Again',
+                  actionLabel: 'View Orders',
+                  onAction: () => context.push('/orders'),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 116,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: itemsList.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    itemBuilder: (ctx, i) {
+                      final item = itemsList[i];
+                      final liveProduct = productMap[item.productId];
+                      final name = liveProduct?.name ?? item.productName;
+                      final price = liveProduct?.price ?? item.price;
+                      final unit = liveProduct?.unit ?? item.unit;
+                      final imageUrl = (liveProduct?.imageUrls.isNotEmpty == true && liveProduct!.imageUrls.first.isNotEmpty)
+                          ? liveProduct.imageUrls.first
+                          : (item.imageUrl ?? '');
+
+                      return GestureDetector(
+                        onTap: () {
+                          if (item.productId.isNotEmpty) {
+                            context.push('/home/product/${item.productId}');
+                          }
+                        },
+                        child: Container(
+                          width: 220,
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(color: Colors.grey.shade200),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.04),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child:
-                                p.imageUrls.isNotEmpty &&
-                                    p.imageUrls.first.isNotEmpty
-                                ? CachedNetworkImage(
-                                    imageUrl: p.imageUrls.first,
-                                    width: 54,
-                                    height: 54,
-                                    fit: BoxFit.cover,
-                                    errorWidget: (_, __, ___) => Container(
-                                      width: 54,
-                                      height: 54,
-                                      color: Colors.grey.shade100,
-                                      child: const Icon(Icons.shopping_bag),
-                                    ),
-                                  )
-                                : Container(
-                                    width: 54,
-                                    height: 54,
-                                    color: Colors.grey.shade100,
-                                    child: const Icon(Icons.shopping_bag),
-                                  ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  p.name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 13,
-                                    color: Color(0xFF111827),
-                                  ),
-                                ),
-                                Text(
-                                  '₹${p.price.toStringAsFixed(0)} / ${p.unit}',
-                                  style: const TextStyle(
-                                    color: Color(0xFF059669),
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                GestureDetector(
-                                  onTap: () {
-                                    context.read<CartProvider>().addItem(p);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          '${p.name} added to cart!',
+                          child: Row(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: imageUrl.isNotEmpty
+                                    ? CachedNetworkImage(
+                                        imageUrl: imageUrl,
+                                        width: 56,
+                                        height: 56,
+                                        fit: BoxFit.cover,
+                                        errorWidget: (_, __, ___) => Container(
+                                          width: 56,
+                                          height: 56,
+                                          color: Colors.grey.shade100,
+                                          child: const Icon(Icons.shopping_bag_outlined, color: Color(0xFF059669)),
                                         ),
-                                        backgroundColor: const Color(
-                                          0xFF059669,
-                                        ),
-                                        duration: const Duration(seconds: 2),
-                                        behavior: SnackBarBehavior.floating,
+                                      )
+                                    : Container(
+                                        width: 56,
+                                        height: 56,
+                                        color: Colors.grey.shade100,
+                                        child: const Icon(Icons.shopping_bag_outlined, color: Color(0xFF059669)),
                                       ),
-                                    );
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 3,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 13,
+                                        color: Color(0xFF111827),
+                                      ),
                                     ),
-                                    decoration: BoxDecoration(
-                                      color: const Color(
-                                        0xFF10B981,
-                                      ).withValues(alpha: 0.12),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Text(
-                                      '+ Reorder',
-                                      style: TextStyle(
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      '₹${price.toStringAsFixed(0)} / $unit',
+                                      style: const TextStyle(
                                         color: Color(0xFF059669),
-                                        fontSize: 10,
                                         fontWeight: FontWeight.w900,
+                                        fontSize: 12,
                                       ),
                                     ),
-                                  ),
+                                    const SizedBox(height: 4),
+                                    GestureDetector(
+                                      onTap: () {
+                                        if (liveProduct != null) {
+                                          context.read<CartProvider>().addItem(liveProduct);
+                                        } else {
+                                          context.read<CartProvider>().addItemById(item);
+                                        }
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('$name added to cart!'),
+                                            backgroundColor: const Color(0xFF059669),
+                                            duration: const Duration(seconds: 2),
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 3,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF10B981).withValues(alpha: 0.14),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: const Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.replay_rounded, size: 11, color: Color(0xFF059669)),
+                                            SizedBox(width: 3),
+                                            Text(
+                                              'Reorder',
+                                              style: TextStyle(
+                                                color: Color(0xFF059669),
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w900,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             );
           },
-        ),
-      ],
+        );
+      },
     );
   }
 }
