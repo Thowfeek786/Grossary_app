@@ -1123,7 +1123,7 @@ class _OrderAgainSection extends StatelessWidget {
                 SectionHeader(
                   title: 'Order Again',
                   actionLabel: 'View Orders',
-                  onAction: () => context.push('/orders'),
+                  onAction: () => context.go('/orders'),
                 ),
                 const SizedBox(height: 12),
                 SizedBox(

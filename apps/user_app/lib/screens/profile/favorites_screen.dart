@@ -18,24 +18,42 @@ class FavoritesScreen extends StatelessWidget {
 
     if (user == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
-        appBar: const CustomAppBar(
-          title: 'My Favorites',
-          backgroundColor: Color(0xFF0F172A),
-          foregroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF9FAFB),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF0F172A)),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/home');
+              }
+            },
+          ),
+          title: const Text(
+            'My Favorites',
+            style: TextStyle(
+              color: Color(0xFF0F172A),
+              fontWeight: FontWeight.w900,
+            ),
+          ),
         ),
-        body: const Center(
-          child: EmptyState(
-            icon: Icons.favorite_border_rounded,
-            title: 'Please Log In',
-            subtitle: 'Log in to save and manage your favorite items.',
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: _EmptyFavoritesView(
+              isGuest: true,
+              onAction: () => context.push('/login'),
+            ),
           ),
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -45,7 +63,7 @@ class FavoritesScreen extends StatelessWidget {
             if (context.canPop()) {
               context.pop();
             } else {
-              context.go('/profile');
+              context.go('/home');
             }
           },
         ),
@@ -67,14 +85,10 @@ class FavoritesScreen extends StatelessWidget {
 
           if (favorites.isEmpty) {
             return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: EmptyState(
-                  icon: Icons.favorite_border_rounded,
-                  title: 'No Favorites Saved Yet',
-                  subtitle:
-                      'Tap the heart icon on any product to quickly save your top choices here!',
-                  actionLabel: 'Browse Products',
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                child: _EmptyFavoritesView(
+                  isGuest: false,
                   onAction: () => context.go('/home'),
                 ),
               ),
@@ -304,3 +318,289 @@ class _FavoriteProductCard extends StatelessWidget {
     );
   }
 }
+
+// ─────────────────────────────────────────────
+// Beautiful Redesigned Empty Favorites View
+// ─────────────────────────────────────────────
+class _EmptyFavoritesView extends StatelessWidget {
+  final bool isGuest;
+  final VoidCallback onAction;
+
+  const _EmptyFavoritesView({
+    required this.isGuest,
+    required this.onAction,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final categories = [
+      {'emoji': '🍎', 'name': 'Fresh Fruits'},
+      {'emoji': '🥦', 'name': 'Vegetables'},
+      {'emoji': '🥛', 'name': 'Dairy & Eggs'},
+      {'emoji': '🍪', 'name': 'Snacks & Munchies'},
+      {'emoji': '🍞', 'name': 'Bakery'},
+      {'emoji': '🥤', 'name': 'Beverages'},
+    ];
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const SizedBox(height: 16),
+        // Visual Hero Icon with Multi-Layer Glow
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            // Outer Soft Ambient Glow
+            Container(
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFFEF4444).withValues(alpha: 0.08),
+              ),
+            ),
+            // Middle Concentric Ring
+            Container(
+              width: 108,
+              height: 108,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFFEF4444).withValues(alpha: 0.14),
+                border: Border.all(
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.2),
+                  width: 2,
+                ),
+              ),
+            ),
+            // Core Elevated Card with Gradient Heart
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFF6B6B), Color(0xFFEF4444), Color(0xFFDC2626)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.35),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Icon(
+                isGuest ? Icons.lock_outline_rounded : Icons.favorite_rounded,
+                size: 38,
+                color: Colors.white,
+              ),
+            ),
+            // Floating Mini Sparkle Badge
+            Positioned(
+              top: 14,
+              right: 18,
+              child: Container(
+                padding: const EdgeInsets.all(5),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFBBF24),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.star_rounded,
+                  size: 14,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 28),
+
+        // Heading
+        Text(
+          isGuest ? 'Sign In to View Favorites' : 'Your Wishlist is Empty',
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+            color: Color(0xFF0F172A),
+            letterSpacing: -0.5,
+          ),
+        ),
+
+        const SizedBox(height: 10),
+
+        // Subtitle
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            isGuest
+                ? 'Sign in to access your saved groceries, track price drops, and quickly reorder your favorite items anytime.'
+                : 'Explore thousands of fresh farm produce, dairy, and grocery essentials. Tap the ❤️ icon on any product to save it here!',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF64748B),
+              height: 1.5,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 28),
+
+        // Primary Action CTA
+        SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: ElevatedButton(
+            onPressed: onAction,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF059669),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shadowColor: const Color(0xFF059669).withValues(alpha: 0.3),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  isGuest ? Icons.login_rounded : Icons.shopping_bag_outlined,
+                  size: 19,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  isGuest ? 'Sign In / Register' : 'Explore Fresh Groceries',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Icon(Icons.arrow_forward_rounded, size: 17),
+              ],
+            ),
+          ),
+        ),
+
+        if (!isGuest) ...[
+          const SizedBox(height: 32),
+
+          // Quick Category Explorer Title
+          Row(
+            children: [
+              Container(
+                width: 3,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF059669),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Browse by Category',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF475569),
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // Quick Discovery Chips
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: categories.map((cat) {
+              return InkWell(
+                onTap: () => context.go('/categories'),
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.02),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(cat['emoji']!, style: const TextStyle(fontSize: 14)),
+                      const SizedBox(width: 6),
+                      Text(
+                        cat['name']!,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF334155),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Benefit Highlights Banner
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF059669).withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF059669).withValues(alpha: 0.16),
+              ),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.bolt_rounded, color: Color(0xFF059669), size: 22),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Tip: Items in your wishlist can be ordered with 1-tap from your home screen!',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF065F46),
+                      height: 1.3,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
