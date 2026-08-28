@@ -57,10 +57,12 @@ class WaterCanRepository {
   Stream<List<CanTransactionModel>> getUserCanLedger(String userId) {
     return _canTransactions
         .where('userId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((d) => CanTransactionModel.fromFirestore(d)).toList())
+        .map((snapshot) {
+          final list = snapshot.docs.map((d) => CanTransactionModel.fromFirestore(d)).toList();
+          list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return list;
+        })
         .handleError((_) => <CanTransactionModel>[]);
   }
 
@@ -145,10 +147,12 @@ class WaterCanRepository {
   Stream<List<CanTransactionModel>> getDealerCanLedger(String dealerId) {
     return _canTransactions
         .where('dealerId', isEqualTo: dealerId)
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((d) => CanTransactionModel.fromFirestore(d)).toList())
+        .map((snapshot) {
+          final list = snapshot.docs.map((d) => CanTransactionModel.fromFirestore(d)).toList();
+          list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return list;
+        })
         .handleError((_) => <CanTransactionModel>[]);
   }
 

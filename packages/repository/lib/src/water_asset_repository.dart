@@ -250,12 +250,12 @@ class WaterAssetRepository {
   Stream<WaterQualityModel?> getLatestQualityLog(String dealerId) {
     return _qualityLogsRef
         .where('dealerId', isEqualTo: dealerId)
-        .orderBy('testedAt', descending: true)
-        .limit(1)
         .snapshots()
         .map((snap) {
       if (snap.docs.isEmpty) return null;
-      return WaterQualityModel.fromFirestore(snap.docs.first);
-    });
+      final docs = snap.docs.map(WaterQualityModel.fromFirestore).toList();
+      docs.sort((a, b) => b.testedAt.compareTo(a.testedAt));
+      return docs.first;
+    }).handleError((_) => null);
   }
 }
