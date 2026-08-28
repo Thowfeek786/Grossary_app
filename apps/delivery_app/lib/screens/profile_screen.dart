@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:models/models.dart';
+import 'package:repository/repository.dart';
 import 'package:ui_kit/ui_kit.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../providers/delivery_provider.dart';
+import '../widgets/join_store_fleet_dialog.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -278,6 +280,18 @@ class ProfileScreen extends StatelessWidget {
           'Earnings History',
           'Detailed payout breakdown',
           () => context.push('/earnings'),
+        ),
+        StreamBuilder<DealerDriverModel?>(
+          stream: DealerFleetRepository().streamDriverAffiliation(auth.user?.phone.replaceAll(RegExp(r'[^0-9]'), '') ?? ''),
+          builder: (context, affilSnap) {
+            final affil = affilSnap.data;
+            return _buildMenuCard(
+              Icons.storefront_rounded,
+              'Dark Store Fleet Affiliation',
+              affil != null ? 'Dedicated Partner for ${affil.dealerName}' : 'Enter dealer invite code to join fleet',
+              () => JoinStoreFleetDialog.show(context, auth.user!),
+            );
+          },
         ),
         _buildMenuCard(
           Icons.two_wheeler_rounded,

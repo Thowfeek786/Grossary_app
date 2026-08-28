@@ -8,6 +8,7 @@ import '../providers/auth_provider.dart';
 import '../providers/delivery_provider.dart';
 import 'widgets/daily_goal_card.dart';
 import '../widgets/emergency_sos_dialog.dart';
+import '../widgets/join_store_fleet_dialog.dart';
 
 class DeliveryDashboard extends StatelessWidget {
   const DeliveryDashboard({super.key});
@@ -188,34 +189,63 @@ class DeliveryDashboard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // Dedicated Store Affiliation Pill
+                  // Dedicated Store Affiliation Pill / Join Button
                   StreamBuilder<DealerDriverModel?>(
                     stream: DealerFleetRepository().streamDriverAffiliation(user.phone.replaceAll(RegExp(r'[^0-9]'), '')),
                     builder: (context, affilSnap) {
                       final affil = affilSnap.data;
-                      if (affil == null) return const SizedBox.shrink();
 
-                      return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
+                      if (affil == null) {
+                        return InkWell(
+                          onTap: () => JoinStoreFleetDialog.show(context, user),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white24),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.verified_rounded, color: Color(0xFF34D399), size: 15),
-                            const SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                'Dedicated Fleet Partner • ${affil.dealerName}',
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 11.5),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.white30),
                             ),
-                          ],
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.add_link_rounded, color: Color(0xFF34D399), size: 15),
+                                SizedBox(width: 6),
+                                Text(
+                                  '+ Join Store Fleet (Invite Code)',
+                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 11.5),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+
+                      return InkWell(
+                        onTap: () => JoinStoreFleetDialog.show(context, user),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white24),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.verified_rounded, color: Color(0xFF34D399), size: 15),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  'Dedicated Partner • ${affil.dealerName}',
+                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 11.5),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },

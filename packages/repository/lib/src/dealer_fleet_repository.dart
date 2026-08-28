@@ -100,4 +100,80 @@ class DealerFleetRepository {
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }
+
+  /// Join dealer fleet using invite code (e.g. "STORE-QJJJP" or dealer ID/phone)
+  Future<DealerDriverModel> joinFleetWithInviteCode({
+    required String inviteCode,
+    required UserModel driver,
+  }) async {
+    final rawCode = inviteCode.trim().toUpperCase();
+    final cleanCode = rawCode.replaceAll('STORE-', '').replaceAll('#', '').trim();
+
+    if (cleanCode.isEmpty) {
+      throw Exception('Invalid Store Invite Code');
+    }
+
+    // Search for dealer in users collection
+    final dealersSnap = await _firestore
+        .collection('users')
+        .where('role', isEqualTo: UserRole.dealer.name)
+        .get();
+
+    UserModel? matchingDealer;
+    for (final doc in dealersSnap.docs) {
+      final dealer = UserModel.fromFirestore(doc);
+      final dealerStoreCode = dealer.id.substring(0, dealer.id.length > 5 ? 5 : dealer.id.length).toUpperCase();
+      if (dealer.id.toUpperCase().startsWith(cleanCode) ||
+          dealerStoreCode == cleanCode ||
+          dealer.phone.replaceAll(RegExp(r'[^0-9]'), '') == cleanCode ||
+          (dealer.shopName != null && dealer.shopName!.toUpperCase().contains(cleanCode))) {
+        matchingDealer = dealer;
+        break;
+      }
+    }
+
+    if (matchingDealer == null) {
+      throw Exception('No Dark Store found matching code "$inviteCode"');
+    }
+
+    final driverCleanPhone = driver.phone.replaceAll(RegExp(r'[^0-9]'), '');
+
+    // Check if driver is already enrolled with this dealer
+    final existingSnap = await _fleetRef
+        .where('driverId', isEqualTo: driverCleanPhone)
+        .where('dealerId', isEqualTo: matchingDealer.id)
+        .get();
+
+    if (existingSnap.docs.isNotEmpty) {
+      final docId = existingSnap.docs.first.id;
+      await _fleetRef.doc(docId).update({
+        'isActive': true,
+        'workStatus': DriverWorkStatus.availableAtStore.name,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      final updatedDoc = await _fleetRef.doc(docId).get();
+      return DealerDriverModel.fromFirestore(updatedDoc);
+    }
+
+    // Create new enrollment
+    final docRef = _fleetRef.doc();
+    final newDriver = DealerDriverModel(
+      id: docRef.id,
+      driverId: driverCleanPhone.isNotEmpty ? driverCleanPhone : driver.id,
+      driverName: driver.name,
+      driverPhone: driver.phone,
+      vehicleType: driver.vehicleType ?? 'Bike / Two-Wheeler',
+      vehicleNumber: driver.rcNumber ?? '',
+      dealerId: matchingDealer.id,
+      dealerName: matchingDealer.shopName ?? matchingDealer.name,
+      employmentType: DriverEmploymentType.dedicatedPerDrop,
+      payoutRate: 25.0,
+      workStatus: DriverWorkStatus.availableAtStore,
+      hiredAt: DateTime.now(),
+      isActive: true,
+    );
+
+    await docRef.set(newDriver.toFirestore());
+    return newDriver;
+  }
 }
