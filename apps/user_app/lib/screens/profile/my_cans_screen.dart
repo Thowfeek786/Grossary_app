@@ -24,8 +24,9 @@ class _MyCansScreenState extends State<MyCansScreen> {
   Future<void> _launchWhatsApp() async {
     final uri = Uri.parse('https://wa.me/919876543210?text=Hi%20GroceryGo,%20I%20have%20a%20question%20about%20my%20water%20can%20balance');
     try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
       }
     } catch (_) {}
   }
