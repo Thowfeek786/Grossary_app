@@ -799,15 +799,21 @@ class _MySubscriptionsScreenState extends State<MySubscriptionsScreen> with Sing
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Next Scheduled Drop', style: TextStyle(color: Color(0xFF64748B), fontSize: 11.5, fontWeight: FontWeight.w700)),
-                    Text(
-                      isCancelled
-                          ? 'Cancelled'
-                          : (isPaused ? 'On Vacation Hold' : '$formattedNext ($countdownText)'),
-                      style: TextStyle(
-                        color: isCancelled ? const Color(0xFFDC2626) : const Color(0xFF0F172A),
-                        fontWeight: FontWeight.w900,
-                        fontSize: 12,
+                    const Text('Next Drop', style: TextStyle(color: Color(0xFF64748B), fontSize: 11.5, fontWeight: FontWeight.w700)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        isCancelled
+                            ? 'Cancelled'
+                            : (isPaused ? 'On Vacation Hold' : '$formattedNext ($countdownText)'),
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          color: isCancelled ? const Color(0xFFDC2626) : const Color(0xFF0F172A),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 12,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -817,23 +823,50 @@ class _MySubscriptionsScreenState extends State<MySubscriptionsScreen> with Sing
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Time Slot', style: TextStyle(color: Color(0xFF64748B), fontSize: 11.5, fontWeight: FontWeight.w700)),
-                    Text(sub.timeSlot, style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w800, fontSize: 12)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        sub.timeSlot,
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w800, fontSize: 12),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 6),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Price per Delivery', style: TextStyle(color: Color(0xFF64748B), fontSize: 11.5, fontWeight: FontWeight.w700)),
-                    Text('₹${(sub.pricePerCan * sub.quantityPerDelivery).toStringAsFixed(0)} (10% OFF applied)', style: const TextStyle(color: Color(0xFF059669), fontWeight: FontWeight.w900, fontSize: 12)),
+                    const Text('Price per Drop', style: TextStyle(color: Color(0xFF64748B), fontSize: 11.5, fontWeight: FontWeight.w700)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '₹${(sub.pricePerCan * sub.quantityPerDelivery).toStringAsFixed(0)} (10% OFF)',
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(color: Color(0xFF059669), fontWeight: FontWeight.w900, fontSize: 12),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 6),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Dark Store Dealer', style: TextStyle(color: Color(0xFF64748B), fontSize: 11.5, fontWeight: FontWeight.w700)),
-                    Text(sub.dealerName, style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w800, fontSize: 12)),
+                    const Text('Dark Store', style: TextStyle(color: Color(0xFF64748B), fontSize: 11.5, fontWeight: FontWeight.w700)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        sub.dealerName,
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w800, fontSize: 12),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ],
                 ),
                 if (isCancelled && sub.cancellationReason != null) ...[
@@ -843,8 +876,17 @@ class _MySubscriptionsScreenState extends State<MySubscriptionsScreen> with Sing
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Cancellation Reason', style: TextStyle(color: Color(0xFFDC2626), fontSize: 11, fontWeight: FontWeight.w800)),
-                      Text(sub.cancellationReason!, style: const TextStyle(color: Color(0xFF991B1B), fontWeight: FontWeight.w700, fontSize: 11.5)),
+                      const Text('Reason', style: TextStyle(color: Color(0xFFDC2626), fontSize: 11, fontWeight: FontWeight.w800)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          sub.cancellationReason!,
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(color: Color(0xFF991B1B), fontWeight: FontWeight.w700, fontSize: 11.5),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ],
                   ),
                 ],
