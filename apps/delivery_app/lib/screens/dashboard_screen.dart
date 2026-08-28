@@ -222,7 +222,7 @@ class DeliveryDashboard extends StatelessWidget {
                       }
 
                       return InkWell(
-                        onTap: () => JoinStoreFleetDialog.show(context, user),
+                        onTap: () => context.push('/joined-stores'),
                         borderRadius: BorderRadius.circular(12),
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -244,6 +244,8 @@ class DeliveryDashboard extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
+                              const SizedBox(width: 4),
+                              const Icon(Icons.chevron_right_rounded, color: Colors.white70, size: 16),
                             ],
                           ),
                         ),

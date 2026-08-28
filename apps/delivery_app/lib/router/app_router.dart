@@ -18,6 +18,7 @@ import '../screens/vehicle_documents_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/morning_drops_screen.dart';
+import '../screens/joined_stores_screen.dart';
 
 class AppRouter {
   static final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -100,6 +101,11 @@ class AppRouter {
           path: '/morning-drops',
           parentNavigatorKey: _rootNavigatorKey,
           builder: (_, __) => const MorningDropsScreen(),
+        ),
+        GoRoute(
+          path: '/joined-stores',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, __) => const JoinedStoresScreen(),
         ),
 
         // Shell route for persistent bottom nav

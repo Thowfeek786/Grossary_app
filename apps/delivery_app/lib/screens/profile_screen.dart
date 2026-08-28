@@ -8,7 +8,6 @@ import 'package:ui_kit/ui_kit.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../providers/delivery_provider.dart';
-import '../widgets/join_store_fleet_dialog.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -289,7 +288,7 @@ class ProfileScreen extends StatelessWidget {
               Icons.storefront_rounded,
               'Dark Store Fleet Affiliation',
               affil != null ? 'Dedicated Partner for ${affil.dealerName}' : 'Enter dealer invite code to join fleet',
-              () => JoinStoreFleetDialog.show(context, auth.user!),
+              () => context.push('/joined-stores'),
             );
           },
         ),

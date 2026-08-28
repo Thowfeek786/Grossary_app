@@ -56,6 +56,22 @@ class DealerFleetRepository {
         .handleError((_) => null);
   }
 
+  /// Stream all store affiliations for a driver
+  Stream<List<DealerDriverModel>> streamDriverAffiliations(String driverId) {
+    return _fleetRef
+        .where('driverId', isEqualTo: driverId)
+        .snapshots()
+        .map((snap) {
+          final list = snap.docs
+              .map((d) => DealerDriverModel.fromFirestore(d))
+              .where((d) => d.isActive)
+              .toList();
+          list.sort((a, b) => b.hiredAt.compareTo(a.hiredAt));
+          return list;
+        })
+        .handleError((_) => <DealerDriverModel>[]);
+  }
+
   /// Hire / Register a new dedicated delivery partner
   Future<String> hireDriver(DealerDriverModel driver) async {
     final docRef = _fleetRef.doc();
