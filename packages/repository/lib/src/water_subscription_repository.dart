@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:models/models.dart';
+import 'wallet_repository.dart';
 
 class WaterSubscriptionRepository {
   final FirebaseFirestore _firestore;
+  final WalletRepository _walletRepo = WalletRepository();
 
   WaterSubscriptionRepository({FirebaseFirestore? firestore})
       : _firestore = firestore ?? FirebaseFirestore.instance;
@@ -110,22 +112,26 @@ class WaterSubscriptionRepository {
       final canTxRef = _firestore.collection('can_transactions').doc();
       final tx = CanTransactionModel(
         id: canTxRef.id,
+        orderId: 'SUB-${sub.id}',
         userId: sub.userId,
         userName: sub.userName,
+        userPhone: sub.userPhone,
         dealerId: sub.dealerId,
         dealerName: sub.dealerName,
         fullDelivered: sub.quantityPerDelivery,
         emptyCollected: sub.quantityPerDelivery,
         depositAmount: 0.0,
+        exchangeType: CanExchangeType.refill,
+        notes: 'Recurring Morning Subscription Drop',
         createdAt: now,
       );
-      await canTxRef.set(tx.toMap());
+      await canTxRef.set(tx.toFirestore());
     }
 
     // 3. Auto-debit wallet if payment is configured for wallet
     if (sub.paymentType == 'wallet_auto_debit') {
       final totalCost = sub.pricePerCan * sub.quantityPerDelivery;
-      await WalletRepository().deductBalance(
+      await _walletRepo.deductBalance(
         userId: sub.userId,
         amount: totalCost,
         description: 'Auto-Debit: ${sub.quantityPerDelivery}x Pure 20L Water Can Morning Drop',
