@@ -106,24 +106,22 @@ class _EmergencySosDialogState extends State<EmergencySosDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEF4444).withValues(alpha: 0.12),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.shield_rounded, color: Color(0xFFDC2626), size: 22),
-                  ),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'Partner Safety & Support',
-                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A)),
-                  ),
-                ],
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.shield_rounded, color: Color(0xFFDC2626), size: 20),
+              ),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'Partner Safety & Support',
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF0F172A)),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               IconButton(
                 icon: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF64748B)),
