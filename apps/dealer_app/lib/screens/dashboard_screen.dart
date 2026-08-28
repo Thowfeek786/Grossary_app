@@ -17,6 +17,58 @@ class DealerDashboard extends StatefulWidget {
 class _DealerDashboardState extends State<DealerDashboard> {
   bool _isStoreOpen = true;
 
+  Future<void> _showLogoutConfirmation(BuildContext context) async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        title: const Row(
+          children: [
+            Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 24),
+            SizedBox(width: 10),
+            Text(
+              'Confirm Logout',
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Color(0xFF0F172A)),
+            ),
+          ],
+        ),
+        content: const Text(
+          'Are you sure you want to log out of your vendor account?',
+          style: TextStyle(color: Color(0xFF64748B), fontSize: 13.5),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w700),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            ),
+            child: const Text(
+              'Logout',
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true && context.mounted) {
+      context.read<DealerAuthProvider>().logout();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = context.watch<DealerAuthProvider>().user;
@@ -46,7 +98,7 @@ class _DealerDashboardState extends State<DealerDashboard> {
             icon: const Icon(Icons.person_outline_rounded, color: Colors.white),
           ),
           IconButton(
-            onPressed: () => context.read<DealerAuthProvider>().logout(),
+            onPressed: () => _showLogoutConfirmation(context),
             icon: const Icon(Icons.logout_rounded, color: Color(0xFFFCA5A5)),
           ),
         ],
@@ -154,13 +206,14 @@ class _DealerDashboardState extends State<DealerDashboard> {
               ),
 
               const SizedBox(height: 16),
-
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Real Stats Grid from Firestore
+                    // ─────────────────────────────────────────────
+                    // 1. Core Store Performance Metrics (General Grocery)
+                    // ─────────────────────────────────────────────
                     StreamBuilder<List<OrderModel>>(
                       stream: OrderRepository().getOrdersByDealer(user.id),
                       builder: (context, orderSnap) {
@@ -176,8 +229,8 @@ class _DealerDashboardState extends State<DealerDashboard> {
 
                             return GridView.count(
                               crossAxisCount: 2,
-                              crossAxisSpacing: 14,
-                              mainAxisSpacing: 14,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               children: [
@@ -196,7 +249,7 @@ class _DealerDashboardState extends State<DealerDashboard> {
                                   onTap: () => context.go('/inventory'),
                                 ),
                                 _StatCard(
-                                  title: 'Total Sales',
+                                  title: 'Total Store Sales',
                                   value: '₹${(totalSales / 1000).toStringAsFixed(1)}K',
                                   icon: Icons.insights_rounded,
                                   color: const Color(0xFF10B981),
@@ -216,9 +269,11 @@ class _DealerDashboardState extends State<DealerDashboard> {
                       },
                     ),
 
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 24),
 
-                    // Quick Actions Section Header
+                    // ─────────────────────────────────────────────
+                    // 2. Vendor Quick Actions (All Previous Actions)
+                    // ─────────────────────────────────────────────
                     const Text('Vendor Quick Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
                     const SizedBox(height: 12),
                     Row(
@@ -249,31 +304,142 @@ class _DealerDashboardState extends State<DealerDashboard> {
                             onTap: () => context.go('/orders'),
                           ),
                         ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _ActionBtn(
+                            icon: Icons.account_balance_wallet_rounded,
+                            label: 'Payouts',
+                            color: const Color(0xFF0D9488),
+                            onTap: () => context.push('/dealer-payouts'),
+                          ),
+                        ),
                       ],
                     ),
 
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 24),
 
-                    // Recent Orders Preview Header
+                    // ─────────────────────────────────────────────
+                    // 3. Dedicated Water Can Operations Hub (Separate Section)
+                    // ─────────────────────────────────────────────
+                    StreamBuilder<Map<String, dynamic>>(
+                      stream: WaterCanRepository().getDealerCanSummary(user.id),
+                      builder: (context, canSnap) {
+                        final canData = canSnap.data ?? {};
+                        final cansSold = canData['totalDelivered'] ?? 0;
+                        final cansCollected = canData['totalCollected'] ?? 0;
+                        final canBalance = canData['canBalance'] ?? 0;
+
+                        return Container(
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF0F766E), Color(0xFF0D9488), Color(0xFF14B8A6)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(22),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF0D9488).withValues(alpha: 0.25),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Row(
+                                    children: [
+                                      Icon(Icons.water_drop_rounded, color: Colors.white, size: 20),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        'Water Can Operations Hub',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 14.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  GestureDetector(
+                                    onTap: () => context.push('/can-returns'),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            'Ledger',
+                                            style: TextStyle(
+                                              color: Color(0xFF0F766E),
+                                              fontWeight: FontWeight.w900,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                          SizedBox(width: 2),
+                                          Icon(Icons.chevron_right_rounded, color: Color(0xFF0F766E), size: 14),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 14),
+                              IntrinsicHeight(
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    _WaterCanStatPill(
+                                      label: 'Cans Sold',
+                                      value: '$cansSold',
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _WaterCanStatPill(
+                                      label: 'With Customers',
+                                      value: '$canBalance',
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _WaterCanStatPill(
+                                      label: 'Collected',
+                                      value: '$cansCollected',
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Recent Store Orders', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
+                        const Text('Recent Orders', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
                         TextButton(
                           onPressed: () => context.go('/orders'),
                           child: const Text('View All', style: TextStyle(color: Color(0xFF059669), fontWeight: FontWeight.w800, fontSize: 13)),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
-
+                    const SizedBox(height: 8),
                     StreamBuilder<List<OrderModel>>(
                       stream: OrderRepository().getOrdersByDealer(user.id),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return const Center(child: CircularProgressIndicator(color: Color(0xFF059669)));
                         }
-                        final orders = (snapshot.data ?? []).take(4).toList();
+                        final orders = (snapshot.data ?? []).take(5).toList();
                         if (orders.isEmpty) {
                           return Container(
                             padding: const EdgeInsets.all(24),
@@ -330,20 +496,20 @@ class _StatCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 2)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 6, offset: const Offset(0, 2)),
         ],
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(18),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -351,14 +517,29 @@ class _StatCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.12),
+                    color: color.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: color, size: 20),
                 ),
-                const SizedBox(height: 12),
-                Text(value, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: Color(0xFF0F172A))),
-                Text(title, style: const TextStyle(color: Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.w600)),
+                const Spacer(),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF64748B),
+                  ),
+                ),
               ],
             ),
           ),
@@ -381,22 +562,22 @@ class _ActionBtn extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: const EdgeInsets.symmetric(vertical: 12),
             child: Column(
               children: [
-                Icon(icon, color: color, size: 26),
-                const SizedBox(height: 8),
-                Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF0F172A))),
+                Icon(icon, color: color, size: 22),
+                const SizedBox(height: 6),
+                Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF0F172A))),
               ],
             ),
           ),
@@ -415,15 +596,22 @@ class _RecentOrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final orderCode = order.id.length >= 8 ? order.id.substring(0, 8).toUpperCase() : order.id.toUpperCase();
+    final firstItem = order.items.isNotEmpty ? order.items.first : null;
+    final itemTitle = firstItem != null
+        ? (firstItem.isWaterCan
+            ? (firstItem.canExchange ? '20L Can (Refill)' : '20L Can (New)')
+            : firstItem.productName)
+        : '${order.itemCount} items';
+    final qtyText = firstItem != null ? '${firstItem.quantity} Qty' : '${order.itemCount} Qty';
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 6, offset: const Offset(0, 2)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 4, offset: const Offset(0, 2)),
         ],
       ),
       child: Material(
@@ -433,47 +621,112 @@ class _RecentOrderCard extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF059669).withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.receipt_rounded, color: Color(0xFF059669), size: 18),
-                ),
-                const SizedBox(width: 12),
                 Expanded(
+                  flex: 3,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         '#$orderCode',
-                        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Color(0xFF0F172A)),
+                        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF0F172A)),
                       ),
+                      const SizedBox(height: 2),
                       Text(
-                        '${order.itemCount} items • ${AppHelpers.formatDate(order.createdAt)}',
-                        style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                        AppHelpers.formatDate(order.createdAt),
+                        style: const TextStyle(color: Color(0xFF64748B), fontSize: 10.5),
                       ),
                     ],
                   ),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '₹${order.total.toStringAsFixed(0)}',
-                      style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w900, fontSize: 15),
-                    ),
-                    const SizedBox(height: 2),
-                    OrderStatusBadge(status: order.statusString, isSmall: true),
-                  ],
+                Expanded(
+                  flex: 4,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        itemTitle,
+                        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12.5, color: Color(0xFF0F172A)),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        qtyText,
+                        style: const TextStyle(color: Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '₹${order.total.toStringAsFixed(0)}',
+                        style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w900, fontSize: 13.5),
+                      ),
+                      const SizedBox(height: 2),
+                      OrderStatusBadge(status: order.statusString, isSmall: true),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _WaterCanStatPill extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _WaterCanStatPill({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              height: 28,
+              child: Center(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    color: Color(0xFFE6FFFA),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                    height: 1.15,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
         ),
       ),
     );

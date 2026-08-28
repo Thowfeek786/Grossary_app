@@ -325,7 +325,6 @@ class _SettingsTile extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
@@ -333,7 +332,7 @@ class _SettingsTile extends StatelessWidget {
         ],
       ),
       child: Material(
-        type: MaterialType.transparency,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         child: ListTile(
           onTap: onTap,

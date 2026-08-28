@@ -16,4 +16,7 @@ export 'src/flash_sale_model.dart';
 export 'src/payout_request_model.dart';
 export 'src/chat_model.dart';
 export 'src/water_can_model.dart';
+export 'src/water_asset_model.dart';
+export 'src/water_subscription_model.dart';
+export 'src/water_quality_model.dart';
 

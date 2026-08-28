@@ -403,7 +403,7 @@ class OrderDetailScreen extends StatelessWidget {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
-                          child: const Text('Accept & Pack Order', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
+                          child: const Text('Accept Order', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
                         ),
                       ),
                       const SizedBox(width: 10),

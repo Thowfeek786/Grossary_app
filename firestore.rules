@@ -167,5 +167,33 @@ service cloud.firestore {
     match /fcm_send_queue/{docId} {
       allow read, write: if isSignedIn();
     }
+
+    // Water Can Module Collections (Can Exchanges, Deposits, & Return Ledgers)
+    match /can_transactions/{transactionId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /water_can_summaries/{summaryId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /water_assets/{assetId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /water_subscriptions/{subId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /water_quality_logs/{logId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /platform_settings/{settingId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
   }
 }

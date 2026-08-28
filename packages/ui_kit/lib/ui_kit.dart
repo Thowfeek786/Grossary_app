@@ -19,3 +19,5 @@ export 'src/widgets/network_wrapper.dart';
 export 'src/widgets/notification_bottom_sheet.dart';
 export 'src/widgets/animated_heart_button.dart';
 export 'src/widgets/app_snackbar.dart';
+export 'src/widgets/water_purity_badge.dart';
+export 'src/widgets/can_qr_scanner_dialog.dart';

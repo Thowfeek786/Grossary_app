@@ -18,5 +18,7 @@ export 'src/payout_repository.dart';
 export 'src/chat_repository.dart';
 export 'src/favorite_repository.dart';
 export 'src/water_can_repository.dart';
+export 'src/water_asset_repository.dart';
+export 'src/water_subscription_repository.dart';
 
 

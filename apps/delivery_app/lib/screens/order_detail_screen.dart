@@ -10,6 +10,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../providers/delivery_provider.dart';
 import '../providers/auth_provider.dart';
 import 'navigation_screen.dart';
+import 'widgets/empty_can_collection_modal.dart';
+import 'water_delivery_summary_screen.dart';
 
 class OrderDetailScreen extends StatelessWidget {
   final String orderId;
@@ -707,7 +709,7 @@ class OrderDetailScreen extends StatelessWidget {
         final canDeliver = !isCOD || order.isPaid;
 
         label = canDeliver ? 'Enter OTP & Complete Delivery 🔑' : 'Please Collect Cash First';
-        action = canDeliver ? () => _showOtpDialog(context, delivery, order) : null;
+        action = canDeliver ? () => _startDeliveryCompletionFlow(context, delivery, order) : null;
         break;
       default:
         label = 'Awaiting Store Dispatch';
@@ -746,7 +748,45 @@ class OrderDetailScreen extends StatelessWidget {
     );
   }
 
-  void _showOtpDialog(BuildContext context, DeliveryProvider delivery, OrderModel order) {
+  Future<void> _startDeliveryCompletionFlow(
+    BuildContext context,
+    DeliveryProvider delivery,
+    OrderModel order,
+  ) async {
+    int collectedCans = 0;
+
+    if (order.hasWaterCan) {
+      final expectedExchangeCans = order.items
+          .where((i) => i.isWaterCan && i.canExchange)
+          .fold(0, (sum, i) => sum + i.quantity);
+
+      if (expectedExchangeCans > 0) {
+        final didCollect = await EmptyCanCollectionModal.show(
+          context,
+          customerName: order.userName,
+          cansExpected: expectedExchangeCans,
+        );
+
+        if (didCollect == null) {
+          // User dismissed modal without choosing
+          return;
+        }
+
+        collectedCans = didCollect ? expectedExchangeCans : 0;
+      }
+    }
+
+    if (context.mounted) {
+      _showOtpDialog(context, delivery, order, collectedCans);
+    }
+  }
+
+  void _showOtpDialog(
+    BuildContext context,
+    DeliveryProvider delivery,
+    OrderModel order,
+    int emptyCansCollected,
+  ) {
     final controllers = List.generate(4, (_) => TextEditingController());
     final focusNodes = List.generate(4, (_) => FocusNode());
     String error = '';
@@ -850,7 +890,8 @@ class OrderDetailScreen extends StatelessWidget {
                                   return;
                                 }
 
-                                final partnerId = context.read<DeliveryAuthProvider>().user?.id ?? '';
+                                final partner = context.read<DeliveryAuthProvider>().user;
+                                final partnerId = partner?.id ?? '';
                                 final success = await delivery.verifyAndCompleteDelivery(
                                   orderId: order.id,
                                   partnerId: partnerId,
@@ -859,15 +900,60 @@ class OrderDetailScreen extends StatelessWidget {
                                 );
 
                                 if (success) {
+                                  // Record Can collection transaction in ledger
+                                  if (order.hasWaterCan) {
+                                    final totalFullCans = order.waterCanQuantity;
+                                    final totalDeposit = order.items
+                                        .where((i) => i.isWaterCan && !i.canExchange)
+                                        .fold(0.0, (acc, i) => acc + (i.depositAmount * i.quantity));
+
+                                    try {
+                                      await WaterCanRepository().recordCanCollection(
+                                        orderId: order.id,
+                                        userId: order.userId,
+                                        userName: order.userName,
+                                        userPhone: order.userPhone,
+                                        dealerId: order.dealerId ?? 'default-dealer',
+                                        dealerName: order.dealerName,
+                                        deliveryPartnerId: partnerId,
+                                        deliveryPartnerName: partner?.name,
+                                        fullDelivered: totalFullCans,
+                                        emptyCollected: emptyCansCollected,
+                                        depositAmount: totalDeposit,
+                                        exchangeType: order.hasCanExchange
+                                            ? CanExchangeType.refill
+                                            : CanExchangeType.newCan,
+                                        notes: 'Delivery completed via OTP verification',
+                                      );
+                                    } catch (e) {
+                                      debugPrint('Error logging water can collection: $e');
+                                    }
+                                  }
+
                                   if (modalContext.mounted) Navigator.pop(modalContext);
                                   if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('🎉 OTP Verified & Order Delivered!'),
-                                        backgroundColor: Color(0xFF059669),
-                                      ),
-                                    );
-                                    context.pop();
+                                    if (order.hasWaterCan) {
+                                      Navigator.of(context).pushReplacement(
+                                        MaterialPageRoute(
+                                          builder: (_) => WaterDeliverySummaryScreen(
+                                            orderId: order.id,
+                                            fullDelivered: order.waterCanQuantity,
+                                            emptyCollected: emptyCansCollected,
+                                            totalAmount: order.total,
+                                            paymentMethod: order.paymentMethod,
+                                            isPaid: order.isPaid,
+                                          ),
+                                        ),
+                                      );
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('🎉 OTP Verified & Order Delivered!'),
+                                          backgroundColor: Color(0xFF059669),
+                                        ),
+                                      );
+                                      context.pop();
+                                    }
                                   }
                                 } else {
                                   setState(() => error = 'Incorrect OTP. Please check with customer.');

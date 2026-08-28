@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:models/models.dart';
+import 'wallet_repository.dart';
 
 class WaterCanRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final WalletRepository _walletRepo = WalletRepository();
 
   CollectionReference get _canTransactions =>
       _firestore.collection('can_transactions');
@@ -41,7 +43,14 @@ class WaterCanRepository {
             canBalance: balance > 0 ? balance : 0,
             totalDepositHeld: depositHeld,
           );
-        });
+        })
+        .handleError((_) => UserCanSummaryModel(
+              userId: userId,
+              fullDelivered: 0,
+              emptyCollected: 0,
+              canBalance: 0,
+              totalDepositHeld: 0.0,
+            ));
   }
 
   /// Stream user's can transaction ledger history
@@ -51,12 +60,35 @@ class WaterCanRepository {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) =>
-            snapshot.docs.map((d) => CanTransactionModel.fromFirestore(d)).toList());
+            snapshot.docs.map((d) => CanTransactionModel.fromFirestore(d)).toList())
+        .handleError((_) => <CanTransactionModel>[]);
   }
 
   // ─────────────────────────────────────────────
   // Vendor / Dealer Methods
   // ─────────────────────────────────────────────
+
+  /// Stream dealer water products (refill, new can, 1L, pack of 6)
+  Stream<List<ProductModel>> getDealerWaterProducts(String dealerId) {
+    return _firestore
+        .collection('products')
+        .where('dealerId', isEqualTo: dealerId)
+        .where('categoryId', isEqualTo: 'water_cans')
+        .snapshots()
+        .map((s) => s.docs.map(ProductModel.fromFirestore).toList())
+        .handleError((_) => <ProductModel>[]);
+  }
+
+  /// Stream all approved dealers who offer water cans / beverages
+  Stream<List<UserModel>> getAvailableWaterDealers() {
+    return _users
+        .where('role', isEqualTo: UserRole.dealer.name)
+        .where('isApproved', isEqualTo: true)
+        .where('isActive', isEqualTo: true)
+        .snapshots()
+        .map((s) => s.docs.map(UserModel.fromFirestore).toList())
+        .handleError((_) => <UserModel>[]);
+  }
 
   /// Stream dealer can return summary
   Stream<Map<String, dynamic>> getDealerCanSummary(String dealerId) {
@@ -68,6 +100,7 @@ class WaterCanRepository {
           int totalCollected = 0;
           int todayDelivered = 0;
           int todayCollected = 0;
+          final Set<String> activeCustomers = {};
 
           final now = DateTime.now();
           final startOfToday = DateTime(now.year, now.month, now.day);
@@ -77,20 +110,35 @@ class WaterCanRepository {
             totalDelivered += tx.fullDelivered;
             totalCollected += tx.emptyCollected;
 
+            if (tx.fullDelivered > tx.emptyCollected) {
+              activeCustomers.add(tx.userId);
+            }
+
             if (tx.createdAt.isAfter(startOfToday)) {
               todayDelivered += tx.fullDelivered;
               todayCollected += tx.emptyCollected;
             }
           }
 
+          final canBalance = totalDelivered - totalCollected;
+
           return {
             'totalDelivered': totalDelivered,
             'totalCollected': totalCollected,
             'todayDelivered': todayDelivered,
             'todayCollected': todayCollected,
-            'canBalance': totalDelivered - totalCollected,
+            'canBalance': canBalance > 0 ? canBalance : 0,
+            'activeCustomersCount': activeCustomers.length,
           };
-        });
+        })
+        .handleError((_) => {
+              'totalDelivered': 0,
+              'totalCollected': 0,
+              'todayDelivered': 0,
+              'todayCollected': 0,
+              'canBalance': 0,
+              'activeCustomersCount': 0,
+            });
   }
 
   /// Stream dealer can transactions
@@ -100,7 +148,63 @@ class WaterCanRepository {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) =>
-            snapshot.docs.map((d) => CanTransactionModel.fromFirestore(d)).toList());
+            snapshot.docs.map((d) => CanTransactionModel.fromFirestore(d)).toList())
+        .handleError((_) => <CanTransactionModel>[]);
+  }
+
+  /// Record walk-in can return directly at dealer store
+  Future<void> recordWalkInCanReturn({
+    required String dealerId,
+    required String? dealerName,
+    required String userId,
+    required String userName,
+    String userPhone = '',
+    required int emptyCollected,
+    double refundDepositAmount = 0.0,
+    String notes = '',
+  }) async {
+    final batch = _firestore.batch();
+
+    final txRef = _canTransactions.doc();
+    final transaction = CanTransactionModel(
+      id: txRef.id,
+      orderId: 'WALKIN-${DateTime.now().millisecondsSinceEpoch}',
+      userId: userId,
+      userName: userName,
+      userPhone: userPhone,
+      dealerId: dealerId,
+      dealerName: dealerName,
+      fullDelivered: 0,
+      emptyCollected: emptyCollected,
+      depositAmount: -refundDepositAmount,
+      exchangeType: CanExchangeType.walkInReturn,
+      notes: notes.isNotEmpty ? notes : 'Store Walk-in Empty Can Return',
+      createdAt: DateTime.now(),
+    );
+    batch.set(txRef, transaction.toFirestore());
+
+    if (userId.isNotEmpty) {
+      final userRef = _users.doc(userId);
+      batch.set(userRef, {
+        'totalEmptyCansReturned': FieldValue.increment(emptyCollected),
+        'canBalance': FieldValue.increment(-emptyCollected),
+      }, SetOptions(merge: true));
+    }
+
+    await batch.commit();
+
+    // Auto-credit customer wallet balance instantly if refund is owed
+    if (userId.isNotEmpty && refundDepositAmount > 0) {
+      try {
+        await _walletRepo.addFunds(
+          userId: userId,
+          amount: refundDepositAmount,
+          description: 'Instant Refund: Deposit for $emptyCollected empty can(s) returned at store',
+        );
+      } catch (e) {
+        // Log wallet refund error gracefully
+      }
+    }
   }
 
   // ─────────────────────────────────────────────
@@ -155,12 +259,14 @@ class WaterCanRepository {
     });
 
     // 3. Increment User can balance
-    final userRef = _users.doc(userId);
-    batch.set(userRef, {
-      'totalFullCans': FieldValue.increment(fullDelivered),
-      'totalEmptyCansReturned': FieldValue.increment(emptyCollected),
-      'canBalance': FieldValue.increment(fullDelivered - emptyCollected),
-    }, SetOptions(merge: true));
+    if (userId.isNotEmpty) {
+      final userRef = _users.doc(userId);
+      batch.set(userRef, {
+        'totalFullCans': FieldValue.increment(fullDelivered),
+        'totalEmptyCansReturned': FieldValue.increment(emptyCollected),
+        'canBalance': FieldValue.increment(fullDelivered - emptyCollected),
+      }, SetOptions(merge: true));
+    }
 
     await batch.commit();
   }
@@ -217,7 +323,8 @@ class WaterCanRepository {
         .limit(100)
         .snapshots()
         .map((snapshot) =>
-            snapshot.docs.map((d) => CanTransactionModel.fromFirestore(d)).toList());
+            snapshot.docs.map((d) => CanTransactionModel.fromFirestore(d)).toList())
+        .handleError((_) => <CanTransactionModel>[]);
   }
 
   /// Get platform pricing & deposit settings
@@ -233,7 +340,7 @@ class WaterCanRepository {
           'bottlePackPrice': 90.0,
         };
       }
-      final data = doc.data() as Map<String, dynamic>;
+      final data = doc.data() as Map<String, dynamic>? ?? {};
       return {
         'refillPrice': (data['refillPrice'] as num?)?.toDouble() ?? 50.0,
         'refillOriginalPrice': (data['refillOriginalPrice'] as num?)?.toDouble() ?? 80.0,
@@ -242,6 +349,13 @@ class WaterCanRepository {
         'refundableDeposit': (data['refundableDeposit'] as num?)?.toDouble() ?? 100.0,
         'bottlePackPrice': (data['bottlePackPrice'] as num?)?.toDouble() ?? 90.0,
       };
+    }).handleError((_) => {
+      'refillPrice': 50.0,
+      'refillOriginalPrice': 80.0,
+      'exchangeDiscount': 30.0,
+      'newCanPrice': 150.0,
+      'refundableDeposit': 100.0,
+      'bottlePackPrice': 90.0,
     });
   }
 
@@ -299,5 +413,18 @@ class WaterCanRepository {
     }, SetOptions(merge: true));
 
     await batch.commit();
+
+    // Auto-credit customer wallet balance
+    if (userId.isNotEmpty && refundAmount > 0) {
+      try {
+        await _walletRepo.addFunds(
+          userId: userId,
+          amount: refundAmount,
+          description: 'Can Deposit Refund ($cansReturned returned): ₹${refundAmount.toStringAsFixed(0)}',
+        );
+      } catch (e) {
+        // Log gracefully
+      }
+    }
   }
 }

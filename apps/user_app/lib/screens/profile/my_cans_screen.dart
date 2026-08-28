@@ -17,6 +17,8 @@ class MyCansScreen extends StatefulWidget {
 
 class _MyCansScreenState extends State<MyCansScreen> {
   final WaterCanRepository _waterCanRepo = WaterCanRepository();
+  final WaterAssetRepository _assetRepo = WaterAssetRepository();
+  final WaterSubscriptionRepository _subRepo = WaterSubscriptionRepository();
   bool _showHistory = true;
 
   Future<void> _launchWhatsApp() async {
@@ -166,7 +168,7 @@ class _MyCansScreenState extends State<MyCansScreen> {
 
                 const SizedBox(height: 16),
 
-                // Can Balance Card
+                // Can Balance & Escrow Deposit Card
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -184,48 +186,64 @@ class _MyCansScreenState extends State<MyCansScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Can Balance',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF64748B),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            '${summary.canBalance}',
-                            style: TextStyle(
-                              fontSize: 40,
-                              fontWeight: FontWeight.w900,
-                              color: summary.canBalance > 0 ? const Color(0xFF059669) : const Color(0xFF0F172A),
-                            ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Can Balance',
+                                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: Color(0xFF64748B)),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.baseline,
+                                textBaseline: TextBaseline.alphabetic,
+                                children: [
+                                  Text(
+                                    '${summary.canBalance}',
+                                    style: TextStyle(
+                                      fontSize: 36,
+                                      fontWeight: FontWeight.w900,
+                                      color: summary.canBalance > 0 ? const Color(0xFF059669) : const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    summary.canBalance == 1 ? 'can' : 'cans',
+                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF334155)),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            summary.canBalance == 1 ? 'can with you' : 'cans with you',
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF334155),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFF6FF),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: const Color(0xFFBFDBFE)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                const Text('Deposit Escrow', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: Color(0xFF2563EB))),
+                                Text(
+                                  '₹${(summary.canBalance * 100).toStringAsFixed(0)}',
+                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF1E40AF)),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 12),
                       const Text(
-                        'Keep balance at 0 to get refill discount',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF64748B),
-                          fontWeight: FontWeight.w500,
-                        ),
+                        'Instant auto-refund to Wallet upon empty can return',
+                        style: TextStyle(fontSize: 11.5, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       SizedBox(
                         width: double.infinity,
                         height: 44,
@@ -236,12 +254,8 @@ class _MyCansScreenState extends State<MyCansScreen> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                           ),
                           child: Text(
-                            _showHistory ? 'Hide History' : 'View History',
-                            style: const TextStyle(
-                              color: Color(0xFF059669),
-                              fontWeight: FontWeight.w800,
-                              fontSize: 13,
-                            ),
+                            _showHistory ? 'Hide Ledger History' : 'View Ledger History',
+                            style: const TextStyle(color: Color(0xFF059669), fontWeight: FontWeight.w800, fontSize: 13),
                           ),
                         ),
                       ),
@@ -250,6 +264,164 @@ class _MyCansScreenState extends State<MyCansScreen> {
                 ),
 
                 const SizedBox(height: 20),
+
+                // Serialized Tracked Containers
+                StreamBuilder<List<WaterAssetModel>>(
+                  stream: _assetRepo.getCustomerHeldAssets(user.id),
+                  builder: (context, assetSnap) {
+                    final assets = assetSnap.data ?? [];
+                    if (assets.isEmpty) return const SizedBox.shrink();
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Tracked Serialized Containers',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Color(0xFF0F172A)),
+                        ),
+                        const SizedBox(height: 10),
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: assets.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          itemBuilder: (ctx, idx) {
+                            final asset = assets[idx];
+                            return Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF059669).withValues(alpha: 0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.qr_code_2_rounded, color: Color(0xFF059669), size: 20),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          asset.canSerialId,
+                                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF0F172A)),
+                                        ),
+                                        Text(
+                                          'Fill #${asset.fillCount} • TDS ${asset.lastTestedTds.toStringAsFixed(0)} ppm',
+                                          style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF0FDF4),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Text('Active', style: TextStyle(color: Color(0xFF059669), fontSize: 11, fontWeight: FontWeight.w800)),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                    );
+                  },
+                ),
+
+                // Active Subscriptions Section
+                StreamBuilder<List<WaterSubscriptionModel>>(
+                  stream: _subRepo.getUserSubscriptions(user.id),
+                  builder: (context, subSnap) {
+                    final subs = subSnap.data ?? [];
+                    if (subs.isEmpty) return const SizedBox.shrink();
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Active Subscriptions',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Color(0xFF0F172A)),
+                        ),
+                        const SizedBox(height: 10),
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: subs.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          itemBuilder: (ctx, idx) {
+                            final sub = subs[idx];
+                            return Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFEFF6FF),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.repeat_rounded, color: Color(0xFF2563EB), size: 20),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '${sub.quantityPerDelivery}x 20L Can • ${sub.cadence.displayName}',
+                                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF0F172A)),
+                                        ),
+                                        Text(
+                                          'Next drop: ${DateFormat('dd MMM').format(sub.nextScheduledDelivery)} (${sub.timeSlot})',
+                                          style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(
+                                      sub.status == SubscriptionStatus.paused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                                      color: const Color(0xFF2563EB),
+                                    ),
+                                    tooltip: sub.status == SubscriptionStatus.paused ? 'Resume' : 'Pause',
+                                    onPressed: () async {
+                                      if (sub.status == SubscriptionStatus.paused) {
+                                        await _subRepo.resumeSubscription(sub.id, DateTime.now().add(const Duration(days: 1)));
+                                      } else {
+                                        await _subRepo.pauseSubscription(
+                                          subscriptionId: sub.id,
+                                          startDate: DateTime.now(),
+                                          endDate: DateTime.now().add(const Duration(days: 7)),
+                                        );
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                    );
+                  },
+                ),
 
                 // WhatsApp Support Contact Banner
                 GestureDetector(

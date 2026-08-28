@@ -431,7 +431,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
               return Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
@@ -443,7 +442,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     return Column(
                       children: [
                         Material(
-                          type: MaterialType.transparency,
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
                           child: ListTile(
                             onTap: () => context.push('/management/orders/${o.id}'),
                             dense: true,

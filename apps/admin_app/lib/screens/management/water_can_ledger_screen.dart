@@ -15,6 +15,7 @@ class WaterCanLedgerScreen extends StatefulWidget {
 class _WaterCanLedgerScreenState extends State<WaterCanLedgerScreen> {
   final WaterCanRepository _waterCanRepo = WaterCanRepository();
   String _searchQuery = '';
+  String? _selectedDealerId;
 
   void _showRefundDialog() {
     final nameCtrl = TextEditingController();
@@ -175,24 +176,70 @@ class _WaterCanLedgerScreenState extends State<WaterCanLedgerScreen> {
       ),
       body: Column(
         children: [
-          // Search Header
+          // Search & Filter Header
           Container(
             color: Colors.white,
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: TextField(
-              onChanged: (val) => setState(() => _searchQuery = val.toLowerCase()),
-              decoration: InputDecoration(
-                hintText: 'Search by Customer Name or Order ID...',
-                hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
-                prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF64748B), size: 20),
-                isDense: true,
-                filled: true,
-                fillColor: const Color(0xFFF1F5F9),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: Column(
+              children: [
+                TextField(
+                  onChanged: (val) => setState(() => _searchQuery = val.toLowerCase()),
+                  decoration: InputDecoration(
+                    hintText: 'Search by Customer Name or Order ID...',
+                    hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                    prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF64748B), size: 20),
+                    isDense: true,
+                    filled: true,
+                    fillColor: const Color(0xFFF1F5F9),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 10),
+                StreamBuilder<List<UserModel>>(
+                  stream: _waterCanRepo.getAvailableWaterDealers(),
+                  builder: (context, dealersSnap) {
+                    final dealers = dealersSnap.data ?? [];
+                    if (dealers.isEmpty) return const SizedBox.shrink();
+
+                    return SizedBox(
+                      height: 36,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          ChoiceChip(
+                            label: const Text('All Stores', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                            selected: _selectedDealerId == null,
+                            selectedColor: const Color(0xFF059669).withValues(alpha: 0.15),
+                            labelStyle: TextStyle(
+                              color: _selectedDealerId == null ? const Color(0xFF059669) : const Color(0xFF64748B),
+                            ),
+                            onSelected: (_) => setState(() => _selectedDealerId = null),
+                          ),
+                          const SizedBox(width: 8),
+                          ...dealers.map((d) {
+                            final isSel = _selectedDealerId == d.id;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ChoiceChip(
+                                label: Text(d.shopName ?? d.name, style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                                selected: isSel,
+                                selectedColor: const Color(0xFF059669).withValues(alpha: 0.15),
+                                labelStyle: TextStyle(
+                                  color: isSel ? const Color(0xFF059669) : const Color(0xFF64748B),
+                                ),
+                                onSelected: (_) => setState(() => _selectedDealerId = isSel ? null : d.id),
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
           ),
 
@@ -207,6 +254,9 @@ class _WaterCanLedgerScreenState extends State<WaterCanLedgerScreen> {
 
                 final allList = snapshot.data ?? [];
                 final filtered = allList.where((tx) {
+                  if (_selectedDealerId != null && tx.dealerId != _selectedDealerId) {
+                    return false;
+                  }
                   if (_searchQuery.isEmpty) return true;
                   return tx.userName.toLowerCase().contains(_searchQuery) ||
                       tx.orderId.toLowerCase().contains(_searchQuery);
@@ -217,9 +267,9 @@ class _WaterCanLedgerScreenState extends State<WaterCanLedgerScreen> {
                     child: EmptyState(
                       icon: Icons.receipt_long_outlined,
                       title: 'No Can Transactions',
-                      subtitle: _searchQuery.isEmpty
+                      subtitle: _searchQuery.isEmpty && _selectedDealerId == null
                           ? 'Water can exchanges and deliveries will appear here.'
-                          : 'No transactions match "$_searchQuery".',
+                          : 'No transactions match current filters.',
                     ),
                   );
                 }

@@ -315,6 +315,115 @@ class _WaterCanManagementScreenState extends State<WaterCanManagementScreen> {
 
                 const SizedBox(height: 24),
 
+                // Dealer Breakdown Section
+                const Text(
+                  'Dealer Water Circulation Status',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                StreamBuilder<List<UserModel>>(
+                  stream: _waterCanRepo.getAvailableWaterDealers(),
+                  builder: (context, dealersSnapshot) {
+                    final dealers = dealersSnapshot.data ?? [];
+                    if (dealers.isEmpty) {
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            'No active dealers found.',
+                            style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: dealers.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      itemBuilder: (ctx, idx) {
+                        final dealer = dealers[idx];
+                        return StreamBuilder<Map<String, dynamic>>(
+                          stream: _waterCanRepo.getDealerCanSummary(dealer.id),
+                          builder: (context, summarySnap) {
+                            final stats = summarySnap.data ?? {};
+                            final balance = stats['canBalance'] ?? 0;
+                            final activeCust = stats['activeCustomersCount'] ?? 0;
+
+                            return Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF059669).withValues(alpha: 0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.storefront_rounded, color: Color(0xFF059669), size: 20),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          dealer.shopName ?? dealer.name,
+                                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5, color: Color(0xFF0F172A)),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          '$activeCust active customer${activeCust == 1 ? "" : "s"} holding cans',
+                                          style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: balance > 0
+                                          ? const Color(0xFF059669).withValues(alpha: 0.1)
+                                          : const Color(0xFF64748B).withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Text(
+                                      '$balance Cans Out',
+                                      style: TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: balance > 0 ? const Color(0xFF059669) : const Color(0xFF64748B),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 24),
+
                 // Audit Ledger Shortcut
                 GestureDetector(
                   onTap: () => context.push('/management/water-cans/ledger'),

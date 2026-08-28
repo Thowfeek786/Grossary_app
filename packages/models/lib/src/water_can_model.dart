@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum CanExchangeType { refill, newCan, returnOnly }
+enum CanExchangeType { refill, newCan, returnOnly, walkInReturn }
 
 class CanTransactionModel {
   final String id;
@@ -102,6 +102,36 @@ class UserCanSummaryModel {
     emptyCollected: 0,
     canBalance: 0,
     totalDepositHeld: 0.0,
+  );
+}
+
+class DealerCanSummaryModel {
+  final String dealerId;
+  final int totalDelivered;
+  final int totalCollected;
+  final int todayDelivered;
+  final int todayCollected;
+  final int canBalance;
+  final int activeCustomersCount;
+
+  const DealerCanSummaryModel({
+    required this.dealerId,
+    required this.totalDelivered,
+    required this.totalCollected,
+    required this.todayDelivered,
+    required this.todayCollected,
+    required this.canBalance,
+    this.activeCustomersCount = 0,
+  });
+
+  factory DealerCanSummaryModel.empty(String dealerId) => DealerCanSummaryModel(
+    dealerId: dealerId,
+    totalDelivered: 0,
+    totalCollected: 0,
+    todayDelivered: 0,
+    todayCollected: 0,
+    canBalance: 0,
+    activeCustomersCount: 0,
   );
 }
 
