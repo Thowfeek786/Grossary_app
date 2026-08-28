@@ -3,24 +3,47 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:repository/repository.dart';
 
+class ScratchCardResult {
+  final bool isWinner;
+  final double amount;
+  final bool isClaimed;
+
+  const ScratchCardResult({
+    required this.isWinner,
+    required this.amount,
+    required this.isClaimed,
+  });
+}
+
 class InteractiveScratchCardDialog extends StatefulWidget {
   final String userId;
   final String orderId;
+  final Function(ScratchCardResult result)? onResult;
 
   const InteractiveScratchCardDialog({
     super.key,
     required this.userId,
     required this.orderId,
+    this.onResult,
   });
 
-  static Future<void> show(BuildContext context, {required String userId, required String orderId}) {
-    return showDialog(
+  static Future<ScratchCardResult?> show(
+    BuildContext context, {
+    required String userId,
+    required String orderId,
+    Function(ScratchCardResult result)? onResult,
+  }) {
+    return showDialog<ScratchCardResult>(
       context: context,
       barrierDismissible: true,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
         insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-        child: InteractiveScratchCardDialog(userId: userId, orderId: orderId),
+        child: InteractiveScratchCardDialog(
+          userId: userId,
+          orderId: orderId,
+          onResult: onResult,
+        ),
       ),
     );
   }
@@ -66,6 +89,16 @@ class _InteractiveScratchCardDialogState extends State<InteractiveScratchCardDia
     super.dispose();
   }
 
+  void _notifyResult() {
+    widget.onResult?.call(
+      ScratchCardResult(
+        isWinner: _isWinner,
+        amount: _cashbackAmount,
+        isClaimed: _isClaimed,
+      ),
+    );
+  }
+
   void _onScratch(Offset localPos) {
     if (_isRevealed) return;
 
@@ -73,13 +106,13 @@ class _InteractiveScratchCardDialogState extends State<InteractiveScratchCardDia
       _scratchPoints.add(localPos);
     });
 
-    // Provide tactile scratching feedback every 6 drag points
-    if (_scratchPoints.length % 6 == 0) {
+    // Provide tactile scratching feedback every 5 drag points
+    if (_scratchPoints.length % 5 == 0) {
       HapticFeedback.selectionClick();
     }
 
-    // Auto-reveal once scratched sufficiently (e.g. 35+ swipe points)
-    if (_scratchPoints.length >= 35 && !_isRevealed) {
+    // Auto-reveal once scratched sufficiently (e.g. 30+ swipe points)
+    if (_scratchPoints.length >= 30 && !_isRevealed) {
       _revealCard();
     }
   }
@@ -91,6 +124,7 @@ class _InteractiveScratchCardDialogState extends State<InteractiveScratchCardDia
       _isRevealed = true;
     });
     _revealAnimCtrl.forward();
+    _notifyResult();
   }
 
   Future<void> _claimReward() async {
@@ -110,6 +144,8 @@ class _InteractiveScratchCardDialogState extends State<InteractiveScratchCardDia
           _isClaiming = false;
           _isClaimed = true;
         });
+        HapticFeedback.heavyImpact();
+        _notifyResult();
       }
     } catch (_) {
       if (mounted) setState(() => _isClaiming = false);
@@ -134,7 +170,7 @@ class _InteractiveScratchCardDialogState extends State<InteractiveScratchCardDia
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Header Row
+          // Header Row with Dynamic Status Badge
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -157,13 +193,27 @@ class _InteractiveScratchCardDialogState extends State<InteractiveScratchCardDia
               ),
               IconButton(
                 icon: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF64748B)),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  _notifyResult();
+                  Navigator.pop(
+                    context,
+                    ScratchCardResult(
+                      isWinner: _isWinner,
+                      amount: _cashbackAmount,
+                      isClaimed: _isClaimed,
+                    ),
+                  );
+                },
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+
+          // Live Scratch Card Status Pill
+          _buildStatusBanner(),
+          const SizedBox(height: 14),
 
           // Interactive Scratch Area Stack
           Container(
@@ -199,51 +249,45 @@ class _InteractiveScratchCardDialogState extends State<InteractiveScratchCardDia
                       onPanUpdate: (details) => _onScratch(details.localPosition),
                       onPanEnd: (_) => _scratchPoints.add(null),
                       onTap: _revealCard,
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          // Base Metallic Surface
-                          Container(
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [Color(0xFF7C3AED), Color(0xFF6366F1), Color(0xFF4F46E5)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                            ),
-                            child: CustomPaint(
-                              painter: _ScratchFoilPainter(points: _scratchPoints),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.18),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(Icons.touch_app_rounded, color: Colors.white, size: 32),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  const Text(
-                                    'RUB TO SCRATCH & WIN',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 15,
-                                      letterSpacing: 1.2,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  const Text(
-                                    'Swipe your finger across to reveal prize',
-                                    style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
-                                  ),
-                                ],
-                              ),
-                            ),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Color(0xFF7C3AED), Color(0xFF6366F1), Color(0xFF4F46E5)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
-                        ],
+                        ),
+                        child: CustomPaint(
+                          painter: _ScratchFoilPainter(points: _scratchPoints),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.18),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.touch_app_rounded, color: Colors.white, size: 32),
+                              ),
+                              const SizedBox(height: 10),
+                              const Text(
+                                'RUB TO SCRATCH & WIN',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 15,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                'Swipe your finger across to reveal prize',
+                                style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                 ],
@@ -251,7 +295,7 @@ class _InteractiveScratchCardDialogState extends State<InteractiveScratchCardDia
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
 
           // Bottom Action Panel
           if (!_isRevealed)
@@ -288,42 +332,163 @@ class _InteractiveScratchCardDialogState extends State<InteractiveScratchCardDia
               ),
             )
           else if (_isRevealed && _isWinner && _isClaimed)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF0FDF4),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFBBF7D0)),
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 20),
-                  SizedBox(width: 8),
-                  Text(
-                    '₹ Cashback Credited to Wallet!',
-                    style: TextStyle(color: Color(0xFF166534), fontWeight: FontWeight.w900, fontSize: 13),
+            Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0FDF4),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFBBF7D0)),
                   ),
-                ],
-              ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        '₹${_cashbackAmount.toStringAsFixed(0)}.00 Credited to Wallet ✓',
+                        style: const TextStyle(color: Color(0xFF166534), fontWeight: FontWeight.w900, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  height: 42,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      _notifyResult();
+                      Navigator.pop(
+                        context,
+                        ScratchCardResult(
+                          isWinner: _isWinner,
+                          amount: _cashbackAmount,
+                          isClaimed: _isClaimed,
+                        ),
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF059669),
+                      side: const BorderSide(color: Color(0xFF059669), width: 1.2),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Done & Continue Shopping 🛍️', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+                  ),
+                ),
+              ],
             )
           else if (_isRevealed && !_isWinner)
             SizedBox(
               width: double.infinity,
               height: 48,
               child: OutlinedButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  _notifyResult();
+                  Navigator.pop(
+                    context,
+                    ScratchCardResult(
+                      isWinner: _isWinner,
+                      amount: _cashbackAmount,
+                      isClaimed: _isClaimed,
+                    ),
+                  );
+                },
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF334155),
                   side: const BorderSide(color: Color(0xFFCBD5E1), width: 1.2),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
-                child: const Text('Continue Shopping 🛍️', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
+                child: const Text('Got It 👍 Continue Shopping', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
               ),
             ),
         ],
       ),
     );
+  }
+
+  Widget _buildStatusBanner() {
+    if (!_isRevealed) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.hourglass_top_rounded, size: 13, color: Color(0xFF6366F1)),
+            SizedBox(width: 5),
+            Text(
+              'STATUS: CARD READY • RUB FOIL TO REVEAL',
+              style: TextStyle(color: Color(0xFF4F46E5), fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.3),
+            ),
+          ],
+        ),
+      );
+    } else if (_isWinner && !_isClaimed) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFEF3C7),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFFDE68A)),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.celebration_rounded, size: 13, color: Color(0xFFD97706)),
+            SizedBox(width: 5),
+            Text(
+              'STATUS: 🎉 YOU WON! TAP CLAIM BELOW',
+              style: TextStyle(color: Color(0xFFB45309), fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.3),
+            ),
+          ],
+        ),
+      );
+    } else if (_isWinner && _isClaimed) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: const Color(0xFFDCFCE7),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFF86EFAC)),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_circle_rounded, size: 13, color: Color(0xFF16A34A)),
+            SizedBox(width: 5),
+            Text(
+              'STATUS: ✅ REWARD ADDED TO WALLET',
+              style: TextStyle(color: Color(0xFF15803D), fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.3),
+            ),
+          ],
+        ),
+      );
+    } else {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_rounded, size: 13, color: Color(0xFF64748B)),
+            SizedBox(width: 5),
+            Text(
+              'STATUS: 🍀 CARD REVEALED',
+              style: TextStyle(color: Color(0xFF475569), fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.3),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   Widget _buildPrizeCard() {
@@ -359,9 +524,9 @@ class _InteractiveScratchCardDialogState extends State<InteractiveScratchCardDia
                 color: const Color(0xFF059669).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Text(
-                'Instant Wallet Credit Guaranteed',
-                style: TextStyle(fontSize: 11, color: Color(0xFF047857), fontWeight: FontWeight.w800),
+              child: Text(
+                _isClaimed ? '✓ Added to Wallet Balance' : 'Instant Wallet Credit Guaranteed',
+                style: const TextStyle(fontSize: 11, color: Color(0xFF047857), fontWeight: FontWeight.w800),
               ),
             ),
           ],

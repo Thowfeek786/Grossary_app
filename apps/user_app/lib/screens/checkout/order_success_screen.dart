@@ -36,6 +36,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
     '📞 Call before arrival',
     '🤫 Avoid ringing bell',
   ];
+  ScratchCardResult? _scratchResult;
 
   @override
   void initState() {
@@ -507,71 +508,21 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                                       return Padding(
                                         padding: const EdgeInsets.only(top: 10),
                                         child: GestureDetector(
-                                          onTap: () {
+                                          onTap: () async {
                                             final user = context.read<AuthProvider>().user;
-                                            InteractiveScratchCardDialog.show(
+                                            final result = await InteractiveScratchCardDialog.show(
                                               context,
                                               userId: user?.id ?? 'anon',
                                               orderId: widget.orderId,
+                                              onResult: (res) {
+                                                if (mounted) setState(() => _scratchResult = res);
+                                              },
                                             );
+                                            if (result != null && mounted) {
+                                              setState(() => _scratchResult = result);
+                                            }
                                           },
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                                            decoration: BoxDecoration(
-                                              gradient: const LinearGradient(
-                                                colors: [Color(0xFF8B5CF6), Color(0xFF6366F1), Color(0xFF4F46E5)],
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
-                                              ),
-                                              borderRadius: BorderRadius.circular(14),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: const Color(0xFF6366F1).withValues(alpha: 0.25),
-                                                  blurRadius: 8,
-                                                  offset: const Offset(0, 3),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                Container(
-                                                  padding: const EdgeInsets.all(6),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.white.withValues(alpha: 0.2),
-                                                    shape: BoxShape.circle,
-                                                  ),
-                                                  child: const Text('🎁', style: TextStyle(fontSize: 16)),
-                                                ),
-                                                const SizedBox(width: 10),
-                                                const Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(
-                                                        'Mystery Scratch Card 🎁',
-                                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
-                                                      ),
-                                                      Text(
-                                                        'Tap to scratch & test your luck for rewards',
-                                                        style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w600),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.white,
-                                                    borderRadius: BorderRadius.circular(8),
-                                                  ),
-                                                  child: const Text(
-                                                    'Scratch',
-                                                    style: TextStyle(color: Color(0xFF4F46E5), fontWeight: FontWeight.w900, fontSize: 11),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
+                                          child: _buildScratchStatusBanner(),
                                         ),
                                       );
                                     },
@@ -749,6 +700,242 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
             },
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildScratchStatusBanner() {
+    final res = _scratchResult;
+
+    // 1. Claimed Winner Banner
+    if (res != null && res.isWinner && res.isClaimed) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF059669), Color(0xFF10B981)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF059669).withValues(alpha: 0.25),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Text('💰', style: TextStyle(fontSize: 16)),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '🎉 Won ₹${res.amount.toStringAsFixed(0)} Cashback!',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
+                  ),
+                  const Text(
+                    'Added to your GroceryGo Wallet balance ✓',
+                    style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                'Claimed ✓',
+                style: TextStyle(color: Color(0xFF059669), fontWeight: FontWeight.w900, fontSize: 11),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 2. Unclaimed Winner Banner
+    if (res != null && res.isWinner && !res.isClaimed) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFD97706), Color(0xFFF59E0B)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFD97706).withValues(alpha: 0.25),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Text('🎉', style: TextStyle(fontSize: 16)),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '₹${res.amount.toStringAsFixed(0)} Reward Unlocked!',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
+                  ),
+                  const Text(
+                    'Tap to claim cashback to your wallet',
+                    style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                'Claim 🎁',
+                style: TextStyle(color: Color(0xFFD97706), fontWeight: FontWeight.w900, fontSize: 11),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 3. Revealed Non-Winner Banner (Better Luck Next Time)
+    if (res != null && !res.isWinner) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFCBD5E1)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE2E8F0),
+                shape: BoxShape.circle,
+              ),
+              child: const Text('🍀', style: TextStyle(fontSize: 16)),
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Scratch Card Revealed 🍀',
+                    style: TextStyle(color: Color(0xFF1E293B), fontWeight: FontWeight.w900, fontSize: 13),
+                  ),
+                  Text(
+                    'Better luck on your next GroceryGo order!',
+                    style: TextStyle(color: Color(0xFF64748B), fontSize: 10, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE2E8F0),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                'Revealed',
+                style: TextStyle(color: Color(0xFF475569), fontWeight: FontWeight.w900, fontSize: 11),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 4. Default Initial Unscratched Banner
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF8B5CF6), Color(0xFF6366F1), Color(0xFF4F46E5)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF6366F1).withValues(alpha: 0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: const Text('🎁', style: TextStyle(fontSize: 16)),
+          ),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Mystery Scratch Card 🎁',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
+                ),
+                Text(
+                  'Tap to scratch & test your luck for rewards',
+                  style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Text(
+              'Scratch',
+              style: TextStyle(color: Color(0xFF4F46E5), fontWeight: FontWeight.w900, fontSize: 11),
+            ),
+          ),
+        ],
       ),
     );
   }
