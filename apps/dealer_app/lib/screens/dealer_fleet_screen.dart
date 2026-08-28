@@ -214,51 +214,137 @@ class _DealerFleetScreenState extends State<DealerFleetScreen> {
                 ),
                 const SizedBox(height: 14),
 
-                // Employment Type
-                const Text('Payout Terms', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF0F172A))),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ChoiceChip(
-                        label: const Text('Per-Drop (₹25/can)', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800)),
-                        selected: empType == DriverEmploymentType.dedicatedPerDrop,
-                        selectedColor: const Color(0xFF0F766E).withValues(alpha: 0.15),
-                        onSelected: (_) {
-                          setModalState(() {
-                            empType = DriverEmploymentType.dedicatedPerDrop;
-                            rateCtrl.text = '25';
-                          });
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ChoiceChip(
-                        label: const Text('Monthly Salary', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800)),
-                        selected: empType == DriverEmploymentType.dedicatedMonthly,
-                        selectedColor: const Color(0xFF0F766E).withValues(alpha: 0.15),
-                        onSelected: (_) {
-                          setModalState(() {
-                            empType = DriverEmploymentType.dedicatedMonthly;
-                            rateCtrl.text = '15000';
-                          });
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
 
-                TextField(
-                  controller: rateCtrl,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: empType == DriverEmploymentType.dedicatedMonthly ? 'Monthly Salary (₹)' : 'Rate Per Drop / Can (₹)',
-                    prefixText: '₹ ',
-                    filled: true,
-                    fillColor: const Color(0xFFF8FAFC),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                // ─────────────────────────────────────────────
+                // Payout Terms Highlight Container
+                // ─────────────────────────────────────────────
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0FDFA),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFF99F6E4), width: 1.5),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.payments_rounded, color: Color(0xFF0F766E), size: 18),
+                          SizedBox(width: 8),
+                          Text(
+                            'PAYOUT TERMS & COMPENSATION',
+                            style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: Color(0xFF0F766E), letterSpacing: 0.5),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setModalState(() {
+                                  empType = DriverEmploymentType.dedicatedPerDrop;
+                                  rateCtrl.text = '25';
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                                decoration: BoxDecoration(
+                                  color: empType == DriverEmploymentType.dedicatedPerDrop ? const Color(0xFF0F766E) : Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: empType == DriverEmploymentType.dedicatedPerDrop ? const Color(0xFF0F766E) : const Color(0xFFCCFBF1),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.local_shipping_rounded,
+                                      size: 18,
+                                      color: empType == DriverEmploymentType.dedicatedPerDrop ? Colors.white : const Color(0xFF0F766E),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Per-Drop / Can',
+                                      style: TextStyle(
+                                        color: empType == DriverEmploymentType.dedicatedPerDrop ? Colors.white : const Color(0xFF0F172A),
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 11.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setModalState(() {
+                                  empType = DriverEmploymentType.dedicatedMonthly;
+                                  rateCtrl.text = '15000';
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                                decoration: BoxDecoration(
+                                  color: empType == DriverEmploymentType.dedicatedMonthly ? const Color(0xFF0F766E) : Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: empType == DriverEmploymentType.dedicatedMonthly ? const Color(0xFF0F766E) : const Color(0xFFCCFBF1),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.calendar_month_rounded,
+                                      size: 18,
+                                      color: empType == DriverEmploymentType.dedicatedMonthly ? Colors.white : const Color(0xFF0F766E),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Monthly Salary',
+                                      style: TextStyle(
+                                        color: empType == DriverEmploymentType.dedicatedMonthly ? Colors.white : const Color(0xFF0F172A),
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 11.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: rateCtrl,
+                        keyboardType: TextInputType.number,
+                        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A)),
+                        decoration: InputDecoration(
+                          labelText: empType == DriverEmploymentType.dedicatedMonthly ? 'Monthly Fixed Salary (₹)' : 'Rate Per Drop / 20L Can (₹)',
+                          labelStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: Color(0xFF0F766E)),
+                          prefixIcon: const Icon(Icons.currency_rupee_rounded, color: Color(0xFF0F766E), size: 20),
+                          helperText: empType == DriverEmploymentType.dedicatedMonthly
+                              ? 'Fixed salary credited monthly to delivery partner.'
+                              : 'Auto-calculated on each completed morning water drop / grocery delivery.',
+                          helperStyle: const TextStyle(fontSize: 11, color: Color(0xFF0F766E)),
+                          helperMaxLines: 2,
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF99F6E4))),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF99F6E4))),
+                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0F766E), width: 2)),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -738,62 +824,79 @@ class _DealerFleetScreenState extends State<DealerFleetScreen> {
             ],
           ),
           const SizedBox(height: 12),
+          // Vehicle & Contract Container
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
               border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
-            child: Row(
+            child: Column(
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('VEHICLE & CONTRACT', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFF64748B))),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${driver.vehicleType} • ${driver.vehicleNumber.isNotEmpty ? driver.vehicleNumber : "No Plate"}',
-                        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 11.5, color: Color(0xFF0F172A)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.two_wheeler_rounded, size: 16, color: Color(0xFF64748B)),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${driver.vehicleType} • ${driver.vehicleNumber.isNotEmpty ? driver.vehicleNumber : "No Plate"}',
+                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: Color(0xFF0F172A)),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F766E),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    ],
-                  ),
+                      child: Text(
+                        driver.employmentType == DriverEmploymentType.dedicatedMonthly
+                            ? 'Salary: ₹${driver.payoutRate.toStringAsFixed(0)}/mo'
+                            : 'Rate: ₹${driver.payoutRate.toStringAsFixed(0)}/drop',
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11),
+                      ),
+                    ),
+                  ],
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F766E).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    driver.employmentType == DriverEmploymentType.dedicatedMonthly
-                        ? '₹${driver.payoutRate.toStringAsFixed(0)}/mo'
-                        : '₹${driver.payoutRate.toStringAsFixed(0)}/drop',
-                    style: const TextStyle(color: Color(0xFF0F766E), fontWeight: FontWeight.w900, fontSize: 11.5),
-                  ),
+                const SizedBox(height: 10),
+                const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('${driver.totalDropsCompleted} Total Drops', style: const TextStyle(color: Color(0xFF475569), fontSize: 11.5, fontWeight: FontWeight.w700)),
+                    Text('${driver.totalCansDelivered} Cans Done', style: const TextStyle(color: Color(0xFF475569), fontSize: 11.5, fontWeight: FontWeight.w700)),
+                    InkWell(
+                      onTap: driver.pendingPayout > 0 ? () => _showSettlePayoutDialog(driver) : null,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: driver.pendingPayout > 0 ? const Color(0xFFFEF2F2) : const Color(0xFFECFDF5),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: driver.pendingPayout > 0 ? const Color(0xFFFECACA) : const Color(0xFFA7F3D0),
+                          ),
+                        ),
+                        child: Text(
+                          driver.pendingPayout > 0
+                              ? 'Pay Due: ₹${driver.pendingPayout.toStringAsFixed(0)} ⚡'
+                              : 'Paid Up ✓',
+                          style: TextStyle(
+                            color: driver.pendingPayout > 0 ? const Color(0xFFDC2626) : const Color(0xFF059669),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('${driver.totalDropsCompleted} Total Drops', style: const TextStyle(color: Color(0xFF475569), fontSize: 11.5, fontWeight: FontWeight.w700)),
-              Text('${driver.totalCansDelivered} Cans Delivered', style: const TextStyle(color: Color(0xFF475569), fontSize: 11.5, fontWeight: FontWeight.w700)),
-              GestureDetector(
-                onTap: driver.pendingPayout > 0 ? () => _showSettlePayoutDialog(driver) : null,
-                child: Text(
-                  'Payout Due: ₹${driver.pendingPayout.toStringAsFixed(0)}',
-                  style: TextStyle(
-                    color: driver.pendingPayout > 0 ? const Color(0xFFDC2626) : const Color(0xFF059669),
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-            ],
           ),
           const SizedBox(height: 12),
           Row(
