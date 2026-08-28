@@ -246,7 +246,7 @@ class _DealerDashboardState extends State<DealerDashboard> {
                                   value: lowStock.toString(),
                                   icon: Icons.warning_amber_rounded,
                                   color: const Color(0xFFEF4444),
-                                  onTap: () => context.go('/inventory'),
+                                  onTap: () => context.push('/forecast'),
                                 ),
                                 _StatCard(
                                   title: 'Total Store Sales',
@@ -272,26 +272,26 @@ class _DealerDashboardState extends State<DealerDashboard> {
                     const SizedBox(height: 24),
 
                     // ─────────────────────────────────────────────
-                    // 2. Vendor Quick Actions (All Previous Actions)
+                    // 2. Vendor Quick Actions
                     // ─────────────────────────────────────────────
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Vendor Quick Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
                         InkWell(
-                          onTap: () => context.push('/pos'),
+                          onTap: () => context.push('/forecast'),
                           borderRadius: BorderRadius.circular(10),
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF059669).withValues(alpha: 0.1),
+                              color: const Color(0xFFD97706).withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Row(
                               children: [
-                                Icon(Icons.point_of_sale_rounded, size: 14, color: Color(0xFF059669)),
+                                Icon(Icons.auto_graph_rounded, size: 14, color: Color(0xFFD97706)),
                                 SizedBox(width: 4),
-                                Text('Store POS', style: TextStyle(color: Color(0xFF059669), fontWeight: FontWeight.w900, fontSize: 11.5)),
+                                Text('AI Forecaster', style: TextStyle(color: Color(0xFFD97706), fontWeight: FontWeight.w900, fontSize: 11.5)),
                               ],
                             ),
                           ),
@@ -312,8 +312,17 @@ class _DealerDashboardState extends State<DealerDashboard> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: _ActionBtn(
+                            icon: Icons.auto_graph_rounded,
+                            label: 'AI Reorder',
+                            color: const Color(0xFFD97706),
+                            onTap: () => context.push('/forecast'),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _ActionBtn(
                             icon: Icons.add_box_rounded,
-                            label: 'Add Product',
+                            label: 'Add Item',
                             color: const Color(0xFF059669),
                             onTap: () => context.push('/add-product'),
                           ),
@@ -325,15 +334,6 @@ class _DealerDashboardState extends State<DealerDashboard> {
                             label: 'Inventory',
                             color: const Color(0xFF3B82F6),
                             onTap: () => context.go('/inventory'),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _ActionBtn(
-                            icon: Icons.receipt_long_rounded,
-                            label: 'Orders',
-                            color: const Color(0xFF8B5CF6),
-                            onTap: () => context.go('/orders'),
                           ),
                         ),
                       ],

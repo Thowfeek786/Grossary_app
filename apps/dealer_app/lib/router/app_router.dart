@@ -19,6 +19,7 @@ import '../screens/splash/splash_screen.dart';
 import '../screens/main_shell.dart';
 import '../screens/can_return_summary_screen.dart';
 import '../screens/pos_screen.dart';
+import '../screens/stock_forecast_screen.dart';
 
 class AppRouter {
   static final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -90,6 +91,11 @@ class AppRouter {
           path: '/pos',
           parentNavigatorKey: _rootNavigatorKey,
           builder: (_, __) => const PosScreen(),
+        ),
+        GoRoute(
+          path: '/forecast',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, __) => const StockForecastScreen(),
         ),
         GoRoute(
           path: '/can-returns',
