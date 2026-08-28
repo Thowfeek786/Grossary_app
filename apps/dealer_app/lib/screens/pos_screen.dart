@@ -253,15 +253,34 @@ class _PosScreenState extends State<PosScreen> {
                         hintText: 'Search or scan product SKU...',
                         hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
                         prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF64748B), size: 20),
-                        suffixIcon: _searchQuery.isNotEmpty
-                            ? IconButton(
+                        suffixIcon: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_searchQuery.isNotEmpty)
+                              IconButton(
                                 icon: const Icon(Icons.close_rounded, size: 18),
                                 onPressed: () {
                                   _searchCtrl.clear();
                                   setState(() => _searchQuery = '');
                                 },
-                              )
-                            : null,
+                              ),
+                            IconButton(
+                              icon: const Icon(Icons.qr_code_scanner_rounded, color: Color(0xFF0F766E), size: 20),
+                              tooltip: 'Scan Barcode / QR with Camera',
+                              onPressed: () async {
+                                final scanned = await CanQrScannerDialog.show(
+                                  context,
+                                  title: 'Scan Item Barcode / QR',
+                                  prompt: 'Align product barcode or QR code inside the camera viewfinder',
+                                );
+                                if (scanned != null && scanned.isNotEmpty) {
+                                  _searchCtrl.text = scanned;
+                                  setState(() => _searchQuery = scanned);
+                                }
+                              },
+                            ),
+                          ],
+                        ),
                         filled: true,
                         fillColor: const Color(0xFFF1F5F9),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
