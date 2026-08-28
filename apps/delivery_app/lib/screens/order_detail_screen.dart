@@ -709,8 +709,16 @@ class OrderDetailScreen extends StatelessWidget {
     VoidCallback? action;
 
     switch (order.status) {
+      case OrderStatus.pending:
+      case OrderStatus.processing:
+      case OrderStatus.accepted:
+        label = 'Pickup & Start Delivery 🚀';
+        action = () async {
+          await delivery.markPickedUp(order.id);
+        };
+        break;
       case OrderStatus.shipped:
-        label = 'Confirm Pickup from Store';
+        label = 'Confirm Pickup from Store 📦';
         action = () async {
           await delivery.markPickedUp(order.id);
         };
@@ -719,12 +727,14 @@ class OrderDetailScreen extends StatelessWidget {
         final isCOD = order.paymentMethod.toLowerCase().contains('cash');
         final canDeliver = !isCOD || order.isPaid;
 
-        label = canDeliver ? 'Enter OTP & Complete Delivery 🔑' : 'Please Collect Cash First';
+        label = canDeliver ? 'Enter OTP & Complete Delivery 🔑' : 'Confirm Cash Collected First 💵';
         action = canDeliver ? () => _startDeliveryCompletionFlow(context, delivery, order) : null;
         break;
       default:
-        label = 'Awaiting Store Dispatch';
-        action = null;
+        label = 'Order Active';
+        action = () async {
+          await delivery.markPickedUp(order.id);
+        };
     }
 
     return Container(
