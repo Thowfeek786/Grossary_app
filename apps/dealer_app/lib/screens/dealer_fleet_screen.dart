@@ -837,18 +837,25 @@ class _DealerFleetScreenState extends State<DealerFleetScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.two_wheeler_rounded, size: 16, color: Color(0xFF64748B)),
-                        const SizedBox(width: 6),
-                        Text(
-                          '${driver.vehicleType} • ${driver.vehicleNumber.isNotEmpty ? driver.vehicleNumber : "No Plate"}',
-                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: Color(0xFF0F172A)),
-                        ),
-                      ],
+                    Expanded(
+                      child: Row(
+                        children: [
+                          const Icon(Icons.two_wheeler_rounded, size: 16, color: Color(0xFF64748B)),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              '${driver.vehicleType} • ${driver.vehicleNumber.isNotEmpty ? driver.vehicleNumber : "No Plate"}',
+                              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: Color(0xFF0F172A)),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                    const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                       decoration: BoxDecoration(
                         color: const Color(0xFF0F766E),
                         borderRadius: BorderRadius.circular(8),
@@ -857,7 +864,7 @@ class _DealerFleetScreenState extends State<DealerFleetScreen> {
                         driver.employmentType == DriverEmploymentType.dedicatedMonthly
                             ? 'Salary: ₹${driver.payoutRate.toStringAsFixed(0)}/mo'
                             : 'Rate: ₹${driver.payoutRate.toStringAsFixed(0)}/drop',
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11),
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 10.5),
                       ),
                     ),
                   ],
@@ -868,8 +875,8 @@ class _DealerFleetScreenState extends State<DealerFleetScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('${driver.totalDropsCompleted} Total Drops', style: const TextStyle(color: Color(0xFF475569), fontSize: 11.5, fontWeight: FontWeight.w700)),
-                    Text('${driver.totalCansDelivered} Cans Done', style: const TextStyle(color: Color(0xFF475569), fontSize: 11.5, fontWeight: FontWeight.w700)),
+                    Text('${driver.totalDropsCompleted} Drops', style: const TextStyle(color: Color(0xFF475569), fontSize: 11, fontWeight: FontWeight.w700)),
+                    Text('${driver.totalCansDelivered} Cans', style: const TextStyle(color: Color(0xFF475569), fontSize: 11, fontWeight: FontWeight.w700)),
                     InkWell(
                       onTap: driver.pendingPayout > 0 ? () => _showSettlePayoutDialog(driver) : null,
                       child: Container(
@@ -887,7 +894,7 @@ class _DealerFleetScreenState extends State<DealerFleetScreen> {
                               : 'Paid Up ✓',
                           style: TextStyle(
                             color: driver.pendingPayout > 0 ? const Color(0xFFDC2626) : const Color(0xFF059669),
-                            fontSize: 11,
+                            fontSize: 10.5,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
