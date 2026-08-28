@@ -93,6 +93,63 @@ class WaterSubscriptionRepository {
     });
   }
 
+  /// Complete morning drop-off: auto-advance schedule, update counters, record jar swap, & debit wallet
+  Future<void> completeMorningDrop(WaterSubscriptionModel sub) async {
+    final now = DateTime.now();
+    final nextDate = calculateNextDelivery(sub.cadence, customDays: sub.customDays, fromDate: now);
+
+    // 1. Advance Subscription next delivery and delivery counter
+    await _subsRef.doc(sub.id).update({
+      'totalDeliveriesCompleted': sub.totalDeliveriesCompleted + 1,
+      'nextScheduledDelivery': Timestamp.fromDate(nextDate),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    // 2. Record can exchange transaction
+    if (sub.autoExchangeCan) {
+      final canTxRef = _firestore.collection('can_transactions').doc();
+      final tx = CanTransactionModel(
+        id: canTxRef.id,
+        userId: sub.userId,
+        userName: sub.userName,
+        dealerId: sub.dealerId,
+        dealerName: sub.dealerName,
+        fullDelivered: sub.quantityPerDelivery,
+        emptyCollected: sub.quantityPerDelivery,
+        depositAmount: 0.0,
+        createdAt: now,
+      );
+      await canTxRef.set(tx.toMap());
+    }
+
+    // 3. Auto-debit wallet if payment is configured for wallet
+    if (sub.paymentType == 'wallet_auto_debit') {
+      final totalCost = sub.pricePerCan * sub.quantityPerDelivery;
+      await WalletRepository().deductBalance(
+        userId: sub.userId,
+        amount: totalCost,
+        description: 'Auto-Debit: ${sub.quantityPerDelivery}x Pure 20L Water Can Morning Drop',
+      );
+    }
+  }
+
+  /// Update subscription frequency and parameters
+  Future<void> updateSubscriptionCadence({
+    required String subscriptionId,
+    required SubscriptionCadence cadence,
+    required int quantity,
+    required List<int> customDays,
+  }) async {
+    final nextDate = calculateNextDelivery(cadence, customDays: customDays);
+    await _subsRef.doc(subscriptionId).update({
+      'cadence': cadence.name,
+      'quantityPerDelivery': quantity,
+      'customDays': customDays,
+      'nextScheduledDelivery': Timestamp.fromDate(nextDate),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
   /// Compute next scheduled delivery date based on cadence
   DateTime calculateNextDelivery(SubscriptionCadence cadence, {List<int>? customDays, DateTime? fromDate}) {
     final base = fromDate ?? DateTime.now();

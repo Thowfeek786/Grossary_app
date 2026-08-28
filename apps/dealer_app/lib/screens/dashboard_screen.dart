@@ -455,7 +455,7 @@ class _DealerDashboardState extends State<DealerDashboard> {
                                                 onTap: () => context.push('/subscribers'),
                                                 borderRadius: BorderRadius.circular(12),
                                                 child: Container(
-                                                  padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 10),
+                                                  padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 6),
                                                   decoration: BoxDecoration(
                                                     color: Colors.white,
                                                     borderRadius: BorderRadius.circular(12),
@@ -470,11 +470,15 @@ class _DealerDashboardState extends State<DealerDashboard> {
                                                   child: const Row(
                                                     mainAxisAlignment: MainAxisAlignment.center,
                                                     children: [
-                                                      Icon(Icons.people_alt_rounded, color: Color(0xFF0F766E), size: 16),
-                                                      SizedBox(width: 6),
-                                                      Text(
-                                                        'Subscribers & Run',
-                                                        style: TextStyle(color: Color(0xFF0F766E), fontWeight: FontWeight.w900, fontSize: 12),
+                                                      Icon(Icons.people_alt_rounded, color: Color(0xFF0F766E), size: 15),
+                                                      SizedBox(width: 4),
+                                                      Flexible(
+                                                        child: Text(
+                                                          'Subscribers & Run',
+                                                          style: TextStyle(color: Color(0xFF0F766E), fontWeight: FontWeight.w900, fontSize: 11.5),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
                                                       ),
                                                     ],
                                                   ),
@@ -487,7 +491,7 @@ class _DealerDashboardState extends State<DealerDashboard> {
                                                 onTap: () => context.push('/can-returns'),
                                                 borderRadius: BorderRadius.circular(12),
                                                 child: Container(
-                                                  padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 10),
+                                                  padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 6),
                                                   decoration: BoxDecoration(
                                                     color: Colors.white.withValues(alpha: 0.18),
                                                     borderRadius: BorderRadius.circular(12),
@@ -495,11 +499,15 @@ class _DealerDashboardState extends State<DealerDashboard> {
                                                   child: const Row(
                                                     mainAxisAlignment: MainAxisAlignment.center,
                                                     children: [
-                                                      Icon(Icons.qr_code_scanner_rounded, color: Colors.white, size: 16),
-                                                      SizedBox(width: 6),
-                                                      Text(
-                                                        'Can Returns',
-                                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12),
+                                                      Icon(Icons.qr_code_scanner_rounded, color: Colors.white, size: 15),
+                                                      SizedBox(width: 4),
+                                                      Flexible(
+                                                        child: Text(
+                                                          'Can Returns',
+                                                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11.5),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
                                                       ),
                                                     ],
                                                   ),

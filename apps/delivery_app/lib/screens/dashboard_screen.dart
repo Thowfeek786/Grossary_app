@@ -253,6 +253,58 @@ class DeliveryDashboard extends StatelessWidget {
                         currentEarnings: todayEarned > 0 ? todayEarned : user.totalEarnings,
                         completedOrders: deliveredCount,
                       ),
+                      const SizedBox(height: 14),
+                      // Morning Jar Drops Action Card
+                      InkWell(
+                        onTap: () => context.push('/morning-drops'),
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF0F766E), Color(0xFF0D9488)],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF0D9488).withValues(alpha: 0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.water_drop_rounded, color: Colors.white, size: 20),
+                              ),
+                              const SizedBox(width: 12),
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Morning Jar Drops (5:30 AM)',
+                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13.5),
+                                    ),
+                                    SizedBox(height: 2),
+                                    Text(
+                                      'View scheduled water subscription route stops',
+                                      style: TextStyle(color: Colors.white70, fontSize: 11),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 22),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   );
                 },

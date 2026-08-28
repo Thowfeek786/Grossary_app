@@ -662,58 +662,65 @@ class _WaterCanScreenState extends State<WaterCanScreen> {
                         const SizedBox(height: 20),
 
                         // Smart Subscription Banner
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF1E3A8A), Color(0xFF2563EB)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.15),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(Icons.repeat_rounded, color: Colors.white, size: 24),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Automate with Subscription',
-                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    const Text(
-                                      'Daily / Alternate days • Save 10%',
-                                      style: TextStyle(color: Color(0xFFBFDBFE), fontSize: 11.5, fontWeight: FontWeight.w600),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              ElevatedButton(
-                                onPressed: () => _showSubscriptionSetupModal(context, _selectedDealer, refillPrice),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: const Color(0xFF1E3A8A),
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                ),
-                                child: const Text('Subscribe', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
-                              ),
-                            ],
-                          ),
-                        ),
+                        StreamBuilder<StoreSettingsModel>(
+                          stream: SettingsRepository().getGlobalSettings(),
+                          builder: (context, setSnap) {
+                            final isSubEnabled = setSnap.data?.isWaterSubscriptionEnabled ?? true;
+                            if (!isSubEnabled) return const SizedBox.shrink();
 
-                        const SizedBox(height: 24),
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 24),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF1E3A8A), Color(0xFF2563EB)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.15),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.repeat_rounded, color: Colors.white, size: 24),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Automate with Subscription',
+                                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        const Text(
+                                          'Daily / Alternate days • Save 10%',
+                                          style: TextStyle(color: Color(0xFFBFDBFE), fontSize: 11.5, fontWeight: FontWeight.w600),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () => _showSubscriptionSetupModal(context, _selectedDealer, refillPrice),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.white,
+                                      foregroundColor: const Color(0xFF1E3A8A),
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                    child: const Text('Subscribe', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
 
                         // Section 1: Water Cans
                         const Text(
