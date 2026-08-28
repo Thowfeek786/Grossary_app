@@ -19,4 +19,5 @@ export 'src/water_can_model.dart';
 export 'src/water_asset_model.dart';
 export 'src/water_subscription_model.dart';
 export 'src/water_quality_model.dart';
+export 'src/dealer_driver_model.dart';
 

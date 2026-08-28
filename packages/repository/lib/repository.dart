@@ -20,5 +20,6 @@ export 'src/favorite_repository.dart';
 export 'src/water_can_repository.dart';
 export 'src/water_asset_repository.dart';
 export 'src/water_subscription_repository.dart';
+export 'src/dealer_fleet_repository.dart';
 
 

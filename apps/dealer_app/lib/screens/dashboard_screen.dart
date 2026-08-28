@@ -349,8 +349,88 @@ class _DealerDashboardState extends State<DealerDashboard> {
                               ],
                             ),
 
+                            const SizedBox(height: 16),
+
+                            // In-House Delivery Fleet Card
+                            StreamBuilder<List<DealerDriverModel>>(
+                              stream: DealerFleetRepository().streamDealerFleet(user.id),
+                              builder: (context, fleetSnap) {
+                                final fleet = fleetSnap.data ?? [];
+                                final activeCount = fleet.where((d) => d.workStatus == DriverWorkStatus.onRoute).length;
+                                final availableCount = fleet.where((d) => d.workStatus == DriverWorkStatus.availableAtStore).length;
+
+                                return InkWell(
+                                  onTap: () => context.push('/my-fleet'),
+                                  borderRadius: BorderRadius.circular(18),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(18),
+                                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: 0.04),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF0F766E).withValues(alpha: 0.12),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(Icons.two_wheeler_rounded, color: Color(0xFF0F766E), size: 22),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  const Text(
+                                                    'In-House Delivery Fleet',
+                                                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Color(0xFF0F172A)),
+                                                  ),
+                                                  const SizedBox(width: 6),
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(0xFFECFDF5),
+                                                      borderRadius: BorderRadius.circular(6),
+                                                    ),
+                                                    child: Text(
+                                                      '${fleet.length} Hired',
+                                                      style: const TextStyle(color: Color(0xFF065F46), fontWeight: FontWeight.w800, fontSize: 10),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                fleet.isEmpty
+                                                    ? 'Hire dedicated riders for water runs & delivery'
+                                                    : '$availableCount Ready at store • $activeCount on route',
+                                                style: const TextStyle(color: Color(0xFF64748B), fontSize: 11.5),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+
                             if (settings.isWaterCanEnabled) ...[
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 20),
 
                               // Dedicated Water Can Operations Hub
                               StreamBuilder<Map<String, dynamic>>(

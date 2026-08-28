@@ -187,6 +187,39 @@ class DeliveryDashboard extends StatelessWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 12),
+                  // Dedicated Store Affiliation Pill
+                  StreamBuilder<DealerDriverModel?>(
+                    stream: DealerFleetRepository().streamDriverAffiliation(user.phone.replaceAll(RegExp(r'[^0-9]'), '')),
+                    builder: (context, affilSnap) {
+                      final affil = affilSnap.data;
+                      if (affil == null) return const SizedBox.shrink();
+
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white24),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.verified_rounded, color: Color(0xFF34D399), size: 15),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                'Dedicated Fleet Partner • ${affil.dealerName}',
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 11.5),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),

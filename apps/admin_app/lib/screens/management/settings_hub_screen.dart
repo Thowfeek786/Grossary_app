@@ -102,6 +102,13 @@ class SettingsHubScreen extends StatelessWidget {
                   onTap: () => context.push('/management/water-subscribers'),
                 ),
                 _SettingsTile(
+                  icon: Icons.two_wheeler_rounded,
+                  title: 'Store Dedicated Fleets',
+                  subtitle: 'Oversee dark store driver hiring, contracts & payouts',
+                  color: const Color(0xFF0284C7),
+                  onTap: () => context.push('/management/dealer-fleets'),
+                ),
+                _SettingsTile(
                   icon: Icons.celebration_rounded,
                   title: 'Homepage Banners',
                   subtitle: 'Manage promotional carousel banners',

@@ -21,6 +21,7 @@ import '../screens/can_return_summary_screen.dart';
 import '../screens/pos_screen.dart';
 import '../screens/stock_forecast_screen.dart';
 import '../screens/water_subscribers_screen.dart';
+import '../screens/dealer_fleet_screen.dart';
 
 class AppRouter {
   static final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -107,6 +108,11 @@ class AppRouter {
           path: '/subscribers',
           parentNavigatorKey: _rootNavigatorKey,
           builder: (_, __) => const WaterSubscribersScreen(),
+        ),
+        GoRoute(
+          path: '/my-fleet',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, __) => const DealerFleetScreen(),
         ),
         GoRoute(
           path: '/order/:orderId',

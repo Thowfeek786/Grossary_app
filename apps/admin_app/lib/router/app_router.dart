@@ -29,6 +29,7 @@ import '../screens/management/water_can_ledger_screen.dart';
 import '../screens/management/store_geofence_screen.dart';
 import '../screens/management/feature_flags_screen.dart';
 import '../screens/management/water_subscribers_hub_screen.dart';
+import '../screens/management/dealer_fleet_admin_screen.dart';
 import '../screens/profile_screen.dart';
 
 class AppRouter {
@@ -172,6 +173,10 @@ class AppRouter {
         GoRoute(
           path: '/management/water-subscribers',
           builder: (_, __) => const WaterSubscribersHubScreen(),
+        ),
+        GoRoute(
+          path: '/management/dealer-fleets',
+          builder: (_, __) => const DealerFleetAdminScreen(),
         ),
         GoRoute(
           path: '/profile',
