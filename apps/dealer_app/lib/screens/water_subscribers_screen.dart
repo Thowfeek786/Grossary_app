@@ -50,6 +50,56 @@ class _WaterSubscribersScreenState extends State<WaterSubscribersScreen> with Si
     } catch (_) {}
   }
 
+  void _showDealerCancelDialog(WaterSubscriptionModel sub) {
+    String reason = 'Customer requested cancellation';
+    final customCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Cancel Customer Subscription', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Are you sure you want to cancel the recurring drops for ${sub.userName}?', style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+            const SizedBox(height: 12),
+            TextField(
+              controller: customCtrl,
+              decoration: InputDecoration(
+                hintText: 'Reason (e.g. Relocated, Customer Call)',
+                hintStyle: const TextStyle(fontSize: 12),
+                filled: true,
+                fillColor: const Color(0xFFF8FAFC),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Back')),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final finalReason = customCtrl.text.trim().isNotEmpty ? customCtrl.text.trim() : reason;
+              await _subRepo.cancelSubscription(sub.id, reason: finalReason, cancelledBy: 'dealer');
+              HapticFeedback.mediumImpact();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('✓ Subscription for ${sub.userName} cancelled.')),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFDC2626), foregroundColor: Colors.white),
+            child: const Text('Cancel Plan', style: TextStyle(fontWeight: FontWeight.w800)),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _shareManifestWithDriver(List<WaterSubscriptionModel> subs, String dealerName) {
     if (subs.isEmpty) return;
 
@@ -663,6 +713,7 @@ class _WaterSubscribersScreenState extends State<WaterSubscribersScreen> with Si
             ],
           ),
           const SizedBox(height: 12),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -690,8 +741,96 @@ class _WaterSubscribersScreenState extends State<WaterSubscribersScreen> with Si
                   label: const Text('WhatsApp', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12)),
                 ),
               ),
+              const SizedBox(width: 8),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert_rounded, color: Color(0xFF64748B), size: 20),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                onSelected: (val) async {
+                  if (val == 'pause') {
+                    await _subRepo.pauseSubscription(
+                      subscriptionId: sub.id,
+                      startDate: DateTime.now(),
+                      endDate: DateTime.now().add(const Duration(days: 7)),
+                    );
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('✓ Subscription paused for 7 days.')),
+                      );
+                    }
+                  } else if (val == 'resume') {
+                    await _subRepo.resumeSubscription(sub.id, DateTime.now().add(const Duration(days: 1)));
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('✓ Subscription resumed!')),
+                      );
+                    }
+                  } else if (val == 'cancel') {
+                    _showDealerCancelDialog(sub);
+                  }
+                },
+                itemBuilder: (ctx) => [
+                  if (isActive)
+                    const PopupMenuItem(
+                      value: 'pause',
+                      child: Row(
+                        children: [
+                          Icon(Icons.pause_circle_outline_rounded, color: Color(0xFF2563EB), size: 18),
+                          SizedBox(width: 8),
+                          Text('Pause Deliveries', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                        ],
+                      ),
+                    ),
+                  if (isPaused)
+                    const PopupMenuItem(
+                      value: 'resume',
+                      child: Row(
+                        children: [
+                          Icon(Icons.play_circle_outline_rounded, color: Color(0xFF059669), size: 18),
+                          SizedBox(width: 8),
+                          Text('Resume Deliveries', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                        ],
+                      ),
+                    ),
+                  if (!sub.status.name.contains('cancelled'))
+                    const PopupMenuItem(
+                      value: 'cancel',
+                      child: Row(
+                        children: [
+                          Icon(Icons.cancel_outlined, color: Color(0xFFDC2626), size: 18),
+                          SizedBox(width: 8),
+                          Text('Cancel Plan', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFFDC2626))),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
             ],
           ),
+          if (sub.status == SubscriptionStatus.cancelled && sub.cancellationReason != null) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF2F2),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFFECACA)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline_rounded, color: Color(0xFFDC2626), size: 14),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Cancelled: ${sub.cancellationReason}',
+                      style: const TextStyle(color: Color(0xFF991B1B), fontSize: 11, fontWeight: FontWeight.w700),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

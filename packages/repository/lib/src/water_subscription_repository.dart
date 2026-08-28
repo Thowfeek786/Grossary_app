@@ -87,12 +87,49 @@ class WaterSubscriptionRepository {
     });
   }
 
-  /// Cancel subscription
-  Future<void> cancelSubscription(String subscriptionId) async {
+  /// Cancel subscription with reason tracking and safety metadata
+  Future<void> cancelSubscription(
+    String subscriptionId, {
+    String? reason,
+    String cancelledBy = 'customer',
+  }) async {
     await _subsRef.doc(subscriptionId).update({
       'status': SubscriptionStatus.cancelled.name,
+      'cancellationReason': reason ?? 'Cancelled by $cancelledBy',
+      'cancelledAt': FieldValue.serverTimestamp(),
+      'cancelledBy': cancelledBy,
       'updatedAt': FieldValue.serverTimestamp(),
     });
+  }
+
+  /// Update subscription parameters (cadence, quantity, delivery address, time slot)
+  Future<void> updateSubscriptionPlan({
+    required String subscriptionId,
+    SubscriptionCadence? cadence,
+    List<int>? customDays,
+    int? quantityPerDelivery,
+    String? timeSlot,
+    String? deliveryAddress,
+    String? deliveryInstructions,
+    double? newPricePerCan,
+    DateTime? nextScheduledDelivery,
+  }) async {
+    final Map<String, dynamic> updates = {
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+
+    if (cadence != null) updates['cadence'] = cadence.name;
+    if (customDays != null) updates['customDays'] = customDays;
+    if (quantityPerDelivery != null) updates['quantityPerDelivery'] = quantityPerDelivery;
+    if (timeSlot != null) updates['timeSlot'] = timeSlot;
+    if (deliveryAddress != null) updates['deliveryAddress'] = deliveryAddress;
+    if (deliveryInstructions != null) updates['deliveryInstructions'] = deliveryInstructions;
+    if (newPricePerCan != null) updates['pricePerCan'] = newPricePerCan;
+    if (nextScheduledDelivery != null) {
+      updates['nextScheduledDelivery'] = Timestamp.fromDate(nextScheduledDelivery);
+    }
+
+    await _subsRef.doc(subscriptionId).update(updates);
   }
 
   /// Complete morning drop-off: auto-advance schedule, update counters, record jar swap, & debit wallet

@@ -33,6 +33,7 @@ import '../screens/profile/terms_conditions_screen.dart';
 import '../screens/profile/favorites_screen.dart';
 import '../screens/water/water_can_screen.dart';
 import '../screens/profile/my_cans_screen.dart';
+import '../screens/water/my_subscriptions_screen.dart';
 
 class AppRouter {
   static final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -270,6 +271,14 @@ class AppRouter {
           parentNavigatorKey: _rootNavigatorKey,
           pageBuilder: (_, state) => _buildSlideTransitionPage(
             const MyCansScreen(),
+            state,
+          ),
+        ),
+        GoRoute(
+          path: '/my-subscriptions',
+          parentNavigatorKey: _rootNavigatorKey,
+          pageBuilder: (_, state) => _buildSlideTransitionPage(
+            const MySubscriptionsScreen(),
             state,
           ),
         ),

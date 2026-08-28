@@ -71,6 +71,9 @@ class WaterSubscriptionModel {
   final double pricePerCan;
   final String paymentType; // wallet_auto_debit, card_mandate, cash_on_delivery
   final SubscriptionStatus status;
+  final String? cancellationReason;
+  final DateTime? cancelledAt;
+  final String? cancelledBy; // 'customer', 'dealer', 'admin'
   final DateTime? pauseStartDate;
   final DateTime? pauseEndDate;
   final DateTime nextScheduledDelivery;
@@ -95,6 +98,9 @@ class WaterSubscriptionModel {
     this.pricePerCan = 50.0,
     this.paymentType = 'wallet_auto_debit',
     this.status = SubscriptionStatus.active,
+    this.cancellationReason,
+    this.cancelledAt,
+    this.cancelledBy,
     this.pauseStartDate,
     this.pauseEndDate,
     required this.nextScheduledDelivery,
@@ -134,6 +140,11 @@ class WaterSubscriptionModel {
       pricePerCan: ((data['pricePerCan'] ?? 50.0) as num).toDouble(),
       paymentType: data['paymentType'] ?? 'wallet_auto_debit',
       status: SubscriptionStatus.fromString(data['status']),
+      cancellationReason: data['cancellationReason'],
+      cancelledAt: (data['cancelledAt'] is Timestamp)
+          ? (data['cancelledAt'] as Timestamp).toDate()
+          : null,
+      cancelledBy: data['cancelledBy'],
       pauseStartDate: (data['pauseStartDate'] is Timestamp)
           ? (data['pauseStartDate'] as Timestamp).toDate()
           : null,
@@ -171,6 +182,9 @@ class WaterSubscriptionModel {
       'pricePerCan': pricePerCan,
       'paymentType': paymentType,
       'status': status.name,
+      'cancellationReason': cancellationReason,
+      'cancelledAt': cancelledAt != null ? Timestamp.fromDate(cancelledAt!) : null,
+      'cancelledBy': cancelledBy,
       'pauseStartDate': pauseStartDate != null ? Timestamp.fromDate(pauseStartDate!) : null,
       'pauseEndDate': pauseEndDate != null ? Timestamp.fromDate(pauseEndDate!) : null,
       'nextScheduledDelivery': Timestamp.fromDate(nextScheduledDelivery),
@@ -197,6 +211,9 @@ class WaterSubscriptionModel {
     double? pricePerCan,
     String? paymentType,
     SubscriptionStatus? status,
+    String? cancellationReason,
+    DateTime? cancelledAt,
+    String? cancelledBy,
     DateTime? pauseStartDate,
     DateTime? pauseEndDate,
     DateTime? nextScheduledDelivery,
@@ -221,6 +238,9 @@ class WaterSubscriptionModel {
       pricePerCan: pricePerCan ?? this.pricePerCan,
       paymentType: paymentType ?? this.paymentType,
       status: status ?? this.status,
+      cancellationReason: cancellationReason ?? this.cancellationReason,
+      cancelledAt: cancelledAt ?? this.cancelledAt,
+      cancelledBy: cancelledBy ?? this.cancelledBy,
       pauseStartDate: pauseStartDate ?? this.pauseStartDate,
       pauseEndDate: pauseEndDate ?? this.pauseEndDate,
       nextScheduledDelivery: nextScheduledDelivery ?? this.nextScheduledDelivery,

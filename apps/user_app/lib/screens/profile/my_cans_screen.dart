@@ -350,9 +350,21 @@ class _MyCansScreenState extends State<MyCansScreen> {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Active Subscriptions',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Color(0xFF0F172A)),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Active Subscriptions',
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Color(0xFF0F172A)),
+                            ),
+                            InkWell(
+                              onTap: () => context.push('/my-subscriptions'),
+                              child: const Text(
+                                'Manage All ›',
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF059669)),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 10),
                         ListView.separated(
@@ -362,13 +374,16 @@ class _MyCansScreenState extends State<MyCansScreen> {
                           separatorBuilder: (_, __) => const SizedBox(height: 8),
                           itemBuilder: (ctx, idx) {
                             final sub = subs[idx];
-                            return Container(
-                              padding: const EdgeInsets.all(14),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: const Color(0xFFE2E8F0)),
-                              ),
+                            return InkWell(
+                              onTap: () => context.push('/my-subscriptions'),
+                              borderRadius: BorderRadius.circular(16),
+                              child: Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                                ),
                               child: Row(
                                 children: [
                                   Container(
@@ -415,7 +430,8 @@ class _MyCansScreenState extends State<MyCansScreen> {
                                   ),
                                 ],
                               ),
-                            );
+                            ),
+                          );
                           },
                         ),
                         const SizedBox(height: 20),

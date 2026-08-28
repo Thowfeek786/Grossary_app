@@ -374,6 +374,12 @@ class ProfileScreen extends StatelessWidget {
                         onTap: () => context.push('/profile/my-cans'),
                       ),
                       _ProfileItem(
+                        icon: Icons.repeat_rounded,
+                        iconColor: const Color(0xFF059669),
+                        title: 'Water Can Subscriptions',
+                        onTap: () => context.push('/my-subscriptions'),
+                      ),
+                      _ProfileItem(
                         icon: Icons.location_on_outlined,
                         iconColor: const Color(0xFF10B981),
                         title: 'Saved Delivery Addresses',
