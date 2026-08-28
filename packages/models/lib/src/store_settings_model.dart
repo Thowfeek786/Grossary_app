@@ -52,6 +52,14 @@ class StoreSettingsModel {
   final bool isMaintenanceMode;
   final bool requireDriverDocVerification;
 
+  // Dynamic Feature Flags & Module Toggles
+  final bool isScratchCardEnabled;
+  final bool isVoiceSearchEnabled;
+  final bool isWaterCanEnabled;
+  final bool isWaterSubscriptionEnabled;
+  final bool isPosEnabled;
+  final bool isFlashSaleEnabled;
+
   // Admin Official Bank & UPI Payment Details
   final String adminUpiId;
   final String adminPayeeName;
@@ -86,6 +94,12 @@ class StoreSettingsModel {
     this.isWalletEnabled = true,
     this.isMaintenanceMode = false,
     this.requireDriverDocVerification = true,
+    this.isScratchCardEnabled = true,
+    this.isVoiceSearchEnabled = true,
+    this.isWaterCanEnabled = true,
+    this.isWaterSubscriptionEnabled = true,
+    this.isPosEnabled = true,
+    this.isFlashSaleEnabled = true,
     this.adminUpiId = 'groceryadmin@upi',
     this.adminPayeeName = 'GroceryGo Admin',
     this.adminAccountNumber = '987654321012',
@@ -123,6 +137,12 @@ class StoreSettingsModel {
       isWalletEnabled: data['isWalletEnabled'] ?? true,
       isMaintenanceMode: data['isMaintenanceMode'] ?? false,
       requireDriverDocVerification: data['requireDriverDocVerification'] ?? true,
+      isScratchCardEnabled: data['isScratchCardEnabled'] ?? true,
+      isVoiceSearchEnabled: data['isVoiceSearchEnabled'] ?? true,
+      isWaterCanEnabled: data['isWaterCanEnabled'] ?? true,
+      isWaterSubscriptionEnabled: data['isWaterSubscriptionEnabled'] ?? true,
+      isPosEnabled: data['isPosEnabled'] ?? true,
+      isFlashSaleEnabled: data['isFlashSaleEnabled'] ?? true,
       adminUpiId: data['adminUpiId'] as String? ?? 'groceryadmin@upi',
       adminPayeeName: data['adminPayeeName'] as String? ?? 'GroceryGo Admin',
       adminAccountNumber: data['adminAccountNumber'] as String? ?? '987654321012',
@@ -157,6 +177,12 @@ class StoreSettingsModel {
         'isWalletEnabled': isWalletEnabled,
         'isMaintenanceMode': isMaintenanceMode,
         'requireDriverDocVerification': requireDriverDocVerification,
+        'isScratchCardEnabled': isScratchCardEnabled,
+        'isVoiceSearchEnabled': isVoiceSearchEnabled,
+        'isWaterCanEnabled': isWaterCanEnabled,
+        'isWaterSubscriptionEnabled': isWaterSubscriptionEnabled,
+        'isPosEnabled': isPosEnabled,
+        'isFlashSaleEnabled': isFlashSaleEnabled,
         'adminUpiId': adminUpiId,
         'adminPayeeName': adminPayeeName,
         'adminAccountNumber': adminAccountNumber,
@@ -191,6 +217,12 @@ class StoreSettingsModel {
     bool? isWalletEnabled,
     bool? isMaintenanceMode,
     bool? requireDriverDocVerification,
+    bool? isScratchCardEnabled,
+    bool? isVoiceSearchEnabled,
+    bool? isWaterCanEnabled,
+    bool? isWaterSubscriptionEnabled,
+    bool? isPosEnabled,
+    bool? isFlashSaleEnabled,
     String? adminUpiId,
     String? adminPayeeName,
     String? adminAccountNumber,
@@ -224,6 +256,12 @@ class StoreSettingsModel {
       isWalletEnabled: isWalletEnabled ?? this.isWalletEnabled,
       isMaintenanceMode: isMaintenanceMode ?? this.isMaintenanceMode,
       requireDriverDocVerification: requireDriverDocVerification ?? this.requireDriverDocVerification,
+      isScratchCardEnabled: isScratchCardEnabled ?? this.isScratchCardEnabled,
+      isVoiceSearchEnabled: isVoiceSearchEnabled ?? this.isVoiceSearchEnabled,
+      isWaterCanEnabled: isWaterCanEnabled ?? this.isWaterCanEnabled,
+      isWaterSubscriptionEnabled: isWaterSubscriptionEnabled ?? this.isWaterSubscriptionEnabled,
+      isPosEnabled: isPosEnabled ?? this.isPosEnabled,
+      isFlashSaleEnabled: isFlashSaleEnabled ?? this.isFlashSaleEnabled,
       adminUpiId: adminUpiId ?? this.adminUpiId,
       adminPayeeName: adminPayeeName ?? this.adminPayeeName,
       adminAccountNumber: adminAccountNumber ?? this.adminAccountNumber,

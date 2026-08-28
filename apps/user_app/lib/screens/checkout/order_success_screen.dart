@@ -494,69 +494,82 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
 
                                   const SizedBox(height: 10),
 
-                                  // Mystery Scratch Card Reward Banner
-                                  GestureDetector(
-                                    onTap: () {
-                                      final user = context.read<AuthProvider>().user;
-                                      _showScratchCardDialog(context, user?.id ?? 'anon');
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                                      decoration: BoxDecoration(
-                                        gradient: const LinearGradient(
-                                          colors: [Color(0xFF8B5CF6), Color(0xFF6366F1), Color(0xFF4F46E5)],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                        ),
-                                        borderRadius: BorderRadius.circular(14),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: const Color(0xFF6366F1).withValues(alpha: 0.25),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 3),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.all(6),
+                                  // Mystery Scratch Card Reward Banner (Controlled by Admin Feature Flag)
+                                  StreamBuilder<StoreSettingsModel>(
+                                    stream: SettingsRepository().getGlobalSettings(),
+                                    builder: (context, settingsSnap) {
+                                      final settings = settingsSnap.data;
+                                      if (settings != null && !settings.isScratchCardEnabled) {
+                                        return const SizedBox.shrink();
+                                      }
+
+                                      return Padding(
+                                        padding: const EdgeInsets.only(top: 10),
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            final user = context.read<AuthProvider>().user;
+                                            _showScratchCardDialog(context, user?.id ?? 'anon');
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                                             decoration: BoxDecoration(
-                                              color: Colors.white.withValues(alpha: 0.2),
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: const Text('🎁', style: TextStyle(fontSize: 16)),
-                                          ),
-                                          const SizedBox(width: 10),
-                                          const Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  'Mystery Scratch Card 🎁',
-                                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
+                                              gradient: const LinearGradient(
+                                                colors: [Color(0xFF8B5CF6), Color(0xFF6366F1), Color(0xFF4F46E5)],
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                              ),
+                                              borderRadius: BorderRadius.circular(14),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: const Color(0xFF6366F1).withValues(alpha: 0.25),
+                                                  blurRadius: 8,
+                                                  offset: const Offset(0, 3),
                                                 ),
-                                                Text(
-                                                  'Tap to scratch & test your luck for rewards',
-                                                  style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w600),
+                                              ],
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Container(
+                                                  padding: const EdgeInsets.all(6),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white.withValues(alpha: 0.2),
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  child: const Text('🎁', style: TextStyle(fontSize: 16)),
+                                                ),
+                                                const SizedBox(width: 10),
+                                                const Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        'Mystery Scratch Card 🎁',
+                                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
+                                                      ),
+                                                      Text(
+                                                        'Tap to scratch & test your luck for rewards',
+                                                        style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w600),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                  child: const Text(
+                                                    'Scratch',
+                                                    style: TextStyle(color: Color(0xFF4F46E5), fontWeight: FontWeight.w900, fontSize: 11),
+                                                  ),
                                                 ),
                                               ],
                                             ),
                                           ),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius: BorderRadius.circular(8),
-                                            ),
-                                            child: const Text(
-                                              'Scratch',
-                                              style: TextStyle(color: Color(0xFF4F46E5), fontWeight: FontWeight.w900, fontSize: 11),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                                        ),
+                                      );
+                                    },
                                   ),
 
                                   const SizedBox(height: 12),

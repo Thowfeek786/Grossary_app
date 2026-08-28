@@ -183,9 +183,16 @@ class SettingsHubScreen extends StatelessWidget {
                 _SectionHeader(title: 'Platform Configuration', icon: Icons.settings_rounded, color: const Color(0xFF64748B)),
                 const SizedBox(height: 10),
                 _SettingsTile(
+                  icon: Icons.toggle_on_rounded,
+                  title: 'Feature Flags & Module Controls',
+                  subtitle: 'Live kill-switches for rewards, voice search, POS & water cans',
+                  color: const Color(0xFF6366F1),
+                  onTap: () => context.push('/management/feature-flags'),
+                ),
+                _SettingsTile(
                   icon: Icons.tune_rounded,
                   title: 'Platform Settings',
-                  subtitle: 'Global toggles, app name, ToS & privacy',
+                  subtitle: 'Global contacts, bank details, ToS & privacy',
                   color: const Color(0xFF64748B),
                   onTap: () => context.push('/management/platform-settings'),
                 ),

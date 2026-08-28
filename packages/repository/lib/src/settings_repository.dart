@@ -38,4 +38,15 @@ class SettingsRepository {
       return false;
     }
   }
+
+  // Update global settings by map
+  Future<bool> updateGlobalSettings(Map<String, dynamic> data) async {
+    try {
+      await _col.doc('global').set(data, SetOptions(merge: true));
+      return true;
+    } catch (e) {
+      debugPrint('Error updating global settings: $e');
+      return false;
+    }
+  }
 }
