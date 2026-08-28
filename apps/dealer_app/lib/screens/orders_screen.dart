@@ -120,6 +120,7 @@ class _DealerOrdersScreenState extends State<DealerOrdersScreen> {
                       onAccept: () => _updateStatus(order.id, OrderStatus.processing),
                       onReject: () => _showRejectDialog(context, order.id),
                       onReadyForPickup: () => _updateStatus(order.id, OrderStatus.accepted),
+                      onDispatch: () => _updateStatus(order.id, OrderStatus.shipped),
                     );
                   },
                 );
@@ -333,6 +334,7 @@ class _DealerOrderCard extends StatelessWidget {
   final VoidCallback onAccept;
   final VoidCallback onReject;
   final VoidCallback onReadyForPickup;
+  final VoidCallback onDispatch;
 
   const _DealerOrderCard({
     required this.order,
@@ -341,6 +343,7 @@ class _DealerOrderCard extends StatelessWidget {
     required this.onAccept,
     required this.onReject,
     required this.onReadyForPickup,
+    required this.onDispatch,
   });
 
   @override
@@ -469,8 +472,26 @@ class _DealerOrderCard extends StatelessWidget {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 10),
                       ),
+                      icon: const Icon(Icons.inventory_2_rounded, size: 16),
+                      label: const Text('Mark Packed & Ready for Pickup 📦', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
+                    ),
+                  ),
+                ),
+              ] else if (order.status == OrderStatus.accepted) ...[
+                Container(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: isUpdating ? null : onDispatch,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF059669),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
                       icon: const Icon(Icons.local_shipping_rounded, size: 16),
-                      label: const Text('Mark Packed & Ready for Pickup', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
+                      label: const Text('Dispatch Order to Rider 🛵', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
                     ),
                   ),
                 ),

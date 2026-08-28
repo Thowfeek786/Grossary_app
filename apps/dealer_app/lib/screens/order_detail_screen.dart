@@ -91,9 +91,11 @@ class OrderDetailScreen extends StatelessWidget {
                         children: [
                           _buildStepIndicator('Received', true),
                           _buildStepLine(order.status != OrderStatus.pending),
-                          _buildStepIndicator('Packing', order.status != OrderStatus.pending),
-                          _buildStepLine(order.status == OrderStatus.accepted || order.status == OrderStatus.shipped || order.status == OrderStatus.delivered),
-                          _buildStepIndicator('Ready', order.status == OrderStatus.accepted || order.status == OrderStatus.shipped || order.status == OrderStatus.delivered),
+                          _buildStepIndicator('Packing', order.status == OrderStatus.processing || order.status == OrderStatus.accepted || order.status == OrderStatus.shipped || order.status == OrderStatus.outForDelivery || order.status == OrderStatus.delivered),
+                          _buildStepLine(order.status == OrderStatus.accepted || order.status == OrderStatus.shipped || order.status == OrderStatus.outForDelivery || order.status == OrderStatus.delivered),
+                          _buildStepIndicator('Ready', order.status == OrderStatus.accepted || order.status == OrderStatus.shipped || order.status == OrderStatus.outForDelivery || order.status == OrderStatus.delivered),
+                          _buildStepLine(order.status == OrderStatus.shipped || order.status == OrderStatus.outForDelivery || order.status == OrderStatus.delivered),
+                          _buildStepIndicator('Dispatched', order.status == OrderStatus.shipped || order.status == OrderStatus.outForDelivery || order.status == OrderStatus.delivered),
                         ],
                       ),
                     ],
@@ -439,7 +441,46 @@ class OrderDetailScreen extends StatelessWidget {
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       ),
-                      child: const Text('Mark Packed & Ready for Pickup', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+                      child: const Text('Mark Packed & Ready for Pickup 📦', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+                    ),
+                  ),
+                ] else if (order.status == OrderStatus.accepted) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        await OrderRepository().updateOrderStatus(order.id, OrderStatus.shipped);
+                        if (context.mounted) Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF059669),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      icon: const Icon(Icons.local_shipping_rounded, size: 20),
+                      label: const Text('Dispatch Order to Rider 🛵', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+                    ),
+                  ),
+                ] else if (order.status == OrderStatus.shipped || order.status == OrderStatus.outForDelivery) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFECFDF5),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFA7F3D0)),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.delivery_dining_rounded, color: Color(0xFF059669), size: 22),
+                        SizedBox(width: 8),
+                        Text(
+                          'Order Dispatched & Out for Delivery 🛵',
+                          style: TextStyle(color: Color(0xFF065F46), fontWeight: FontWeight.w900, fontSize: 14),
+                        ),
+                      ],
                     ),
                   ),
                 ],
