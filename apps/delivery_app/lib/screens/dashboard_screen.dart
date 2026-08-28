@@ -7,6 +7,7 @@ import 'package:ui_kit/ui_kit.dart';
 import '../providers/auth_provider.dart';
 import '../providers/delivery_provider.dart';
 import 'widgets/daily_goal_card.dart';
+import '../widgets/emergency_sos_dialog.dart';
 
 class DeliveryDashboard extends StatelessWidget {
   const DeliveryDashboard({super.key});
@@ -41,9 +42,9 @@ class DeliveryDashboard extends StatelessWidget {
             tooltip: 'Notifications',
           ),
           IconButton(
-            onPressed: () => _showQuickHelpDialog(context),
-            icon: const Icon(Icons.help_outline_rounded, color: Colors.white),
-            tooltip: 'Partner Help',
+            onPressed: () => EmergencySosDialog.show(context, user: user),
+            icon: const Icon(Icons.shield_outlined, color: Color(0xFFFCA5A5)),
+            tooltip: 'Partner SOS & Help',
           ),
           IconButton(
             onPressed: () => auth.logout(),
@@ -438,36 +439,6 @@ class DeliveryDashboard extends StatelessWidget {
             const SizedBox(height: 40),
           ],
         ),
-      ),
-    );
-  }
-
-  void _showQuickHelpDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Row(
-          children: [
-            Icon(Icons.headset_mic_rounded, color: Color(0xFF059669)),
-            SizedBox(width: 10),
-            Text('Partner Support Hotline', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
-          ],
-        ),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Need help with an active pickup or delivery route?'),
-            SizedBox(height: 12),
-            SelectableText('📞 Toll-Free: 1800-476-2379', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF059669))),
-            SizedBox(height: 4),
-            Text('Dedicated partner dispatch desk available 24/7', style: TextStyle(fontSize: 11, color: Colors.grey)),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close')),
-        ],
       ),
     );
   }

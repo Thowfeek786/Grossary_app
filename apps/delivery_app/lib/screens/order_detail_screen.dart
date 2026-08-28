@@ -12,6 +12,7 @@ import '../providers/auth_provider.dart';
 import 'navigation_screen.dart';
 import 'widgets/empty_can_collection_modal.dart';
 import 'water_delivery_summary_screen.dart';
+import '../widgets/emergency_sos_dialog.dart';
 
 class OrderDetailScreen extends StatelessWidget {
   final String orderId;
@@ -49,6 +50,16 @@ class OrderDetailScreen extends StatelessWidget {
             title: 'Order #$orderCode',
             backgroundColor: const Color(0xFF0B3C26),
             foregroundColor: Colors.white,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.shield_outlined, color: Color(0xFFFCA5A5)),
+                tooltip: 'Emergency SOS & Help',
+                onPressed: () {
+                  final driver = context.read<DeliveryAuthProvider>().user;
+                  EmergencySosDialog.show(context, user: driver, activeOrderId: orderCode);
+                },
+              ),
+            ],
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
