@@ -43,24 +43,35 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 12),
-                  const _WaterCanPromoBanner(),
-                  const SizedBox(height: 20),
-                  _FlashSaleSection(),
-                  const SizedBox(height: 24),
-                  _OrderAgainSection(),
-                  const SizedBox(height: 24),
-                  _FeaturedProductsSection(),
-                  const SizedBox(height: 24),
-                  _AllProductsSection(),
-                  const SizedBox(height: 32),
-                ],
-              ),
+            child: StreamBuilder<StoreSettingsModel>(
+              stream: SettingsRepository().getGlobalSettings(),
+              builder: (context, settingsSnap) {
+                final settings = settingsSnap.data ?? const StoreSettingsModel(id: 'global');
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (settings.isWaterCanEnabled) ...[
+                        const SizedBox(height: 12),
+                        const _WaterCanPromoBanner(),
+                      ],
+                      if (settings.isFlashSaleEnabled) ...[
+                        const SizedBox(height: 20),
+                        _FlashSaleSection(),
+                      ],
+                      const SizedBox(height: 24),
+                      _OrderAgainSection(),
+                      const SizedBox(height: 24),
+                      _FeaturedProductsSection(),
+                      const SizedBox(height: 24),
+                      _AllProductsSection(),
+                      const SizedBox(height: 32),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -438,28 +449,38 @@ class _SearchBar extends StatelessWidget {
                 ],
               ),
             ),
-            GestureDetector(
-              onTap: () => VoiceSearchDialog.show(
-                context,
-                onQueryRecognized: (query) {
-                  context.push('/home/search', extra: {'query': query});
-                },
-              ),
-              child: Container(
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  color: AppColors.primarySurface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.18),
+            StreamBuilder<StoreSettingsModel>(
+              stream: SettingsRepository().getGlobalSettings(),
+              builder: (context, snap) {
+                final settings = snap.data;
+                if (settings != null && !settings.isVoiceSearchEnabled) {
+                  return const SizedBox.shrink();
+                }
+
+                return GestureDetector(
+                  onTap: () => VoiceSearchDialog.show(
+                    context,
+                    onQueryRecognized: (query) {
+                      context.push('/home/search', extra: {'query': query});
+                    },
                   ),
-                ),
-                child: const Icon(
-                  Icons.mic_rounded,
-                  color: AppColors.primary,
-                  size: 18,
-                ),
-              ),
+                  child: Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: AppColors.primarySurface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.18),
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.mic_rounded,
+                      color: AppColors.primary,
+                      size: 18,
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),

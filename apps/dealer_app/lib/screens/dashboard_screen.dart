@@ -299,147 +299,161 @@ class _DealerDashboardState extends State<DealerDashboard> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _ActionBtn(
-                            icon: Icons.point_of_sale_rounded,
-                            label: 'Store POS',
-                            color: const Color(0xFFEA580C),
-                            onTap: () => context.push('/pos'),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _ActionBtn(
-                            icon: Icons.auto_graph_rounded,
-                            label: 'AI Reorder',
-                            color: const Color(0xFFD97706),
-                            onTap: () => context.push('/forecast'),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _ActionBtn(
-                            icon: Icons.add_box_rounded,
-                            label: 'Add Item',
-                            color: const Color(0xFF059669),
-                            onTap: () => context.push('/add-product'),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _ActionBtn(
-                            icon: Icons.inventory_rounded,
-                            label: 'Inventory',
-                            color: const Color(0xFF3B82F6),
-                            onTap: () => context.go('/inventory'),
-                          ),
-                        ),
-                      ],
-                    ),
+                    StreamBuilder<StoreSettingsModel>(
+                      stream: SettingsRepository().getGlobalSettings(),
+                      builder: (context, settingsSnap) {
+                        final settings = settingsSnap.data ?? const StoreSettingsModel(id: 'global');
 
-                    const SizedBox(height: 24),
-
-                    // ─────────────────────────────────────────────
-                    // 3. Dedicated Water Can Operations Hub (Separate Section)
-                    // ─────────────────────────────────────────────
-                    StreamBuilder<Map<String, dynamic>>(
-                      stream: WaterCanRepository().getDealerCanSummary(user.id),
-                      builder: (context, canSnap) {
-                        final canData = canSnap.data ?? {};
-                        final cansSold = canData['totalDelivered'] ?? 0;
-                        final cansCollected = canData['totalCollected'] ?? 0;
-                        final canBalance = canData['canBalance'] ?? 0;
-
-                        return Container(
-                          padding: const EdgeInsets.all(18),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF0F766E), Color(0xFF0D9488), Color(0xFF14B8A6)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(22),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF0D9488).withValues(alpha: 0.25),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Row(
-                                    children: [
-                                      Icon(Icons.water_drop_rounded, color: Colors.white, size: 20),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'Water Can Operations Hub',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w900,
-                                          fontSize: 14.5,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  GestureDetector(
-                                    onTap: () => context.push('/can-returns'),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: const Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            'Ledger',
-                                            style: TextStyle(
-                                              color: Color(0xFF0F766E),
-                                              fontWeight: FontWeight.w900,
-                                              fontSize: 11,
-                                            ),
-                                          ),
-                                          SizedBox(width: 2),
-                                          Icon(Icons.chevron_right_rounded, color: Color(0xFF0F766E), size: 14),
-                                        ],
-                                      ),
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                if (settings.isPosEnabled) ...[
+                                  Expanded(
+                                    child: _ActionBtn(
+                                      icon: Icons.point_of_sale_rounded,
+                                      label: 'Store POS',
+                                      color: const Color(0xFFEA580C),
+                                      onTap: () => context.push('/pos'),
                                     ),
                                   ),
+                                  const SizedBox(width: 8),
                                 ],
-                              ),
-                              const SizedBox(height: 14),
-                              IntrinsicHeight(
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    _WaterCanStatPill(
-                                      label: 'Cans Sold',
-                                      value: '$cansSold',
-                                    ),
-                                    const SizedBox(width: 8),
-                                    _WaterCanStatPill(
-                                      label: 'With Customers',
-                                      value: '$canBalance',
-                                    ),
-                                    const SizedBox(width: 8),
-                                    _WaterCanStatPill(
-                                      label: 'Collected',
-                                      value: '$cansCollected',
-                                    ),
-                                  ],
+                                Expanded(
+                                  child: _ActionBtn(
+                                    icon: Icons.auto_graph_rounded,
+                                    label: 'AI Reorder',
+                                    color: const Color(0xFFD97706),
+                                    onTap: () => context.push('/forecast'),
+                                  ),
                                 ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: _ActionBtn(
+                                    icon: Icons.add_box_rounded,
+                                    label: 'Add Item',
+                                    color: const Color(0xFF059669),
+                                    onTap: () => context.push('/add-product'),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: _ActionBtn(
+                                    icon: Icons.inventory_rounded,
+                                    label: 'Inventory',
+                                    color: const Color(0xFF3B82F6),
+                                    onTap: () => context.go('/inventory'),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            if (settings.isWaterCanEnabled) ...[
+                              const SizedBox(height: 24),
+
+                              // Dedicated Water Can Operations Hub
+                              StreamBuilder<Map<String, dynamic>>(
+                                stream: WaterCanRepository().getDealerCanSummary(user.id),
+                                builder: (context, canSnap) {
+                                  final canData = canSnap.data ?? {};
+                                  final cansSold = canData['totalDelivered'] ?? 0;
+                                  final cansCollected = canData['totalCollected'] ?? 0;
+                                  final canBalance = canData['canBalance'] ?? 0;
+
+                                  return Container(
+                                    padding: const EdgeInsets.all(18),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [Color(0xFF0F766E), Color(0xFF0D9488), Color(0xFF14B8A6)],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      borderRadius: BorderRadius.circular(22),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFF0D9488).withValues(alpha: 0.25),
+                                          blurRadius: 12,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Row(
+                                              children: [
+                                                Icon(Icons.water_drop_rounded, color: Colors.white, size: 20),
+                                                SizedBox(width: 8),
+                                                Text(
+                                                  'Water Can Operations Hub',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w900,
+                                                    fontSize: 14.5,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            GestureDetector(
+                                              onTap: () => context.push('/can-returns'),
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                                child: const Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                      'Ledger',
+                                                      style: TextStyle(
+                                                        color: Color(0xFF0F766E),
+                                                        fontWeight: FontWeight.w900,
+                                                        fontSize: 11,
+                                                      ),
+                                                    ),
+                                                    SizedBox(width: 2),
+                                                    Icon(Icons.chevron_right_rounded, color: Color(0xFF0F766E), size: 14),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 14),
+                                        IntrinsicHeight(
+                                          child: Row(
+                                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                                            children: [
+                                              _WaterCanStatPill(
+                                                label: 'Cans Sold',
+                                                value: '$cansSold',
+                                              ),
+                                              const SizedBox(width: 8),
+                                              _WaterCanStatPill(
+                                                label: 'With Customers',
+                                                value: '$canBalance',
+                                              ),
+                                              const SizedBox(width: 8),
+                                              _WaterCanStatPill(
+                                                label: 'Collected',
+                                                value: '$cansCollected',
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
                               ),
                             ],
-                          ),
+                          ],
                         );
                       },
                     ),
