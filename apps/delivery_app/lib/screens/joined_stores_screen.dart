@@ -238,7 +238,7 @@ class _JoinedStoresScreenState extends State<JoinedStoresScreen> {
 
   Widget _buildBannerStat(String label, String value, String sub, IconData icon) {
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
@@ -247,16 +247,33 @@ class _JoinedStoresScreenState extends State<JoinedStoresScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(label, style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w700)),
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(color: Colors.white70, fontSize: 9.5, fontWeight: FontWeight.w700),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 2),
               Icon(icon, color: Colors.white, size: 12),
             ],
           ),
           const SizedBox(height: 4),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w900)),
+          Text(
+            value,
+            style: const TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w900),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
           const SizedBox(height: 1),
-          Text(sub, style: const TextStyle(color: Colors.white60, fontSize: 8.5)),
+          Text(
+            sub,
+            style: const TextStyle(color: Colors.white60, fontSize: 8.5),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
       ),
     );
@@ -304,6 +321,8 @@ class _JoinedStoresScreenState extends State<JoinedStoresScreen> {
                     Text(
                       store.dealerName,
                       style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A)),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -388,8 +407,8 @@ class _JoinedStoresScreenState extends State<JoinedStoresScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('${store.totalDropsCompleted} Drops Delivered', style: const TextStyle(color: Color(0xFF475569), fontSize: 11.5, fontWeight: FontWeight.w700)),
-              Text('${store.totalCansDelivered} Cans Supplied', style: const TextStyle(color: Color(0xFF475569), fontSize: 11.5, fontWeight: FontWeight.w700)),
+              Text('${store.totalDropsCompleted} Drops', style: const TextStyle(color: Color(0xFF475569), fontSize: 11.5, fontWeight: FontWeight.w700)),
+              Text('${store.totalCansDelivered} Cans', style: const TextStyle(color: Color(0xFF475569), fontSize: 11.5, fontWeight: FontWeight.w700)),
               Text(
                 'Status: ${store.workStatus.displayName}',
                 style: const TextStyle(color: Color(0xFF059669), fontSize: 11.5, fontWeight: FontWeight.w800),
