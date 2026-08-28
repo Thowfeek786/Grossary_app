@@ -13,10 +13,12 @@ class DealerFleetRepository {
   Stream<List<DealerDriverModel>> streamDealerFleet(String dealerId) {
     return _fleetRef
         .where('dealerId', isEqualTo: dealerId)
-        .where('isActive', isEqualTo: true)
         .snapshots()
         .map((snap) {
-          final list = snap.docs.map((d) => DealerDriverModel.fromFirestore(d)).toList();
+          final list = snap.docs
+              .map((d) => DealerDriverModel.fromFirestore(d))
+              .where((d) => d.isActive)
+              .toList();
           list.sort((a, b) => b.hiredAt.compareTo(a.hiredAt));
           return list;
         })
@@ -28,7 +30,10 @@ class DealerFleetRepository {
     return _fleetRef
         .snapshots()
         .map((snap) {
-          final list = snap.docs.map((d) => DealerDriverModel.fromFirestore(d)).toList();
+          final list = snap.docs
+              .map((d) => DealerDriverModel.fromFirestore(d))
+              .where((d) => d.isActive)
+              .toList();
           list.sort((a, b) => b.hiredAt.compareTo(a.hiredAt));
           return list;
         })
@@ -39,12 +44,14 @@ class DealerFleetRepository {
   Stream<DealerDriverModel?> streamDriverAffiliation(String driverId) {
     return _fleetRef
         .where('driverId', isEqualTo: driverId)
-        .where('isActive', isEqualTo: true)
-        .limit(1)
         .snapshots()
         .map((snap) {
-          if (snap.docs.isEmpty) return null;
-          return DealerDriverModel.fromFirestore(snap.docs.first);
+          final list = snap.docs
+              .map((d) => DealerDriverModel.fromFirestore(d))
+              .where((d) => d.isActive)
+              .toList();
+          if (list.isEmpty) return null;
+          return list.first;
         })
         .handleError((_) => null);
   }

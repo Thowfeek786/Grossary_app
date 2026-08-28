@@ -191,6 +191,11 @@ service cloud.firestore {
       allow write: if isSignedIn();
     }
 
+    match /dealer_fleet/{driverDocId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
     match /platform_settings/{settingId} {
       allow read: if true;
       allow write: if isSignedIn();
