@@ -17,13 +17,39 @@ class WaterSubscriptionRepository {
         .map((snap) => snap.docs.map((d) => WaterSubscriptionModel.fromFirestore(d)).toList());
   }
 
-  /// Stream subscriptions assigned to a dealer for upcoming manifests
+  /// Stream all subscriptions across all dealers (for Admin)
+  Stream<List<WaterSubscriptionModel>> getAllSubscriptions() {
+    return _subsRef
+        .snapshots()
+        .map((snap) {
+          final list = snap.docs.map((d) => WaterSubscriptionModel.fromFirestore(d)).toList();
+          list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return list;
+        })
+        .handleError((_) => <WaterSubscriptionModel>[]);
+  }
+
+  /// Stream subscriptions assigned to a dealer for upcoming manifests (Active only)
   Stream<List<WaterSubscriptionModel>> getDealerSubscriptions(String dealerId) {
     return _subsRef
         .where('dealerId', isEqualTo: dealerId)
         .where('status', isEqualTo: SubscriptionStatus.active.name)
         .snapshots()
-        .map((snap) => snap.docs.map((d) => WaterSubscriptionModel.fromFirestore(d)).toList());
+        .map((snap) => snap.docs.map((d) => WaterSubscriptionModel.fromFirestore(d)).toList())
+        .handleError((_) => <WaterSubscriptionModel>[]);
+  }
+
+  /// Stream all subscriptions for a dealer (Active, Paused, Cancelled)
+  Stream<List<WaterSubscriptionModel>> getDealerAllSubscriptions(String dealerId) {
+    return _subsRef
+        .where('dealerId', isEqualTo: dealerId)
+        .snapshots()
+        .map((snap) {
+          final list = snap.docs.map((d) => WaterSubscriptionModel.fromFirestore(d)).toList();
+          list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return list;
+        })
+        .handleError((_) => <WaterSubscriptionModel>[]);
   }
 
   /// Create a new water subscription

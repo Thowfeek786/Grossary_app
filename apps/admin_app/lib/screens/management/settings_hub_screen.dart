@@ -95,6 +95,13 @@ class SettingsHubScreen extends StatelessWidget {
                   onTap: () => context.push('/management/store-geofence'),
                 ),
                 _SettingsTile(
+                  icon: Icons.water_drop_rounded,
+                  title: 'Water Subscriptions Hub',
+                  subtitle: 'Platform-wide subscriber directories, MRR & runs',
+                  color: const Color(0xFF0D9488),
+                  onTap: () => context.push('/management/water-subscribers'),
+                ),
+                _SettingsTile(
                   icon: Icons.celebration_rounded,
                   title: 'Homepage Banners',
                   subtitle: 'Manage promotional carousel banners',

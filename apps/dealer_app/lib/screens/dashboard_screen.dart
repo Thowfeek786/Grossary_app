@@ -447,6 +447,67 @@ class _DealerDashboardState extends State<DealerDashboard> {
                                             ],
                                           ),
                                         ),
+                                        const SizedBox(height: 14),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: InkWell(
+                                                onTap: () => context.push('/subscribers'),
+                                                borderRadius: BorderRadius.circular(12),
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 10),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius: BorderRadius.circular(12),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: Colors.black.withValues(alpha: 0.08),
+                                                        blurRadius: 6,
+                                                        offset: const Offset(0, 2),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  child: const Row(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      Icon(Icons.people_alt_rounded, color: Color(0xFF0F766E), size: 16),
+                                                      SizedBox(width: 6),
+                                                      Text(
+                                                        'Subscribers & Run',
+                                                        style: TextStyle(color: Color(0xFF0F766E), fontWeight: FontWeight.w900, fontSize: 12),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: InkWell(
+                                                onTap: () => context.push('/can-returns'),
+                                                borderRadius: BorderRadius.circular(12),
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 10),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white.withValues(alpha: 0.18),
+                                                    borderRadius: BorderRadius.circular(12),
+                                                  ),
+                                                  child: const Row(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      Icon(Icons.qr_code_scanner_rounded, color: Colors.white, size: 16),
+                                                      SizedBox(width: 6),
+                                                      Text(
+                                                        'Can Returns',
+                                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ],
                                     ),
                                   );

@@ -20,6 +20,7 @@ import '../screens/main_shell.dart';
 import '../screens/can_return_summary_screen.dart';
 import '../screens/pos_screen.dart';
 import '../screens/stock_forecast_screen.dart';
+import '../screens/water_subscribers_screen.dart';
 
 class AppRouter {
   static final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -101,6 +102,11 @@ class AppRouter {
           path: '/can-returns',
           parentNavigatorKey: _rootNavigatorKey,
           builder: (_, __) => const CanReturnSummaryScreen(),
+        ),
+        GoRoute(
+          path: '/subscribers',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (_, __) => const WaterSubscribersScreen(),
         ),
         GoRoute(
           path: '/order/:orderId',
