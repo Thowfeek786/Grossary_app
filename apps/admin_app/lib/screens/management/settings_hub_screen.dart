@@ -82,10 +82,17 @@ class SettingsHubScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 _SettingsTile(
                   icon: Icons.local_shipping_rounded,
-                  title: 'Delivery Rates & Zones',
-                  subtitle: 'Configure base fees, free delivery thresholds',
+                  title: 'Delivery Rates & Surge Fee',
+                  subtitle: 'Configure base fees, surge engine, free thresholds',
                   color: const Color(0xFF8B5CF6),
                   onTap: () => context.push('/management/delivery-settings'),
+                ),
+                _SettingsTile(
+                  icon: Icons.radar_rounded,
+                  title: 'Store Zones & Geofencing',
+                  subtitle: 'Manage dark store GPS pins & coverage boundaries',
+                  color: const Color(0xFF059669),
+                  onTap: () => context.push('/management/store-geofence'),
                 ),
                 _SettingsTile(
                   icon: Icons.celebration_rounded,
