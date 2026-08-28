@@ -533,11 +533,11 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  'You Won a Mystery Scratch Card!',
-                                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12.5),
+                                                  'Mystery Scratch Card 🎁',
+                                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
                                                 ),
                                                 Text(
-                                                  'Tap to scratch & reveal instant wallet cashback',
+                                                  'Tap to scratch & test your luck for rewards',
                                                   style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w600),
                                                 ),
                                               ],
@@ -739,7 +739,13 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
     bool isScratched = false;
     bool isClaiming = false;
     bool isClaimed = false;
-    const double cashbackAmount = 25.0;
+
+    // 25% chance to win, 75% chance of Better Luck Next Time
+    final random = math.Random();
+    final bool isWinner = random.nextInt(100) < 25;
+    final double cashbackAmount = isWinner
+        ? const [10.0, 15.0, 20.0, 25.0][random.nextInt(4)]
+        : 0.0;
 
     showDialog(
       context: context,
@@ -769,7 +775,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        '🎉 Mystery Reward Card',
+                        '🎁 Mystery Scratch Card',
                         style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A)),
                       ),
                       IconButton(
@@ -796,11 +802,17 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                       height: 160,
                       decoration: BoxDecoration(
                         gradient: isScratched
-                            ? const LinearGradient(
-                                colors: [Color(0xFFECFDF5), Color(0xFFD1FAE5)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              )
+                            ? (isWinner
+                                ? const LinearGradient(
+                                    colors: [Color(0xFFECFDF5), Color(0xFFD1FAE5)],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  )
+                                : const LinearGradient(
+                                    colors: [Color(0xFFF1F5F9), Color(0xFFE2E8F0)],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ))
                             : const LinearGradient(
                                 colors: [Color(0xFF8B5CF6), Color(0xFF6366F1), Color(0xFF4F46E5)],
                                 begin: Alignment.topLeft,
@@ -808,13 +820,17 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                               ),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: isScratched ? const Color(0xFF34D399) : const Color(0xFF818CF8),
+                          color: isScratched
+                              ? (isWinner ? const Color(0xFF34D399) : const Color(0xFFCBD5E1))
+                              : const Color(0xFF818CF8),
                           width: 1.5,
                         ),
                         boxShadow: [
                           BoxShadow(
                             color: isScratched
-                                ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                                ? (isWinner
+                                    ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                                    : Colors.black.withValues(alpha: 0.05))
                                 : const Color(0xFF6366F1).withValues(alpha: 0.3),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
@@ -823,22 +839,43 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                       ),
                       child: Center(
                         child: isScratched
-                            ? Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Text('💰', style: TextStyle(fontSize: 36)),
-                                  const SizedBox(height: 4),
-                                  const Text(
-                                    '₹25.00 CASHBACK',
-                                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF065F46)),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  const Text(
-                                    'Credited directly to your GroceryGo Wallet',
-                                    style: TextStyle(fontSize: 11, color: Color(0xFF047857), fontWeight: FontWeight.w700),
-                                  ),
-                                ],
-                              )
+                            ? (isWinner
+                                ? Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Text('💰', style: TextStyle(fontSize: 36)),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '₹${cashbackAmount.toStringAsFixed(0)}.00 CASHBACK',
+                                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF065F46)),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      const Text(
+                                        'Credited directly to your GroceryGo Wallet',
+                                        style: TextStyle(fontSize: 11, color: Color(0xFF047857), fontWeight: FontWeight.w700),
+                                      ),
+                                    ],
+                                  )
+                                : const Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text('🍀', style: TextStyle(fontSize: 36)),
+                                      SizedBox(height: 6),
+                                      Text(
+                                        'Better Luck Next Time!',
+                                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF1E293B)),
+                                      ),
+                                      SizedBox(height: 3),
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 16),
+                                        child: Text(
+                                          'Keep shopping with GroceryGo to unlock guaranteed rewards on your next order!',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+                                        ),
+                                      ),
+                                    ],
+                                  ))
                             : const Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -850,7 +887,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                                   ),
                                   SizedBox(height: 2),
                                   Text(
-                                    'Reveal your guaranteed order reward',
+                                    'See if you won a mystery cashback reward',
                                     style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
                                   ),
                                 ],
@@ -861,7 +898,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
 
                   const SizedBox(height: 20),
 
-                  if (isScratched && !isClaimed)
+                  if (isScratched && isWinner && !isClaimed)
                     SizedBox(
                       width: double.infinity,
                       height: 48,
@@ -895,10 +932,10 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                         ),
                         child: isClaiming
                             ? const CircularProgressIndicator(color: Colors.white)
-                            : const Text('Claim ₹25 to Wallet 🎁', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
+                            : Text('Claim ₹${cashbackAmount.toStringAsFixed(0)} to Wallet 🎁', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
                       ),
                     )
-                  else if (isClaimed)
+                  else if (isScratched && isWinner && isClaimed)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
@@ -916,6 +953,23 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                             style: TextStyle(color: Color(0xFF166534), fontWeight: FontWeight.w800, fontSize: 13),
                           ),
                         ],
+                      ),
+                    )
+                  else if (isScratched && !isWinner)
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(dlgCtx),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF334155),
+                          side: const BorderSide(color: Color(0xFFCBD5E1), width: 1.2),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        ),
+                        child: const Text(
+                          'Got It 👍',
+                          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14),
+                        ),
                       ),
                     ),
                 ],
