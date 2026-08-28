@@ -7,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:models/models.dart';
 import 'package:repository/repository.dart';
 import '../../providers/order_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../utils/invoice_generator.dart';
 
 class OrderSuccessScreen extends StatefulWidget {
@@ -491,6 +492,73 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                                     ),
                                   ),
 
+                                  const SizedBox(height: 10),
+
+                                  // Mystery Scratch Card Reward Banner
+                                  GestureDetector(
+                                    onTap: () {
+                                      final user = context.read<AuthProvider>().user;
+                                      _showScratchCardDialog(context, user?.id ?? 'anon');
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          colors: [Color(0xFF8B5CF6), Color(0xFF6366F1), Color(0xFF4F46E5)],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        borderRadius: BorderRadius.circular(14),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(0xFF6366F1).withValues(alpha: 0.25),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(6),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white.withValues(alpha: 0.2),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Text('🎁', style: TextStyle(fontSize: 16)),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          const Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  'You Won a Mystery Scratch Card!',
+                                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12.5),
+                                                ),
+                                                Text(
+                                                  'Tap to scratch & reveal instant wallet cashback',
+                                                  style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w600),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: const Text(
+                                              'Scratch',
+                                              style: TextStyle(color: Color(0xFF4F46E5), fontWeight: FontWeight.w900, fontSize: 11),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
                                   const SizedBox(height: 12),
 
                                   // Delivery Instructions Selector
@@ -661,6 +729,198 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                 ],
               );
             },
+          );
+        },
+      ),
+    );
+  }
+
+  void _showScratchCardDialog(BuildContext context, String userId) {
+    bool isScratched = false;
+    bool isClaiming = false;
+    bool isClaimed = false;
+    const double cashbackAmount = 25.0;
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (dlgCtx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        '🎉 Mystery Reward Card',
+                        style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A)),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF64748B)),
+                        onPressed: () => Navigator.pop(dlgCtx),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Scratch Surface Card
+                  GestureDetector(
+                    onTap: () {
+                      if (!isScratched) {
+                        HapticFeedback.heavyImpact();
+                        setDialogState(() => isScratched = true);
+                      }
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      width: double.infinity,
+                      height: 160,
+                      decoration: BoxDecoration(
+                        gradient: isScratched
+                            ? const LinearGradient(
+                                colors: [Color(0xFFECFDF5), Color(0xFFD1FAE5)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              )
+                            : const LinearGradient(
+                                colors: [Color(0xFF8B5CF6), Color(0xFF6366F1), Color(0xFF4F46E5)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isScratched ? const Color(0xFF34D399) : const Color(0xFF818CF8),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isScratched
+                                ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                                : const Color(0xFF6366F1).withValues(alpha: 0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: isScratched
+                            ? Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text('💰', style: TextStyle(fontSize: 36)),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    '₹25.00 CASHBACK',
+                                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF065F46)),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  const Text(
+                                    'Credited directly to your GroceryGo Wallet',
+                                    style: TextStyle(fontSize: 11, color: Color(0xFF047857), fontWeight: FontWeight.w700),
+                                  ),
+                                ],
+                              )
+                            : const Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.touch_app_rounded, color: Colors.white, size: 36),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    'TAP TO SCRATCH',
+                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1.0),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    'Reveal your guaranteed order reward',
+                                    style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  if (isScratched && !isClaimed)
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: isClaiming
+                            ? null
+                            : () async {
+                                setDialogState(() => isClaiming = true);
+                                try {
+                                  if (userId != 'anon') {
+                                    await WalletRepository().addFunds(
+                                      userId: userId,
+                                      amount: cashbackAmount,
+                                      description: 'Mystery Scratch Card Reward for Order #${widget.orderId.substring(0, 8)}',
+                                      orderId: widget.orderId,
+                                    );
+                                  }
+                                  setDialogState(() {
+                                    isClaiming = false;
+                                    isClaimed = true;
+                                  });
+                                } catch (_) {
+                                  setDialogState(() => isClaiming = false);
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF059669),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        ),
+                        child: isClaiming
+                            ? const CircularProgressIndicator(color: Colors.white)
+                            : const Text('Claim ₹25 to Wallet 🎁', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
+                      ),
+                    )
+                  else if (isClaimed)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0FDF4),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFBBF7D0)),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 18),
+                          SizedBox(width: 8),
+                          Text(
+                            'Added to Wallet Successfully!',
+                            style: TextStyle(color: Color(0xFF166534), fontWeight: FontWeight.w800, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
           );
         },
       ),
