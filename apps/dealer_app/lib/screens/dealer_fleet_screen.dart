@@ -171,14 +171,25 @@ class _DealerFleetScreenState extends State<DealerFleetScreen> {
                     Expanded(
                       child: DropdownButtonFormField<String>(
                         initialValue: vehicleType,
+                        isExpanded: true,
                         decoration: InputDecoration(
-                          labelText: 'Vehicle Type',
+                          labelText: 'Vehicle',
+                          labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
                           filled: true,
                           fillColor: const Color(0xFFF8FAFC),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
                         ),
                         items: ['Bike / Two-Wheeler', '3-Wheeler / Auto', 'Mini-Van / Pickup', 'Bicycle']
-                            .map((v) => DropdownMenuItem(value: v, child: Text(v, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700))))
+                            .map((v) => DropdownMenuItem(
+                                  value: v,
+                                  child: Text(
+                                    v,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700),
+                                  ),
+                                ))
                             .toList(),
                         onChanged: (val) {
                           if (val != null) setModalState(() => vehicleType = val);
