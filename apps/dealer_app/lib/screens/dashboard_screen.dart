@@ -274,10 +274,42 @@ class _DealerDashboardState extends State<DealerDashboard> {
                     // ─────────────────────────────────────────────
                     // 2. Vendor Quick Actions (All Previous Actions)
                     // ─────────────────────────────────────────────
-                    const Text('Vendor Quick Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Vendor Quick Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
+                        InkWell(
+                          onTap: () => context.push('/pos'),
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF059669).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Row(
+                              children: [
+                                Icon(Icons.point_of_sale_rounded, size: 14, color: Color(0xFF059669)),
+                                SizedBox(width: 4),
+                                Text('Store POS', style: TextStyle(color: Color(0xFF059669), fontWeight: FontWeight.w900, fontSize: 11.5)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
+                        Expanded(
+                          child: _ActionBtn(
+                            icon: Icons.point_of_sale_rounded,
+                            label: 'Store POS',
+                            color: const Color(0xFFEA580C),
+                            onTap: () => context.push('/pos'),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: _ActionBtn(
                             icon: Icons.add_box_rounded,
@@ -286,7 +318,7 @@ class _DealerDashboardState extends State<DealerDashboard> {
                             onTap: () => context.push('/add-product'),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: _ActionBtn(
                             icon: Icons.inventory_rounded,
@@ -295,22 +327,13 @@ class _DealerDashboardState extends State<DealerDashboard> {
                             onTap: () => context.go('/inventory'),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: _ActionBtn(
                             icon: Icons.receipt_long_rounded,
                             label: 'Orders',
                             color: const Color(0xFF8B5CF6),
                             onTap: () => context.go('/orders'),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: _ActionBtn(
-                            icon: Icons.account_balance_wallet_rounded,
-                            label: 'Payouts',
-                            color: const Color(0xFF0D9488),
-                            onTap: () => context.push('/dealer-payouts'),
                           ),
                         ),
                       ],
