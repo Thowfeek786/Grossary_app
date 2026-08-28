@@ -17,7 +17,12 @@ class _AdminDeliverySettingsScreenState extends State<AdminDeliverySettingsScree
   final _scheduledFeeCtrl = TextEditingController();
   final _thresholdCtrl = TextEditingController();
   final _etaCtrl = TextEditingController();
+  final _maxRadiusCtrl = TextEditingController();
+  final _surgeFeeCtrl = TextEditingController();
+  final _surgeReasonCtrl = TextEditingController();
+
   bool _isFreeDeliveryEnabled = true;
+  bool _isSurgeActive = false;
   bool _isSaving = false;
 
   @override
@@ -26,6 +31,9 @@ class _AdminDeliverySettingsScreenState extends State<AdminDeliverySettingsScree
     _scheduledFeeCtrl.dispose();
     _thresholdCtrl.dispose();
     _etaCtrl.dispose();
+    _maxRadiusCtrl.dispose();
+    _surgeFeeCtrl.dispose();
+    _surgeReasonCtrl.dispose();
     super.dispose();
   }
 
@@ -35,7 +43,11 @@ class _AdminDeliverySettingsScreenState extends State<AdminDeliverySettingsScree
       _scheduledFeeCtrl.text = settings.scheduledDeliveryFee.toStringAsFixed(0);
       _thresholdCtrl.text = settings.freeDeliveryThreshold.toStringAsFixed(0);
       _etaCtrl.text = settings.estimatedDeliveryTime;
+      _maxRadiusCtrl.text = settings.maxDeliveryRadiusKm.toStringAsFixed(0);
+      _surgeFeeCtrl.text = settings.surgeFee > 0 ? settings.surgeFee.toStringAsFixed(0) : '25';
+      _surgeReasonCtrl.text = settings.surgeReason;
       _isFreeDeliveryEnabled = settings.isFreeDeliveryEnabled;
+      _isSurgeActive = settings.isSurgeActive;
     }
   }
 
@@ -43,6 +55,9 @@ class _AdminDeliverySettingsScreenState extends State<AdminDeliverySettingsScree
     final quickFee = double.tryParse(_quickFeeCtrl.text.trim());
     final scheduledFee = double.tryParse(_scheduledFeeCtrl.text.trim());
     final threshold = double.tryParse(_thresholdCtrl.text.trim());
+    final maxRadius = double.tryParse(_maxRadiusCtrl.text.trim()) ?? 15.0;
+    final surgeFee = double.tryParse(_surgeFeeCtrl.text.trim()) ?? 0.0;
+    final surgeReason = _surgeReasonCtrl.text.trim().isNotEmpty ? _surgeReasonCtrl.text.trim() : 'Heavy rain / peak demand';
     final eta = _etaCtrl.text.trim().isNotEmpty ? _etaCtrl.text.trim() : '20 to 30 minutes';
 
     if (quickFee == null || quickFee < 0) {
@@ -70,12 +85,16 @@ class _AdminDeliverySettingsScreenState extends State<AdminDeliverySettingsScree
         freeDeliveryThreshold: threshold ?? 500.0,
         isFreeDeliveryEnabled: _isFreeDeliveryEnabled,
         estimatedDeliveryTime: eta,
+        maxDeliveryRadiusKm: maxRadius,
+        surgeFee: surgeFee,
+        isSurgeActive: _isSurgeActive,
+        surgeReason: surgeReason,
       );
 
       final ok = await SettingsRepository().updateSettings(settings);
       if (ok && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('🎉 Delivery pricing & schedule rates updated successfully!'), backgroundColor: Color(0xFF0F172A)),
+          const SnackBar(content: Text('🎉 Delivery & surge pricing settings updated!'), backgroundColor: Color(0xFF059669)),
         );
       }
     } catch (e) {
@@ -91,14 +110,11 @@ class _AdminDeliverySettingsScreenState extends State<AdminDeliverySettingsScree
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       drawer: const AdminDrawer(),
       appBar: CustomAppBar(
-        title: 'Delivery Fee & Schedule Pricing',
+        title: 'Delivery & Surge Pricing',
         backgroundColor: const Color(0xFF0F172A),
         foregroundColor: Colors.white,
         leading: Builder(
@@ -129,89 +145,158 @@ class _AdminDeliverySettingsScreenState extends State<AdminDeliverySettingsScree
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header Banner
+                // 1. Dynamic Surge Pricing Card (Weather / Peak Demand)
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFF6366F1).withValues(alpha: 0.1),
+                    color: _isSurgeActive ? const Color(0xFFFFFBEB) : Colors.white,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: _isSurgeActive ? const Color(0xFFF59E0B) : const Color(0xFFE2E8F0),
+                      width: _isSurgeActive ? 1.5 : 1,
+                    ),
                   ),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.delivery_dining_rounded, color: Color(0xFF6366F1), size: 32),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Quick vs Scheduled Delivery Rates',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: _isSurgeActive ? const Color(0xFFF59E0B).withValues(alpha: 0.2) : const Color(0xFFF1F5F9),
+                              shape: BoxShape.circle,
                             ),
-                            Text(
-                              'Charge for express instant orders and discount or offer FREE delivery for planned scheduled slots.',
-                              style: TextStyle(fontSize: 12, color: isDark ? Colors.grey[400] : AppColors.textSecondary),
+                            child: Icon(Icons.bolt_rounded, color: _isSurgeActive ? const Color(0xFFD97706) : const Color(0xFF64748B), size: 22),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Surge Pricing Engine',
+                                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF0F172A)),
+                                ),
+                                Text(
+                                  _isSurgeActive ? '⚡ Surge is currently ACTIVE on customer checkouts' : 'Inactive (Normal platform rates apply)',
+                                  style: TextStyle(fontSize: 12, color: _isSurgeActive ? const Color(0xFFD97706) : const Color(0xFF64748B), fontWeight: FontWeight.w600),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
+                          Switch(
+                            value: _isSurgeActive,
+                            activeThumbColor: const Color(0xFFD97706),
+                            onChanged: (val) => setState(() => _isSurgeActive = val),
+                          ),
+                        ],
+                      ),
+                      if (_isSurgeActive) ...[
+                        const Divider(height: 24, color: Color(0xFFFDE68A)),
+                        AppTextField(
+                          label: 'Additional Surge Fee (₹)',
+                          hint: 'e.g. 25',
+                          controller: _surgeFeeCtrl,
+                          keyboardType: TextInputType.number,
                         ),
+                        const SizedBox(height: 12),
+                        AppTextField(
+                          label: 'Customer-facing Surge Notice Reason',
+                          hint: 'e.g. Heavy rainfall in your area / High demand surge',
+                          controller: _surgeReasonCtrl,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // 2. Base & Scheduled Delivery Rates
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.two_wheeler_rounded, color: Color(0xFF059669), size: 20),
+                          SizedBox(width: 8),
+                          Text('Standard Delivery Rates', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF0F172A))),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      AppTextField(
+                        label: 'Instant / Quick Delivery Fee (₹)',
+                        hint: 'e.g. 40',
+                        controller: _quickFeeCtrl,
+                        keyboardType: TextInputType.number,
+                      ),
+                      const SizedBox(height: 14),
+                      AppTextField(
+                        label: 'Scheduled Slot Delivery Fee (₹)',
+                        hint: '0 for FREE scheduled slot',
+                        controller: _scheduledFeeCtrl,
+                        keyboardType: TextInputType.number,
+                      ),
+                      const SizedBox(height: 14),
+                      AppTextField(
+                        label: 'Estimated Delivery Time Label',
+                        hint: 'e.g. 20 to 30 minutes',
+                        controller: _etaCtrl,
+                      ),
+                      const SizedBox(height: 14),
+                      AppTextField(
+                        label: 'Maximum Delivery Service Radius (KM)',
+                        hint: 'e.g. 15',
+                        controller: _maxRadiusCtrl,
+                        keyboardType: TextInputType.number,
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 24),
-
-                // Quick / Instant Delivery Fee
-                AppTextField(
-                  label: 'Quick / Instant Delivery Fee (₹)',
-                  hint: 'e.g. 40 (standard instant fee)',
-                  controller: _quickFeeCtrl,
-                  keyboardType: TextInputType.number,
-                ),
-
                 const SizedBox(height: 20),
 
-                // Scheduled Delivery Fee
-                AppTextField(
-                  label: 'Scheduled Delivery Fee (₹) — (0 for FREE)',
-                  hint: '0 for FREE scheduled delivery or reduced fee (e.g. 10)',
-                  controller: _scheduledFeeCtrl,
-                  keyboardType: TextInputType.number,
-                ),
-
-                const SizedBox(height: 20),
-
-                // Estimated Quick Delivery Time Field
-                AppTextField(
-                  label: 'Quick Delivery Time Label',
-                  hint: 'e.g. 20 to 30 minutes',
-                  controller: _etaCtrl,
-                ),
-
-                const SizedBox(height: 20),
-
-                // Free Delivery Switch
-                SwitchListTile(
-                  title: const Text('Enable Free Delivery Threshold', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                  subtitle: const Text('Offer free delivery to platform customers when order exceeds minimum amount'),
-                  value: _isFreeDeliveryEnabled,
-                  activeThumbColor: const Color(0xFF6366F1),
-                  onChanged: (val) => setState(() => _isFreeDeliveryEnabled = val),
-                  contentPadding: EdgeInsets.zero,
-                ),
-
-                if (_isFreeDeliveryEnabled) ...[
-                  const SizedBox(height: 12),
-                  AppTextField(
-                    label: 'Platform Free Delivery Order Minimum (₹)',
-                    hint: 'e.g. 500',
-                    controller: _thresholdCtrl,
-                    keyboardType: TextInputType.number,
+                // 3. Free Delivery Threshold
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
                   ),
-                ],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SwitchListTile(
+                        title: const Text('Free Delivery Threshold', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Color(0xFF0F172A))),
+                        subtitle: const Text('Automatically waive delivery fee when order subtotal exceeds limit', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                        value: _isFreeDeliveryEnabled,
+                        activeThumbColor: const Color(0xFF059669),
+                        onChanged: (val) => setState(() => _isFreeDeliveryEnabled = val),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      if (_isFreeDeliveryEnabled) ...[
+                        const SizedBox(height: 12),
+                        AppTextField(
+                          label: 'Minimum Order Value for Free Delivery (₹)',
+                          hint: 'e.g. 500',
+                          controller: _thresholdCtrl,
+                          keyboardType: TextInputType.number,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
 
-                const SizedBox(height: 36),
+                const SizedBox(height: 32),
 
                 AppButton(
                   label: 'Save Delivery Settings',

@@ -59,6 +59,10 @@ class StoreSettingsModel {
   final String adminIfscCode;
   final String adminBankName;
   final String estimatedDeliveryTime;
+  final double maxDeliveryRadiusKm;
+  final double surgeFee;
+  final bool isSurgeActive;
+  final String surgeReason;
 
   const StoreSettingsModel({
     required this.id,
@@ -88,6 +92,10 @@ class StoreSettingsModel {
     this.adminIfscCode = 'HDFC0001234',
     this.adminBankName = 'HDFC Bank',
     this.estimatedDeliveryTime = '20 to 30 minutes',
+    this.maxDeliveryRadiusKm = 15.0,
+    this.surgeFee = 0.0,
+    this.isSurgeActive = false,
+    this.surgeReason = 'Heavy rain / peak demand',
   });
 
   factory StoreSettingsModel.fromFirestore(DocumentSnapshot doc) {
@@ -121,6 +129,10 @@ class StoreSettingsModel {
       adminIfscCode: data['adminIfscCode'] as String? ?? 'HDFC0001234',
       adminBankName: data['adminBankName'] as String? ?? 'HDFC Bank',
       estimatedDeliveryTime: data['estimatedDeliveryTime'] as String? ?? '20 to 30 minutes',
+      maxDeliveryRadiusKm: (data['maxDeliveryRadiusKm'] as num?)?.toDouble() ?? 15.0,
+      surgeFee: (data['surgeFee'] as num?)?.toDouble() ?? 0.0,
+      isSurgeActive: data['isSurgeActive'] ?? false,
+      surgeReason: data['surgeReason'] as String? ?? 'Heavy rain / peak demand',
     );
   }
 
@@ -151,6 +163,10 @@ class StoreSettingsModel {
         'adminIfscCode': adminIfscCode,
         'adminBankName': adminBankName,
         'estimatedDeliveryTime': estimatedDeliveryTime,
+        'maxDeliveryRadiusKm': maxDeliveryRadiusKm,
+        'surgeFee': surgeFee,
+        'isSurgeActive': isSurgeActive,
+        'surgeReason': surgeReason,
       };
 
   StoreSettingsModel copyWith({
@@ -181,6 +197,10 @@ class StoreSettingsModel {
     String? adminIfscCode,
     String? adminBankName,
     String? estimatedDeliveryTime,
+    double? maxDeliveryRadiusKm,
+    double? surgeFee,
+    bool? isSurgeActive,
+    String? surgeReason,
   }) {
     return StoreSettingsModel(
       id: id ?? this.id,
@@ -210,6 +230,10 @@ class StoreSettingsModel {
       adminIfscCode: adminIfscCode ?? this.adminIfscCode,
       adminBankName: adminBankName ?? this.adminBankName,
       estimatedDeliveryTime: estimatedDeliveryTime ?? this.estimatedDeliveryTime,
+      maxDeliveryRadiusKm: maxDeliveryRadiusKm ?? this.maxDeliveryRadiusKm,
+      surgeFee: surgeFee ?? this.surgeFee,
+      isSurgeActive: isSurgeActive ?? this.isSurgeActive,
+      surgeReason: surgeReason ?? this.surgeReason,
     );
   }
 }
